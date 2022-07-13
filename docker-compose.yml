@@ -6,10 +6,8 @@ services:
     container_name: db_fatcode
     volumes:
       - db_fatcode_vol:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_DB=postgres
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+    env_file:
+      - .env.dev
   web:
     build: .
     container_name: fatcode
@@ -20,8 +18,8 @@ services:
       - ./:/app
     depends_on:
       - db
-    environment:
-      - ./.env.dev
+    env_file:
+      - .env.dev
 
 volumes:
   db_fatcode_vol:
