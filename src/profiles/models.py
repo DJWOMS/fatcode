@@ -21,9 +21,9 @@ class Social(models.Model):
 class FatUser(AbstractUser):
     """user model override"""
 
-    first_login = models.DateTimeField(null=True)
+    first_login = models.DateTimeField(null=True, blank=True)
     avatar = models.ImageField(upload_to=user_directory_path, null=True, blank=True)
-    middle_name = models.CharField(max_length=150)
+    middle_name = models.CharField(max_length=150, null=True, blank=True)
     socials = models.ManyToManyField(Social, through='FatUserSocial')
 
 
