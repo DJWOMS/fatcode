@@ -1,62 +1,25 @@
-from src.profiles import forms
-from django.views.generic.edit import FormView
-from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth import login
-from django.views.generic.base import View
-from django.contrib.auth import logout
-from django.shortcuts import redirect
-from django.views.generic.detail import DetailView
-from django.views.generic.base import TemplateView
+from src.profiles.serializers import UserFatSerializer, UserFatPublicSerializer
 from src.profiles.models import FatUser
+from rest_framework.viewsets import ModelViewSet
+from rest_framework import permissions
 
 
-class RegisterUser(FormView):
-    form_class = forms.RegisterUserForm
-    success_url = '/account/login/'
-    template_name = 'profiles/registration/registration.html'
+class UserFatView(ModelViewSet):
+    """Internal user display"""
 
-    def form_valid(self, form):
-        form.save()
-        return super().form_valid(form)
+    serializer_class = UserFatSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
-    def form_invalid(self, form):
-        return super().form_invalid(form)
+    def get_queryset(self):
+        return FatUser.objects.filter(id=self.request.user.id)
 
 
-class LoginFormView(FormView):
-    form_class = AuthenticationForm
-    template_name = "profiles/registration/login.html"
-    success_url = "/account/profile/"
+class UserFatPublicView(ModelViewSet):
+    """Public user display"""
 
-    def get(self, request):
-        if request.user.is_authenticated:
-            return redirect('profile')
-
-        return super().get(self, request)
-
-    def form_valid(self, form):
-        self.user = form.get_user()
-        login(self.request, self.user)
-        return super().form_valid(form)
+    queryset = FatUser.objects.all()
+    serializer_class = UserFatPublicSerializer
+    permission_classes = [permissions.AllowAny]
 
 
-class LogoutView(View):
-    def get(self, request):
-        logout(request)
-        return redirect('/account/login/')
 
-
-class ProfileView(TemplateView):
-    template_name = 'profiles/profile.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['user_detail'] = FatUser.objects.get(pk=self.request.user.id)
-
-        return context
-
-    def get(self, request):
-        if not request.user.is_authenticated:
-            return redirect('login')
-
-        return super().get(self, request)
