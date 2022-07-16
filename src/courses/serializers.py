@@ -19,9 +19,8 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = FatUser
         fields = (
-            'username', 'first_name',
-            'last_name', 'first_login',
-            'avatar', 'socials',
+            'socials', 'first_name',
+            'last_name', 'avatar',
         )
 
 

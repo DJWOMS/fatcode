@@ -17,3 +17,4 @@ class CourseAdmin(admin.ModelAdmin):
 
 admin.site.register(Tags)
 admin.site.register(Category)
+admin.site.register(Lesson)

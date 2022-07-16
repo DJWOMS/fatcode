@@ -90,11 +90,11 @@ class Quiz(models.Model):
     text = models.TextField()
     right = models.BooleanField()
     hint = models.TextField()
-    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name='quiz')
 
 
 class CodeQuestion(models.Model):
     code = models.TextField()
     answer = models.TextField()
-    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name='code')
 
