@@ -6,7 +6,7 @@ idea
 *.egg-info/
 .installed.cfg
 *.egg
-#**/migrations/
+**/migrations/
 
 dist
 db.sqlite3
