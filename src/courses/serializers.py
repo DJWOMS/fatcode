@@ -3,6 +3,18 @@ from .models import *
 from src.profiles.models import FatUser
 
 
+class CodeQuestionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CodeQuestion
+        fields = ('code', 'answer')
+
+
+class QuizSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Quiz
+        fields = ('text', 'right',)
+
+
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tags
@@ -31,7 +43,22 @@ class LessonSerializer(serializers.ModelSerializer):
             'lesson_type', 'name',
             'viewed', 'video_url',
             'published', 'slug',
-            'description',
+            'description', 'hint'
+        )
+
+
+class DetailLessonSerializer(serializers.ModelSerializer):
+    code = CodeQuestionSerializer(many=True)
+    quiz = QuizSerializer(many=True)
+
+    class Meta:
+        model = Lesson
+        fields = (
+            'lesson_type', 'name',
+            'viewed', 'video_url',
+            'published', 'slug',
+            'description', 'code',
+            'quiz'
         )
 
 
@@ -70,3 +97,7 @@ class DetailCourseSerializer(serializers.ModelSerializer):
         )
 
 
+class StudentWorkSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StudentWork
+        fields = ('code', 'quiz')

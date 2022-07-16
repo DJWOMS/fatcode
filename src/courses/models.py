@@ -52,6 +52,7 @@ class Lesson(models.Model):
     lesson_type = models.CharField(max_length=500, choices=LESSON_CHOISE)
     name = models.CharField(max_length=500)
     viewed = models.IntegerField(default=0, editable=False)
+    hint = models.TextField(null=True)
     video_url = models.URLField(max_length=500)
     published = models.DateField(auto_now_add=True)
     sorted = models.IntegerField(default=1)
@@ -61,6 +62,9 @@ class Lesson(models.Model):
 
     class Meta:
         ordering = ['sorted']
+
+    def __str__(self):
+        return self.name
 
 
 class StudentWork(models.Model):
@@ -89,7 +93,6 @@ class UserCourseThrough(models.Model):
 class Quiz(models.Model):
     text = models.TextField()
     right = models.BooleanField()
-    hint = models.TextField()
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name='quiz')
 
 
