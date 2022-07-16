@@ -1,12 +1,12 @@
 from rest_framework import serializers
 from .models import *
-from django.conf import settings
+from src.profiles.models import FatUser
 
 
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tags
-        fields = ('name')
+        fields = ('name',)
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -17,12 +17,11 @@ class CategorySerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = settings.AUTH_USER_MODEL
+        model = FatUser
         fields = (
             'username', 'first_name',
-            'last_name', 'email',
-            'first_login', 'avatar',
-            'socials'
+            'last_name', 'first_login',
+            'avatar', 'socials',
         )
 
 
@@ -33,17 +32,32 @@ class LessonSerializer(serializers.ModelSerializer):
             'lesson_type', 'name',
             'viewed', 'video_url',
             'published', 'slug',
-            'description'
+            'description',
         )
 
 
-class CourseSerializer(serializers.ModelSerializer):
-    mentor = UserSerializer()
-    students = UserSerializer(many=True)
+class ListCourseSerializer(serializers.ModelSerializer):
     autor = UserSerializer()
     tags = TagSerializer(many=True)
     category = CategorySerializer()
-    lesson_set = LessonSerializer(many=True)
+
+    class Meta:
+        model = Course
+        fields = (
+            'autor', 'tags',
+            'category', 'name',
+            'description', 'published',
+            'updated', 'slug',
+            'id', 'view_count'
+        )
+
+
+class DetailCourseSerializer(serializers.ModelSerializer):
+    mentor = UserSerializer()
+    autor = UserSerializer()
+    tags = TagSerializer(many=True)
+    category = CategorySerializer()
+    lessons = LessonSerializer(many=True)
 
     class Meta:
         model = Course
@@ -52,7 +66,8 @@ class CourseSerializer(serializers.ModelSerializer):
             'slug', 'view_count',
             'published', 'updated',
             'mentor', 'autor',
-            'tags', 'students',
-            'category', 'lesson_set'
+            'tags', 'category',
+            'lessons',
         )
+
 

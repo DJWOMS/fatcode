@@ -4,6 +4,7 @@ from .models import *
 
 class LessonTabInlines(admin.TabularInline):
     model = Lesson
+    extra = 1
 
 
 @admin.register(Course)
@@ -14,11 +15,5 @@ class CourseAdmin(admin.ModelAdmin):
         fields = '__all__'
 
 
-@admin.register(Category)
-class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('name',)
-
-
-@admin.register(Tags)
-class TagAdmin(admin.ModelAdmin):
-    list_display = ('name',)
+admin.site.register(Tags)
+admin.site.register(Category)

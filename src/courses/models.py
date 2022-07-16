@@ -5,6 +5,9 @@ from django.conf import settings
 class Tags(models.Model):
     name = models.CharField(max_length=500)
 
+    def __str__(self):
+        return self.name
+
 
 class Category(models.Model):
     name = models.CharField(max_length=500)
@@ -26,6 +29,9 @@ class Course(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     mentor = models.ForeignKey(settings.AUTH_USER_MODEL, models.CASCADE, related_name='mentor', null=True)
     tags = models.ManyToManyField(Tags, null=True, blank=True)
+
+    def __str__(self):
+        return self.name
 
     def all_lessons(self):
         return Lesson.objects.filter(course=self)
@@ -49,7 +55,7 @@ class Lesson(models.Model):
     video_url = models.URLField(max_length=500)
     published = models.DateField(auto_now_add=True)
     sorted = models.IntegerField(default=1)
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='lessons')
     slug = models.SlugField()
     description = models.TextField()
 
