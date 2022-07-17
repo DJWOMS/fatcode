@@ -34,3 +34,6 @@ make.bat
 Makefile
 
 doc-dev
+
+migrations/
+*/migrations/
