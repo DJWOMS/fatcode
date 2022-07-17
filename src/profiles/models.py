@@ -1,7 +1,12 @@
 import uuid
 from django.db import models
-from django.contrib.auth.models import AbstractUser, BaseUserManager
-from django.utils.translation import gettext_lazy as _
+from django.contrib.auth.models import AbstractUser
+from django.core.exceptions import ValidationError
+
+
+def avatar_validator(value):
+    if value.file.image.size != FatUser.allowed_avatar_size:
+        raise ValidationError('Неправильный размер изображения')
 
 
 def user_directory_path(instance, filename):
@@ -22,8 +27,11 @@ class Social(models.Model):
 class FatUser(AbstractUser):
     """user model override"""
 
+    allowed_avatar_size = (100, 100)
+
     first_login = models.DateTimeField(null=True, blank=True)
-    avatar = models.ImageField(upload_to=user_directory_path, null=True, blank=True)
+    avatar = models.ImageField(upload_to=user_directory_path, null=True,
+                               blank=True, validators=[avatar_validator])
     middle_name = models.CharField(max_length=150, null=True, blank=True)
     socials = models.ManyToManyField(Social, through='FatUserSocial')
 
@@ -34,4 +42,3 @@ class FatUserSocial(models.Model):
     social = models.ForeignKey(Social, on_delete=models.CASCADE)
     user = models.ForeignKey(FatUser, on_delete=models.CASCADE)
     url = models.CharField(max_length=250)
-

@@ -5,6 +5,11 @@ from src.profiles.models import FatUser
 from rest_framework import serializers
 
 
+def avatar_validator(value):
+    if value.image.size != FatUser.allowed_avatar_size:
+        raise serializers.ValidationError('Неправильный размер изображения')
+
+
 class FatUserCreateSerializer(UserCreateSerializer):
     """Serialization to create user"""
 
@@ -30,6 +35,8 @@ class FatUserUpdateSerializer(UserSerializer):
                                        queryset=FatUser.objects.all(),
                                        message='Такой email уже используется')])
 
+    avatar = serializers.ImageField(validators=[avatar_validator])
+
     class Meta:
         model = FatUser
         fields = tuple(FatUser.REQUIRED_FIELDS) + (
@@ -47,7 +54,7 @@ class FatUserUpdateSerializer(UserSerializer):
 class UserFatSerializer(serializers.ModelSerializer):
     """Serialization for user's internal display"""
 
-    # avatar = serializers.ImageField(read_only=True)
+    avatar = serializers.ImageField(validators=[avatar_validator])
 
     class Meta:
         model = FatUser
@@ -64,6 +71,8 @@ class UserFatSerializer(serializers.ModelSerializer):
 
 class UserFatPublicSerializer(serializers.ModelSerializer):
     """Serialization for public user display"""
+
+    avatar = serializers.ImageField(read_only=True)
 
     class Meta:
         model = FatUser
