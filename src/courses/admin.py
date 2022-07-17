@@ -20,6 +20,8 @@ class CodeTabular(admin.TabularInline):
 @admin.register(Course)
 class CourseAdmin(admin.ModelAdmin):
     inlines = [LessonTabInlines]
+    list_display = ('name', 'autor', 'mentor')
+    ordering = ['published']
 
     class Meta:
         fields = '__all__'
@@ -28,6 +30,7 @@ class CourseAdmin(admin.ModelAdmin):
 @admin.register(Lesson)
 class LessonAdmin(admin.ModelAdmin):
     inlines = [QuizTabular, CodeTabular]
+    list_display = ('course', 'lesson_type')
 
     class Meta:
         fields = '__all__'

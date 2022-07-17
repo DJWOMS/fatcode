@@ -31,8 +31,10 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = FatUser
         fields = (
-            'socials', 'first_name',
-            'last_name', 'avatar',
+            'socials',
+            'first_name',
+            'last_name',
+            'avatar',
         )
 
 
@@ -40,10 +42,14 @@ class LessonSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lesson
         fields = (
-            'lesson_type', 'name',
-            'viewed', 'video_url',
-            'published', 'slug',
-            'description', 'hint'
+            'lesson_type',
+            'name',
+            'viewed',
+            'video_url',
+            'published',
+            'slug',
+            'description',
+            'hint'
         )
 
 
@@ -54,10 +60,14 @@ class DetailLessonSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lesson
         fields = (
-            'lesson_type', 'name',
-            'viewed', 'video_url',
-            'published', 'slug',
-            'description', 'code',
+            'lesson_type',
+            'name',
+            'viewed',
+            'video_url',
+            'published',
+            'slug',
+            'description',
+            'code',
             'quiz'
         )
 
@@ -70,11 +80,16 @@ class ListCourseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course
         fields = (
-            'autor', 'tags',
-            'category', 'name',
-            'description', 'published',
-            'updated', 'slug',
-            'id', 'view_count'
+            'autor',
+            'tags',
+            'category',
+            'name',
+            'description',
+            'published',
+            'updated',
+            'slug',
+            'id',
+            'view_count'
         )
 
 
@@ -88,16 +103,30 @@ class DetailCourseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course
         fields = (
-            'name', 'description',
-            'slug', 'view_count',
-            'published', 'updated',
-            'mentor', 'autor',
-            'tags', 'category',
+            'name',
+            'description',
+            'slug',
+            'view_count',
+            'published',
+            'updated',
+            'mentor',
+            'autor',
+            'tags',
+            'category',
             'lessons',
         )
 
 
 class StudentWorkSerializer(serializers.ModelSerializer):
+    code = CodeQuestionSerializer(required=False)
+    quiz = QuizSerializer(required=False)
+
     class Meta:
         model = StudentWork
         fields = ('code', 'quiz')
+
+    def validate(self, data):
+        if not data.keys() & {'code', 'quiz'}:
+            raise serializers.ValidationError('Ответ должен содержать код или квиз')
+        return data
+
