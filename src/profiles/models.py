@@ -5,7 +5,8 @@ from django.core.exceptions import ValidationError
 
 
 def avatar_validator(value):
-    if value.file.image.size != FatUser.allowed_avatar_size:
+    if value.file.image.size != FatUser.allowed_avatar_size or value.size > \
+            FatUser.allowed_avatar_bytes:
         raise ValidationError('Неправильный размер изображения')
 
 
@@ -28,6 +29,7 @@ class FatUser(AbstractUser):
     """user model override"""
 
     allowed_avatar_size = (100, 100)
+    allowed_avatar_bytes = 1048576
 
     first_login = models.DateTimeField(null=True, blank=True)
     avatar = models.ImageField(upload_to=user_directory_path, null=True,

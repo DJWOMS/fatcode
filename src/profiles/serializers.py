@@ -6,7 +6,8 @@ from rest_framework import serializers
 
 
 def avatar_validator(value):
-    if value.image.size != FatUser.allowed_avatar_size:
+    if value.image.size != FatUser.allowed_avatar_size or value.size > \
+            FatUser.allowed_avatar_bytes:
         raise serializers.ValidationError('Неправильный размер изображения')
 
 
