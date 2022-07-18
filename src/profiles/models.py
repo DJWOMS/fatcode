@@ -1,6 +1,7 @@
 import uuid
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from src.profiles.validators import AvatarValidator
 
 
 def user_directory_path(instance, filename):
@@ -22,7 +23,10 @@ class FatUser(AbstractUser):
     """user model override"""
 
     first_login = models.DateTimeField(null=True, blank=True)
-    avatar = models.ImageField(upload_to=user_directory_path, null=True, blank=True)
+    avatar = models.ImageField(upload_to=user_directory_path,
+                               null=True,
+                               blank=True,
+                               validators=[AvatarValidator()])
     middle_name = models.CharField(max_length=150, null=True, blank=True)
     socials = models.ManyToManyField(Social, through='FatUserSocial')
 
@@ -33,4 +37,3 @@ class FatUserSocial(models.Model):
     social = models.ForeignKey(Social, on_delete=models.CASCADE)
     user = models.ForeignKey(FatUser, on_delete=models.CASCADE)
     url = models.CharField(max_length=250)
-
