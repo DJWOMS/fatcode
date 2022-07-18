@@ -17,7 +17,7 @@ class CodeTabular(admin.TabularInline):
     extra = 1
 
 
-@admin.register(Course)
+@admin.register(models.Course)
 class CourseAdmin(admin.ModelAdmin):
     inlines = [LessonTabInlines]
     list_display = ('name', 'autor', 'mentor')
@@ -27,7 +27,7 @@ class CourseAdmin(admin.ModelAdmin):
         fields = '__all__'
 
 
-@admin.register(Lesson)
+@admin.register(models.Lesson)
 class LessonAdmin(admin.ModelAdmin):
     inlines = [QuizTabular, CodeTabular]
     list_display = ('course', 'lesson_type')
