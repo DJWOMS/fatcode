@@ -3,21 +3,20 @@ from djoser.conf import settings
 from rest_framework.validators import UniqueValidator
 from src.profiles.models import FatUser
 from rest_framework import serializers
-
-
-def avatar_validator(value):
-    if value.image.size != FatUser.allowed_avatar_size or value.size > \
-            FatUser.allowed_avatar_bytes:
-        raise serializers.ValidationError('Неправильный размер изображения')
+from src.profiles.validators import AvatarValidator
 
 
 class FatUserCreateSerializer(UserCreateSerializer):
     """Serialization to create user"""
 
-    email = serializers.EmailField(required=True, max_length=100,
-                                   validators=[UniqueValidator(
-                                       queryset=FatUser.objects.all(),
-                                       message='Такой email уже используется')])
+    email = serializers.EmailField(required=True,
+                                   max_length=100,
+                                   validators=[
+                                       UniqueValidator(
+                                           queryset=FatUser.objects.all(),
+                                           message='Такой email уже используется',
+                                       )
+                                   ])
 
     class Meta:
         model = FatUser
@@ -31,12 +30,16 @@ class FatUserCreateSerializer(UserCreateSerializer):
 class FatUserUpdateSerializer(UserSerializer):
     """Serialization to change user data"""
 
-    email = serializers.EmailField(required=True, max_length=100,
-                                   validators=[UniqueValidator(
-                                       queryset=FatUser.objects.all(),
-                                       message='Такой email уже используется')])
+    email = serializers.EmailField(required=True,
+                                   max_length=100,
+                                   validators=[
+                                       UniqueValidator(
+                                           queryset=FatUser.objects.all(),
+                                           message='Такой email уже используется'
+                                       )
+                                   ])
 
-    avatar = serializers.ImageField(validators=[avatar_validator])
+    avatar = serializers.ImageField(validators=[AvatarValidator()])
 
     class Meta:
         model = FatUser
@@ -55,7 +58,7 @@ class FatUserUpdateSerializer(UserSerializer):
 class UserFatSerializer(serializers.ModelSerializer):
     """Serialization for user's internal display"""
 
-    avatar = serializers.ImageField(validators=[avatar_validator])
+    avatar = serializers.ImageField(validators=[AvatarValidator()])
 
     class Meta:
         model = FatUser
