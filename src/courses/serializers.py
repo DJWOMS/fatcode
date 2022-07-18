@@ -127,6 +127,6 @@ class StudentWorkSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         if not data.keys() & {'code', 'quiz'}:
-            raise serializers.ValidationError('Ответ должен содержать код или квиз')
+            raise serializers.ValidationError({'error': 'Ответ должен содержать код или квиз'})
         return data
 
