@@ -3,14 +3,14 @@ from django.conf import settings
 
 
 class Tags(models.Model):
-    name = models.CharField(max_length=500)
+    name = models.CharField(max_length=20)
 
     def __str__(self):
         return self.name
 
 
 class Category(models.Model):
-    name = models.CharField(max_length=500)
+    name = models.CharField(max_length=30)
     parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
@@ -18,7 +18,7 @@ class Category(models.Model):
 
 
 class Course(models.Model):
-    name = models.CharField(max_length=500)
+    name = models.CharField(max_length=50)
     description = models.TextField()
     slug = models.SlugField()
     view_count = models.IntegerField(editable=False, default=0)
@@ -27,7 +27,7 @@ class Course(models.Model):
     autor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='autor')
     students = models.ManyToManyField(settings.AUTH_USER_MODEL, through='UserCourseThrough', related_name='students')
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
-    mentor = models.ForeignKey(settings.AUTH_USER_MODEL, models.CASCADE, related_name='mentor', null=True)
+    mentor = models.ForeignKey(settings.AUTH_USER_MODEL, models.CASCADE, related_name='mentor', null=True, blank=True)
     tags = models.ManyToManyField(Tags, null=True, blank=True)
 
     def __str__(self):
@@ -52,8 +52,8 @@ class Lesson(models.Model):
     lesson_type = models.CharField(max_length=500, choices=LESSON_CHOISE)
     name = models.CharField(max_length=500)
     viewed = models.IntegerField(default=0, editable=False)
-    hint = models.TextField(null=True)
-    video_url = models.URLField(max_length=500)
+    hint = models.TextField(null=True, blank=True)
+    video_url = models.URLField(max_length=500, null=True, blank=True)
     published = models.DateField(auto_now_add=True)
     sorted = models.IntegerField(default=1)
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='lessons')
@@ -93,6 +93,7 @@ class UserCourseThrough(models.Model):
 class Quiz(models.Model):
     text = models.TextField()
     right = models.BooleanField()
+    hint = models.TextField()
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name='quiz')
 
 

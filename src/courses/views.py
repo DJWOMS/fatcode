@@ -8,7 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 class DetailCourseView(RetrieveAPIView):
     queryset = Course.objects.all()
     serializer_class = DetailCourseSerializer
-    lookup_field = 'slug'
+    lookup_field = 'id'
 
 
 class ListCourseView(ListAPIView):
@@ -18,6 +18,7 @@ class ListCourseView(ListAPIView):
 
 class DetailLessonView(RetrieveAPIView):
     queryset = Lesson.objects.all()
-    lookup_field = 'slug'
+    lookup_field = 'id'
     serializer_class = DetailLessonSerializer
+
 
