@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView
-from .models import *
-from .serializers import *
+from .models import Course, Lesson
+from .serializers import DetailCourseSerializer, ListCourseSerializer, DetailLessonSerializer
 from rest_framework.permissions import IsAuthenticated
 
 

@@ -9,14 +9,15 @@ from src.profiles.validators import AvatarValidator
 class FatUserCreateSerializer(UserCreateSerializer):
     """Serialization to create user"""
 
-    email = serializers.EmailField(required=True,
-                                   max_length=100,
-                                   validators=[
-                                       UniqueValidator(
-                                           queryset=FatUser.objects.all(),
-                                           message='Такой email уже используется',
-                                       )
-                                   ])
+    email = serializers.EmailField(
+        required=True,
+        max_length=100,
+        validators=[
+           UniqueValidator(
+               queryset=FatUser.objects.all(),
+               message='Такой email уже используется',
+           )
+        ])
 
     class Meta:
         model = FatUser
@@ -30,14 +31,15 @@ class FatUserCreateSerializer(UserCreateSerializer):
 class FatUserUpdateSerializer(UserSerializer):
     """Serialization to change user data"""
 
-    email = serializers.EmailField(required=True,
-                                   max_length=100,
-                                   validators=[
-                                       UniqueValidator(
-                                           queryset=FatUser.objects.all(),
-                                           message='Такой email уже используется'
-                                       )
-                                   ])
+    email = serializers.EmailField(
+        required=True,
+        max_length=100,
+        validators=[
+           UniqueValidator(
+               queryset=FatUser.objects.all(),
+               message='Такой email уже используется'
+           )
+        ])
 
     avatar = serializers.ImageField(validators=[AvatarValidator()])
 
