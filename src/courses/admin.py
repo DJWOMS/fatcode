@@ -1,23 +1,23 @@
 from django.contrib import admin
-from .models import *
+from . import models
 
 
 class LessonTabInlines(admin.TabularInline):
-    model = Lesson
+    model = models.Lesson
     extra = 1
 
 
 class QuizTabular(admin.TabularInline):
-    model = Quiz
+    model = models.Quiz
     extra = 3
 
 
 class CodeTabular(admin.TabularInline):
-    model = CodeQuestion
+    model = models.CodeQuestion
     extra = 1
 
 
-@admin.register(Course)
+@admin.register(models.Course)
 class CourseAdmin(admin.ModelAdmin):
     inlines = [LessonTabInlines]
     list_display = ('name', 'autor', 'mentor')
@@ -27,7 +27,7 @@ class CourseAdmin(admin.ModelAdmin):
         fields = '__all__'
 
 
-@admin.register(Lesson)
+@admin.register(models.Lesson)
 class LessonAdmin(admin.ModelAdmin):
     inlines = [QuizTabular, CodeTabular]
     list_display = ('course', 'lesson_type')
@@ -36,5 +36,5 @@ class LessonAdmin(admin.ModelAdmin):
         fields = '__all__'
 
 
-admin.site.register(Tags)
-admin.site.register(Category)
+admin.site.register(models.Tags)
+admin.site.register(models.Category)

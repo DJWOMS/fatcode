@@ -24,10 +24,24 @@ class Course(models.Model):
     view_count = models.IntegerField(editable=False, default=0)
     published = models.DateField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
-    autor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='autor')
-    students = models.ManyToManyField(settings.AUTH_USER_MODEL, through='UserCourseThrough', related_name='students')
+    autor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='autor'
+    )
+    students = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        through='UserCourseThrough',
+        related_name='students'
+    )
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
-    mentor = models.ForeignKey(settings.AUTH_USER_MODEL, models.CASCADE, related_name='mentor', null=True, blank=True)
+    mentor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        models.CASCADE,
+        related_name='mentor',
+        null=True,
+        blank=True
+    )
     tags = models.ManyToManyField(Tags, null=True, blank=True)
 
     def __str__(self):
@@ -69,14 +83,22 @@ class Lesson(models.Model):
 
 class StudentWork(models.Model):
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)
-    student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='work')
+    student = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='work'
+    )
     completed = models.BooleanField(default=False)
     code = models.TextField(null=True, blank=True)
     quiz = models.TextField(null=True, blank=True)
 
 
 class UserCourseThrough(models.Model):
-    student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='course')
+    student = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='course'
+    )
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='student')
     progress = models.IntegerField(default=0)
 

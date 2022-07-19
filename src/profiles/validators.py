@@ -25,8 +25,7 @@ class AvatarValidator:
     def check_avatar_bytes(self, value):
         if value.size > self.allowed_avatar_bytes:
             return False
-        else:
-            return True
+        return True
 
     def check_avatar_size(self, value):
         image_functions = {InMemoryUploadedFile: lambda val: val.image,
@@ -36,5 +35,4 @@ class AvatarValidator:
 
         if avatar_size != self.allowed_avatar_size:
             return False
-        else:
-            return True
+        return True
