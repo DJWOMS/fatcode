@@ -2,6 +2,7 @@ import uuid
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from src.profiles.validators import AvatarValidator
+from src.courses.models import Course
 
 
 def user_directory_path(instance, filename):
@@ -31,6 +32,7 @@ class FatUser(AbstractUser):
     )
     middle_name = models.CharField(max_length=150, null=True, blank=True)
     socials = models.ManyToManyField(Social, through='FatUserSocial')
+    courses = models.ManyToManyField(Course, through='FatUserCourse')
 
 
 class FatUserSocial(models.Model):
@@ -39,3 +41,16 @@ class FatUserSocial(models.Model):
     social = models.ForeignKey(Social, on_delete=models.CASCADE)
     user = models.ForeignKey(FatUser, on_delete=models.CASCADE)
     url = models.CharField(max_length=250)
+
+
+class FatUserCourse(models.Model):
+    """Intermediate table for the ManyToMany FatUser and Course relationship"""
+
+    STATUS = (
+        ('in_process', 'in_process'),
+        ('completed', 'completed')
+    )
+
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    user = models.ForeignKey(FatUser, on_delete=models.CASCADE)
+    status = models.CharField(max_length=10, choices=STATUS, default='in_process')
