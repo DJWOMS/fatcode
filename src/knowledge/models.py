@@ -35,8 +35,8 @@ class Article(models.Model):
         null=True,
         blank=True
     )
-    category = models.ManyToManyField(Category)
-    tag = models.ManyToManyField(Tag)
+    category = models.ManyToManyField(Category, blank=True)
+    tag = models.ManyToManyField(Tag, blank=True)
 
     class Meta:
         ordering = ['date_creation']
