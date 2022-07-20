@@ -36,7 +36,8 @@ INSTALLED_APPS = [
     'ckeditor',
     'ckeditor_uploader',
     'src.profiles',
-    'src.courses'
+    'src.courses',
+    'src.knowledge'
 ]
 
 MIDDLEWARE = [
