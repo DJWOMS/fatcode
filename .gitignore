@@ -38,3 +38,5 @@ doc-dev
 
 migrations/
 */migrations/
+
+static/
