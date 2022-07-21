@@ -7,12 +7,14 @@ class CodeQuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = CodeQuestion
         fields = ('code', 'answer')
+        read_only_fields = ('code', 'answer')
 
 
 class QuizSerializer(serializers.ModelSerializer):
     class Meta:
         model = Quiz
-        fields = ('text', 'right',)
+        fields = ('text', 'lesson')
+        read_only_fields = ('right', 'hint')
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -56,6 +58,7 @@ class LessonSerializer(serializers.ModelSerializer):
 class DetailLessonSerializer(serializers.ModelSerializer):
     code = CodeQuestionSerializer(many=True)
     quiz = QuizSerializer(many=True)
+    work = serializers.SerializerMethodField()
 
     class Meta:
         model = Lesson
@@ -68,19 +71,26 @@ class DetailLessonSerializer(serializers.ModelSerializer):
             'slug',
             'description',
             'code',
-            'quiz'
+            'quiz',
+            'work'
         )
+
+    def get_work(self, instance):
+        user = self.context['request'].user
+        work = StudentWork.objects.filter(student=user, lesson=instance).first()
+        serialize_work = StudentWorkSerializer(work)
+        return serialize_work.data
 
 
 class ListCourseSerializer(serializers.ModelSerializer):
-    autor = UserSerializer()
+    author = UserSerializer()
     tags = TagSerializer(many=True)
     category = CategorySerializer()
 
     class Meta:
         model = Course
         fields = (
-            'autor',
+            'author',
             'tags',
             'category',
             'name',
@@ -95,7 +105,7 @@ class ListCourseSerializer(serializers.ModelSerializer):
 
 class DetailCourseSerializer(serializers.ModelSerializer):
     mentor = UserSerializer()
-    autor = UserSerializer()
+    author = UserSerializer()
     tags = TagSerializer(many=True)
     category = CategorySerializer()
     lessons = LessonSerializer(many=True)
@@ -110,7 +120,7 @@ class DetailCourseSerializer(serializers.ModelSerializer):
             'published',
             'updated',
             'mentor',
-            'autor',
+            'author',
             'tags',
             'category',
             'lessons',
@@ -118,15 +128,20 @@ class DetailCourseSerializer(serializers.ModelSerializer):
 
 
 class StudentWorkSerializer(serializers.ModelSerializer):
-    code = CodeQuestionSerializer(required=False)
-    quiz = QuizSerializer(required=False)
-
     class Meta:
         model = StudentWork
-        fields = ('code', 'quiz')
+        fields = ('lesson', 'code_answer', 'quiz_answer', 'completed', )
 
     def validate(self, data):
-        if not data.keys() & {'code', 'quiz'}:
-            raise serializers.ValidationError({'error': 'Ответ должен содержать код или квиз'})
+        lesson_type = data['lesson'].lesson_type
+        if 'quiz_answer' in data and not 'quiz' in lesson_type :
+            raise serializers.ValidationError({'error': 'Урок не содержит quiz'})
+        if not data.keys() & {'code_answer', 'quiz_answer'}:
+            raise serializers.ValidationError({'error': f'Ответ должен содержать {lesson_type}'})
+        if 'quiz' in lesson_type and 'code_answer' in data:
+            raise serializers.ValidationError({'error': 'Нужен квиз'})
         return data
+
+    def create(self, validated_data):
+        return StudentWork.objects.create(**validated_data, student=self.context['request'].user)
 

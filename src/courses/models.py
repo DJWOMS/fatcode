@@ -24,10 +24,10 @@ class Course(models.Model):
     view_count = models.IntegerField(editable=False, default=0)
     published = models.DateField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
-    autor = models.ForeignKey(
+    author = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name='autor'
+        related_name='author'
     )
     students = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
@@ -89,8 +89,23 @@ class StudentWork(models.Model):
         related_name='work'
     )
     completed = models.BooleanField(default=False)
-    code = models.TextField(null=True, blank=True)
-    quiz = models.TextField(null=True, blank=True)
+    code_answer = models.TextField(null=True, blank=True)
+    quiz_answer = models.TextField(null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if self.quiz_answer:
+            self.completed = self.check_quiz()
+        if self.code_answer:
+            self.completed = self.check_code()
+        return super().save()
+
+    def check_quiz(self):
+        return bool(self.quiz_answer == self.lesson.quiz.get(right=True).text)
+
+    def check_code(self):
+        student_answer = list(self.code_answer.replace(' ', ''))
+        answer = list(self.lesson.code.first().answer.replace(' ', ''))
+        return student_answer == answer
 
 
 class UserCourseThrough(models.Model):
