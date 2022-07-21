@@ -2,6 +2,8 @@ from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db.models.fields.files import ImageFieldFile
 from django.core.exceptions import ValidationError
 from django.utils.deconstruct import deconstructible
+from django.core.files.base import File
+from PIL import Image
 
 
 @deconstructible
@@ -29,7 +31,8 @@ class AvatarValidator:
 
     def check_avatar_size(self, value):
         image_functions = {InMemoryUploadedFile: lambda val: val.image,
-                           ImageFieldFile: lambda val: val.file.image}
+                           ImageFieldFile: lambda val: image_functions[val.file.__class__](val.file),
+                           File: lambda val: Image.open(val)}
 
         avatar_size = image_functions[value.__class__](value).size
 
