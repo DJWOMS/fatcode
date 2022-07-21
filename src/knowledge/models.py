@@ -3,6 +3,8 @@ from src.profiles.models import FatUser
 
 
 class Category(models.Model):
+    """Categories of articles"""
+
     name = models.CharField(max_length=50)
     parent = models.ForeignKey(
         'self',
@@ -16,6 +18,8 @@ class Category(models.Model):
 
 
 class Tag(models.Model):
+    """Article tags"""
+
     name = models.CharField(max_length=20)
 
     def __str__(self):
@@ -23,6 +27,8 @@ class Tag(models.Model):
 
 
 class Article(models.Model):
+    """Knowledge Base Articles"""
+
     title = models.CharField(max_length=200)
     text = models.TextField(blank=True, null=True)
     published = models.BooleanField(default=False)
@@ -35,8 +41,11 @@ class Article(models.Model):
         null=True,
         blank=True
     )
-    category = models.ManyToManyField(Category, blank=True)
-    tag = models.ManyToManyField(Tag, blank=True)
+    category = models.ManyToManyField(
+        Category,
+        blank=True,
+        related_name='article')
+    tag = models.ManyToManyField(Tag, blank=True, related_name='article')
 
     class Meta:
         ordering = ['date_creation']

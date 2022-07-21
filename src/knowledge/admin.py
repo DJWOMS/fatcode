@@ -5,6 +5,8 @@ from ckeditor_uploader.widgets import CKEditorUploadingWidget
 
 
 class ArticleAdminForm(forms.ModelForm):
+    """Form for connecting ckeditor to Article model"""
+
     text = forms.CharField(widget=CKEditorUploadingWidget())
 
     class Meta:
