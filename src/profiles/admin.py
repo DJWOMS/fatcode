@@ -8,6 +8,10 @@ class SocialInLineFatUser(admin.TabularInline):
     model = models.FatUser.socials.through
 
 
+class CourseInLineFatUser(admin.TabularInline):
+    model = models.FatUser.courses.through
+
+
 class FatUserAdmin(UserAdmin):
     fieldsets = (
         (None, {"fields": ("username", "password")}),
@@ -29,7 +33,7 @@ class FatUserAdmin(UserAdmin):
         # (_("socials"), {"fields": ("socials", )}),
     )
 
-    inlines = (SocialInLineFatUser, )
+    inlines = (SocialInLineFatUser, CourseInLineFatUser)
 
 
 admin.site.register(models.FatUser, FatUserAdmin)
