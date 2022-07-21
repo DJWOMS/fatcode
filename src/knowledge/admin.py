@@ -16,8 +16,13 @@ class ArticleAdminForm(forms.ModelForm):
 
 class ArticleAdmin(admin.ModelAdmin):
     form = ArticleAdminForm
+    list_display = ('title', 'author', 'published', 'date_creation')
+
+
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ('name', 'parent')
 
 
 admin.site.register(Article, ArticleAdmin)
-admin.site.register(Category)
+admin.site.register(Category, CategoryAdmin)
 admin.site.register(Tag)
