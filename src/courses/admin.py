@@ -9,7 +9,7 @@ class LessonTabInlines(admin.TabularInline):
 
 class QuizTabular(admin.TabularInline):
     model = models.Quiz
-    extra = 3
+    extra = 1
 
 
 class CodeTabular(admin.TabularInline):
@@ -20,7 +20,7 @@ class CodeTabular(admin.TabularInline):
 @admin.register(models.Course)
 class CourseAdmin(admin.ModelAdmin):
     inlines = [LessonTabInlines]
-    list_display = ('name', 'autor', 'mentor')
+    list_display = ('name', 'author', 'mentor')
     ordering = ['published']
 
     class Meta:
@@ -30,7 +30,7 @@ class CourseAdmin(admin.ModelAdmin):
 @admin.register(models.Lesson)
 class LessonAdmin(admin.ModelAdmin):
     inlines = [QuizTabular, CodeTabular]
-    list_display = ('course', 'lesson_type')
+    list_display = ('name', 'course', 'lesson_type')
 
     class Meta:
         fields = '__all__'

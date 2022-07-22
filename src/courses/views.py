@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView
-from .models import Course, Lesson
-from .serializers import DetailCourseSerializer, ListCourseSerializer, DetailLessonSerializer
+from .models import Course, Lesson, StudentWork
+from .serializers import DetailCourseSerializer, ListCourseSerializer, DetailLessonSerializer, StudentWorkSerializer
 from rest_framework.permissions import IsAuthenticated
 
 
@@ -19,6 +19,14 @@ class ListCourseView(ListAPIView):
 class DetailLessonView(RetrieveAPIView):
     queryset = Lesson.objects.all()
     lookup_field = 'id'
+    permission_classes = [IsAuthenticated]
     serializer_class = DetailLessonSerializer
+
+
+class StudentWorkView(CreateAPIView):
+    queryset = StudentWork.objects.all()
+    permission_classes = [IsAuthenticated]
+    serializer_class = StudentWorkSerializer
+
 
 

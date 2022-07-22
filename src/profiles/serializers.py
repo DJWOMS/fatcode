@@ -4,6 +4,10 @@ from rest_framework.validators import UniqueValidator
 from src.profiles.models import FatUser
 from rest_framework import serializers
 from src.profiles.validators import AvatarValidator
+from django.dispatch import receiver
+from django.db.models.signals import post_save
+from rest_framework.authtoken.models import Token
+from datetime import datetime
 
 
 class FatUserCreateSerializer(UserCreateSerializer):
@@ -90,5 +94,16 @@ class UserFatPublicSerializer(serializers.ModelSerializer):
             "is_staff",
             "is_superuser",
             "groups",
-            "user_permissions"
+            "user_permissions",
+            'courses'
         )
+
+
+@receiver(post_save, sender=Token)
+def check_first_login(instance, *args, **kwargs):
+    """Registration of the first user authorization"""
+
+    user = instance.user
+    if user.first_login is None:
+        user.first_login = datetime.now()
+        user.save()
