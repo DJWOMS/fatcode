@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import *
 from src.profiles.models import FatUser
+from .validators import StudentWorkValidator
 
 
 class CodeQuestionSerializer(serializers.ModelSerializer):
@@ -133,13 +134,8 @@ class StudentWorkSerializer(serializers.ModelSerializer):
         fields = ('lesson', 'code_answer', 'quiz_answer', 'completed', )
 
     def validate(self, data):
-        lesson_type = data['lesson'].lesson_type
-        if 'quiz_answer' in data and not 'quiz' in lesson_type :
-            raise serializers.ValidationError({'error': 'Урок не содержит quiz'})
-        if not data.keys() & {'code_answer', 'quiz_answer'}:
-            raise serializers.ValidationError({'error': f'Ответ должен содержать {lesson_type}'})
-        if 'quiz' in lesson_type and 'code_answer' in data:
-            raise serializers.ValidationError({'error': 'Нужен квиз'})
+        validate_class = StudentWorkValidator()
+        validate_class(data)
         return data
 
     def create(self, validated_data):

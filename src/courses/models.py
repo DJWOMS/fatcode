@@ -81,6 +81,13 @@ class Lesson(models.Model):
         return self.name
 
 
+class Quiz(models.Model):
+    text = models.TextField()
+    right = models.BooleanField()
+    hint = models.TextField()
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name='quiz')
+
+
 class StudentWork(models.Model):
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)
     student = models.ForeignKey(
@@ -90,7 +97,7 @@ class StudentWork(models.Model):
     )
     completed = models.BooleanField(default=False)
     code_answer = models.TextField(null=True, blank=True)
-    quiz_answer = models.TextField(null=True, blank=True)
+    quiz_answer = models.ForeignKey(Quiz, on_delete=models.CASCADE, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         if self.quiz_answer:
@@ -100,7 +107,7 @@ class StudentWork(models.Model):
         return super().save()
 
     def check_quiz(self):
-        return bool(self.quiz_answer == self.lesson.quiz.get(right=True).text)
+        return self.quiz_answer.right
 
     def check_code(self):
         student_answer = list(self.code_answer.replace(' ', ''))
@@ -127,15 +134,14 @@ class UserCourseThrough(models.Model):
         return self.save()
 
 
-class Quiz(models.Model):
-    text = models.TextField()
-    right = models.BooleanField()
-    hint = models.TextField()
-    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name='quiz')
-
-
 class CodeQuestion(models.Model):
     code = models.TextField()
     answer = models.TextField()
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name='code')
 
+
+class HelpUser(models.Model):
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)
+    mentor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='help_mentor')
+    student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    date = models.DateTimeField(auto_now_add=True)
