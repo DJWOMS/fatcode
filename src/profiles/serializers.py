@@ -1,7 +1,7 @@
 from djoser.serializers import UserSerializer, UserCreateSerializer
 from djoser.conf import settings
 from rest_framework.validators import UniqueValidator
-from src.profiles.models import FatUser
+from src.profiles.models import FatUser, Social, FatUserSocial
 from rest_framework import serializers
 from src.profiles.validators import AvatarValidator
 from django.dispatch import receiver
@@ -61,10 +61,32 @@ class FatUserUpdateSerializer(UserSerializer):
         read_only_fields = (settings.LOGIN_FIELD,)
 
 
+class User_SocialSerializer(serializers.Serializer):
+    social_id = serializers.IntegerField()
+    social = serializers.CharField(max_length=100)
+    user_url = serializers.CharField(max_length=100)
+
+
+class SocialsSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    title = serializers.CharField(max_length=30)
+    logo = serializers.ImageField(read_only=True)
+
+
+class ListSocialSerializer(serializers.ModelSerializer):
+    logo = serializers.ImageField(read_only=True)
+
+    class Meta:
+        model = Social
+        fields = '__all__'
+
+
 class UserFatSerializer(serializers.ModelSerializer):
     """Serialization for user's internal display"""
 
     avatar = serializers.ImageField(validators=[AvatarValidator()])
+    user_social = User_SocialSerializer(many=True)
+    socials = ListSocialSerializer(many=True)
 
     class Meta:
         model = FatUser
@@ -97,6 +119,9 @@ class UserFatPublicSerializer(serializers.ModelSerializer):
             "user_permissions",
             'courses'
         )
+
+
+
 
 
 @receiver(post_save, sender=Token)

@@ -18,6 +18,10 @@ class Social(models.Model):
 
     title = models.CharField(max_length=150)
     logo = models.ImageField(upload_to='social/logo', null=True, blank=True)
+    url = models.CharField(max_length=20, blank=True, null=True)
+
+    def __str__(self):
+        return self.title
 
 
 class FatUser(AbstractUser):
@@ -39,8 +43,11 @@ class FatUserSocial(models.Model):
     """Intermediate table for the ManyToMany FatUser and Social relationship"""
 
     social = models.ForeignKey(Social, on_delete=models.CASCADE)
-    user = models.ForeignKey(FatUser, on_delete=models.CASCADE)
-    url = models.CharField(max_length=250)
+    user = models.ForeignKey(
+        FatUser,
+        on_delete=models.CASCADE,
+        related_name='user_social')
+    user_url = models.CharField(max_length=20, default='')
 
 
 class FatUserCourse(models.Model):
