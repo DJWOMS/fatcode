@@ -141,3 +141,13 @@ class StudentWorkSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         return StudentWork.objects.create(**validated_data, student=self.context['request'].user)
 
+
+class HelpUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HelpUser
+        fields = ('lesson',)
+
+    def create(self, validated_data):
+        mentor = validated_data['lesson'].course.mentor
+        student = self.context['request'].user
+        return HelpUser.objects.create(mentor=mentor, student=student, **validated_data)

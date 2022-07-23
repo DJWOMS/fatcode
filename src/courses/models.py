@@ -145,3 +145,6 @@ class HelpUser(models.Model):
     mentor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='help_mentor')
     student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Студенту {self.student} нужна помощь на уроке {self.lesson.name}"
