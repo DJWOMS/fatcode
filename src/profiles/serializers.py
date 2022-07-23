@@ -1,13 +1,14 @@
 from djoser.serializers import UserSerializer, UserCreateSerializer
 from djoser.conf import settings
 from rest_framework.validators import UniqueValidator
-from src.profiles.models import FatUser, Social, FatUserSocial
+from src.profiles.models import FatUser, Social, FatUserSocial, FatUserCourse
 from rest_framework import serializers
 from src.profiles.validators import AvatarValidator
 from django.dispatch import receiver
 from django.db.models.signals import post_save
 from rest_framework.authtoken.models import Token
 from datetime import datetime
+from src import courses
 
 
 class FatUserCreateSerializer(UserCreateSerializer):
@@ -61,16 +62,10 @@ class FatUserUpdateSerializer(UserSerializer):
         read_only_fields = (settings.LOGIN_FIELD,)
 
 
-class User_SocialSerializer(serializers.Serializer):
-    social_id = serializers.IntegerField()
-    social = serializers.CharField(max_length=100)
-    user_url = serializers.CharField(max_length=100)
-
-
-class SocialsSerializer(serializers.Serializer):
-    id = serializers.IntegerField()
-    title = serializers.CharField(max_length=30)
-    logo = serializers.ImageField(read_only=True)
+class UserSocialSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FatUserSocial
+        fields = '__all__'
 
 
 class ListSocialSerializer(serializers.ModelSerializer):
@@ -81,12 +76,20 @@ class ListSocialSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class FatUserCourseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FatUserCourse
+        fields = '__all__'
+
+
 class UserFatSerializer(serializers.ModelSerializer):
     """Serialization for user's internal display"""
 
     avatar = serializers.ImageField(validators=[AvatarValidator()])
-    user_social = User_SocialSerializer(many=True)
+    user_social = UserSocialSerializer(many=True)
     socials = ListSocialSerializer(many=True)
+    user_courses = FatUserCourseSerializer(many=True)
+    courses = courses.serializers.DetailCourseSerializer(many=True)
 
     class Meta:
         model = FatUser
@@ -100,11 +103,31 @@ class UserFatSerializer(serializers.ModelSerializer):
             "user_permissions"
         )
 
+    def update(self, instance, validated_data):
+        if validated_data.get('user_social', None):
+            user_social = validated_data.pop('user_social')
+            self.update_user_social(instance, user_social)
+
+        return super().update(instance, validated_data)
+
+    def update_user_social(self, instance, user_social):
+        for soc in user_social:
+            entry_fatUserSocial = instance.user_social.filter(
+                social=soc['social']).first()
+
+            if entry_fatUserSocial is not None:
+                entry_fatUserSocial.user_url = soc['user_url']
+                entry_fatUserSocial.save()
+            else:
+                instance.user_social.create(social=soc['social'], user_url=soc['user_url'])
+
 
 class UserFatPublicSerializer(serializers.ModelSerializer):
     """Serialization for public user display"""
 
     avatar = serializers.ImageField(read_only=True)
+    user_social = UserSocialSerializer(many=True)
+    socials = ListSocialSerializer(many=True)
 
     class Meta:
         model = FatUser
@@ -119,9 +142,6 @@ class UserFatPublicSerializer(serializers.ModelSerializer):
             "user_permissions",
             'courses'
         )
-
-
-
 
 
 @receiver(post_save, sender=Token)

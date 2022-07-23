@@ -59,5 +59,8 @@ class FatUserCourse(models.Model):
     )
 
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    user = models.ForeignKey(FatUser, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        FatUser,
+        on_delete=models.CASCADE,
+        related_name='user_courses')
     status = models.CharField(max_length=10, choices=STATUS, default='in_process')

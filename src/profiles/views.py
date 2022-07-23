@@ -14,11 +14,6 @@ class UserFatView(ModelViewSet):
     def get_queryset(self):
         return models.FatUser.objects.filter(id=self.request.user.id)
 
-    def retrieve(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(instance)
-        return Response(serializer.data)
-
 
 class UserFatPublicView(ModelViewSet):
     """Public user display"""
