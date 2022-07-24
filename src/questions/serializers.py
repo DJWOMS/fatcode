@@ -6,7 +6,7 @@ from src.courses.serializers import UserSerializer
 class TagsSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Tags
-        fields = ('name')
+        fields = ('name',)
 
 
 class AnswerSerializer(serializers.ModelSerializer):

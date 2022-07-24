@@ -19,6 +19,18 @@ class Question(models.Model):
     tags = models.ManyToManyField(Tags)
     rating = models.IntegerField(editable=False, default=0)
 
+    def __str__(self):
+        return self.title
+
+    def answers_count(self):
+        return Answer.objects.filter(question=self).count()
+
+    def all_answers(self):
+        return Answer.objects.filter(question=self)
+
+    def correct_answers_count(self):
+        return Answer.objects.filter(question=self, accepted=True)
+
 
 class Answer(models.Model):
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='answer')
