@@ -1,25 +1,37 @@
-from src.profiles.serializers import UserFatSerializer, UserFatPublicSerializer
-from src.profiles.models import FatUser
+from src.profiles import models, serializers
 from rest_framework.viewsets import ModelViewSet
 from rest_framework import permissions
+from rest_framework.generics import ListAPIView, RetrieveAPIView
+from rest_framework.response import Response
 
 
 class UserFatView(ModelViewSet):
     """Internal user display"""
 
-    serializer_class = UserFatSerializer
+    serializer_class = serializers.UserFatSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return FatUser.objects.filter(id=self.request.user.id)
+        return models.FatUser.objects.filter(id=self.request.user.id)
 
 
 class UserFatPublicView(ModelViewSet):
     """Public user display"""
 
-    queryset = FatUser.objects.all()
-    serializer_class = UserFatPublicSerializer
+    queryset = models.FatUser.objects.all()
+    serializer_class = serializers.UserFatPublicSerializer
     permission_classes = [permissions.AllowAny]
+
+
+class ListSocialView(ListAPIView):
+    queryset = models.Social.objects.all()
+    serializer_class = serializers.ListSocialSerializer
+
+
+class DetailSocialView(RetrieveAPIView):
+    queryset = models.Social.objects.all()
+    serializer_class = serializers.ListSocialSerializer
+    lookup_field = 'id'
 
 
 

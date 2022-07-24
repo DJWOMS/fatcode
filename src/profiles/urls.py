@@ -7,4 +7,6 @@ urlpatterns = [
     })),
 
     path('<int:pk>/', views.UserFatPublicView.as_view({'get': 'retrieve'})),
+    path('social/', views.ListSocialView.as_view()),
+    path('social/<int:id>/', views.DetailSocialView.as_view()),
 ]
