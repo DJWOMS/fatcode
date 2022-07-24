@@ -42,7 +42,7 @@ class Course(models.Model):
         null=True,
         blank=True
     )
-    tags = models.ManyToManyField(Tags, null=True, blank=True)
+    tags = models.ManyToManyField(Tags)
 
     def __str__(self):
         return self.name
@@ -83,7 +83,7 @@ class Lesson(models.Model):
 
 class Quiz(models.Model):
     text = models.TextField()
-    right = models.BooleanField()
+    right = models.BooleanField(default=False)
     hint = models.TextField()
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name='quiz')
 

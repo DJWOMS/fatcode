@@ -34,7 +34,8 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'djoser',
     'src.profiles',
-    'src.courses'
+    'src.courses',
+    'src.questions'
 ]
 
 MIDDLEWARE = [
