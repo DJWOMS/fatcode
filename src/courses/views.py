@@ -1,7 +1,13 @@
 from django.shortcuts import render
 from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView
-from .models import Course, Lesson, StudentWork
-from .serializers import DetailCourseSerializer, ListCourseSerializer, DetailLessonSerializer, StudentWorkSerializer
+from .models import Course, Lesson, StudentWork, HelpUser
+from .serializers import (
+    DetailCourseSerializer,
+    ListCourseSerializer,
+    DetailLessonSerializer,
+    StudentWorkSerializer,
+    HelpUserSerializer
+)
 from rest_framework.permissions import IsAuthenticated
 
 
@@ -29,4 +35,7 @@ class StudentWorkView(CreateAPIView):
     serializer_class = StudentWorkSerializer
 
 
-
+class HelpUserView(CreateAPIView):
+    queryset = HelpUser
+    permission_classes = [IsAuthenticated]
+    serializer_class = HelpUserSerializer
