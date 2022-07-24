@@ -8,7 +8,7 @@ from django.dispatch import receiver
 from django.db.models.signals import post_save
 from rest_framework.authtoken.models import Token
 from datetime import datetime
-from src import courses
+from src import courses as fat_courses
 
 
 class FatUserCreateSerializer(UserCreatePasswordRetypeSerializer):
@@ -89,7 +89,7 @@ class UserFatSerializer(serializers.ModelSerializer):
     user_social = UserSocialSerializer(many=True)
     socials = ListSocialSerializer(many=True)
     user_courses = FatUserCourseSerializer(many=True)
-    courses = courses.serializers.DetailCourseSerializer(many=True)
+    courses = fat_courses.serializers.DetailCourseSerializer(many=True)
 
     class Meta:
         model = FatUser
