@@ -1,4 +1,4 @@
-from djoser.serializers import UserSerializer, UserCreateSerializer
+from djoser.serializers import UserSerializer, UserCreateSerializer, UserCreatePasswordRetypeSerializer
 from djoser.conf import settings
 from rest_framework.validators import UniqueValidator
 from src.profiles.models import FatUser, Social, FatUserSocial, FatUserCourse
@@ -11,7 +11,7 @@ from datetime import datetime
 from src import courses
 
 
-class FatUserCreateSerializer(UserCreateSerializer):
+class FatUserCreateSerializer(UserCreatePasswordRetypeSerializer):
     """Serialization to create user"""
 
     email = serializers.EmailField(
