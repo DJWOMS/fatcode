@@ -46,10 +46,18 @@ class RetrieveQuestionSerializer(serializers.ModelSerializer):
 
 class ListQuestionSerializer(serializers.ModelSerializer):
     author = UserSerializer()
+    correct_answers = serializers.SerializerMethodField()
+    answer_count = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Question
-        fields = ('title', 'rating', 'author', 'viewed')
+        fields = ('title', 'rating', 'author', 'viewed', 'correct_answers')
+
+    def get_correct_answers(self, instance):
+        return instance.correct_answers_count()
+
+    def get_answer_count(self, instance):
+        return instance.answers_count()
 
 
 class QuestionReview(serializers.ModelSerializer):
