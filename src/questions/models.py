@@ -27,7 +27,7 @@ class Answer(models.Model):
     updated = models.DateTimeField(auto_now=True, null=True, blank=True)
     rating = models.IntegerField(editable=False, default=0)
     accepted = models.BooleanField(default=False)
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='answers')
 
 
 class QuestionReview(models.Model):
