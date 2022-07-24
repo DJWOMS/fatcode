@@ -6,6 +6,7 @@ from fatcode import settings
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('courses/', include('src.courses.urls')),
+    path('questions/', include('src.questions.urls')),
     path('api-auth/', include('rest_framework.urls')),
     path('auth/', include('djoser.urls')),
     path('auth/', include('djoser.urls.authtoken')),

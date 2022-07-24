@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView, UpdateAPIView
 from . import serializers
-from models import Question
+from .models import Question
 
 
 class ListQuestionsView(ListAPIView):
