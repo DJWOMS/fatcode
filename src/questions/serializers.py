@@ -6,7 +6,7 @@ from src.courses.serializers import UserSerializer
 class TagsSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Tags
-        fields = ('name',)
+        fields = ('name')
 
 
 class AnswerSerializer(serializers.ModelSerializer):
@@ -21,11 +21,11 @@ class AnswerSerializer(serializers.ModelSerializer):
             'date',
             'updated',
             'rating',
-            'accepted',
+            'accepted'
         )
 
 
-class QuestionSerializer(serializers.ModelSerializer):
+class RetrieveQuestionSerializer(serializers.ModelSerializer):
     author = UserSerializer()
     answer = AnswerSerializer(many=True)
 
@@ -40,13 +40,22 @@ class QuestionSerializer(serializers.ModelSerializer):
             'author',
             'updated',
             'answer',
+            'title'
         )
+
+
+class ListQuestionSerializer(serializers.ModelSerializer):
+    author = UserSerializer()
+
+    class Meta:
+        model = models.Question
+        fields = ('title', 'rating', 'author', 'viewed')
 
 
 class QuestionReview(serializers.ModelSerializer):
     class Meta:
         model = models.QuestionReview
-        fields = ('grade', 'question',)
+        fields = ('grade', 'question')
 
 
 class AnswerReview(serializers.ModelSerializer):

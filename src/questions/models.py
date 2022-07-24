@@ -12,6 +12,7 @@ class Tags(models.Model):
 class Question(models.Model):
     asked = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True, null=True, blank=True)
+    title = models.CharField(max_length=150)
     viewed = models.IntegerField(default=0, editable=False)
     text = models.TextField()
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='question')
