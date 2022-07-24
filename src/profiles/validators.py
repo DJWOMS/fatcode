@@ -17,19 +17,19 @@ class AvatarValidator:
         self.allowed_avatar_size = (100, 100)
         self.allowed_avatar_bytes = 1048576  # 1Mb
 
-    def __call__(self, value):
+    def __call__(self, value: 'ImageFieldFile, InMemoryUploadedFile'):
         valid_avatar_size = self.check_avatar_size(value)
         valid_avatar_bytes = self.check_avatar_bytes(value)
 
         if not valid_avatar_size or not valid_avatar_bytes:
             raise ValidationError('Неправильный размер изображения')
 
-    def check_avatar_bytes(self, value):
+    def check_avatar_bytes(self, value: 'ImageFieldFile, InMemoryUploadedFile'):
         if value.size > self.allowed_avatar_bytes:
             return False
         return True
 
-    def check_avatar_size(self, value):
+    def check_avatar_size(self, value: 'ImageFieldFile, InMemoryUploadedFile'):
         image_functions = {InMemoryUploadedFile: lambda val: val.image,
                            ImageFieldFile: lambda val: image_functions[val.file.__class__](val.file),
                            File: lambda val: Image.open(val)}

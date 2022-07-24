@@ -145,7 +145,7 @@ class UserFatPublicSerializer(serializers.ModelSerializer):
 
 
 @receiver(post_save, sender=Token)
-def check_first_login(instance, *args, **kwargs):
+def check_first_login(instance: Token, *args, **kwargs):
     """Registration of the first user authorization"""
 
     user = instance.user

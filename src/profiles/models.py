@@ -5,7 +5,7 @@ from src.profiles.validators import AvatarValidator
 from src.courses.models import Course
 
 
-def user_directory_path(instance, filename):
+def user_directory_path(instance: 'FatUser', filename: str):
     """File will be uploaded to MEDIA_ROOT/users/avatar/user_<id>/<filename>"""
 
     # return example a2fabc70-be8e-49ac-9a8f-95d36a893d3d.png
