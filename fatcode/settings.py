@@ -38,7 +38,8 @@ INSTALLED_APPS = [
     'ckeditor_uploader',
     'src.profiles',
     'src.courses',
-    'src.knowledge'
+    'src.questions',
+    'src.knowledge',
 ]
 
 MIDDLEWARE = [
@@ -147,7 +148,8 @@ DJOSER = {
     'USER_CREATE_PASSWORD_RETYPE': True,
     'SERIALIZERS': {
         'user_create': 'src.profiles.serializers.FatUserCreateSerializer',
-        'current_user': 'src.profiles.serializers.FatUserUpdateSerializer'
+        'current_user': 'src.profiles.serializers.FatUserUpdateSerializer',
+        'user_create_password_retype': 'src.profiles.serializers.FatUserCreateSerializer'
     },
 }
 
