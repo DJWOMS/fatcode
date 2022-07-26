@@ -145,6 +145,7 @@ DJOSER = {
     'ACTIVATION_URL': '#/activate/{uid}/{token}',
     'SEND_ACTIVATION_EMAIL': False,
     'USER_CREATE_PASSWORD_RETYPE': True,
+    'LOGIN_FIELD': 'email',
     'SERIALIZERS': {
         'user_create': 'src.profiles.serializers.FatUserCreateSerializer',
         'current_user': 'src.profiles.serializers.FatUserUpdateSerializer',
