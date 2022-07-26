@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'src.profiles',
     'src.courses',
-    'src.knowledge'
+    'src.questions',
+    'src.knowledge',
 ]
 
 MIDDLEWARE = [
