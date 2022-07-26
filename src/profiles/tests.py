@@ -63,7 +63,7 @@ class ProfileAuthTests(APITestCase):
         request = self.client.post(
             '/auth/token/login/',
             {
-                'username': user_create_data['username'],
+                'email': user_create_data['email'],
                 'password': user_create_data['password']
             },
             format='json'

@@ -3,6 +3,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from src.profiles.validators import AvatarValidator
 from src.courses.models import Course
+from django.utils.translation import gettext_lazy as _
 
 
 def user_directory_path(instance: 'FatUser', filename: str):
@@ -37,6 +38,11 @@ class FatUser(AbstractUser):
     middle_name = models.CharField(max_length=150, null=True, blank=True)
     socials = models.ManyToManyField(Social, through='FatUserSocial')
     courses = models.ManyToManyField(Course, through='FatUserCourse')
+
+    email = models.EmailField(_("email address"), blank=True, unique=True)
+
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = ["username"]
 
 
 class FatUserSocial(models.Model):
