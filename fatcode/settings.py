@@ -17,6 +17,7 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-86z*$c^)jri5jf
 DEBUG = True
 
 ALLOWED_HOSTS = [
+    '127.0.0.1',
     '0.0.0.0'
 ]
 
@@ -33,9 +34,12 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'djoser',
+    'ckeditor',
+    'ckeditor_uploader',
     'src.profiles',
     'src.courses',
-    'src.questions'
+    'src.questions',
+    'src.knowledge',
 ]
 
 MIDDLEWARE = [
@@ -120,6 +124,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 MEDIA_URL = '/media/'
 
@@ -140,8 +145,12 @@ DJOSER = {
     'PASSWORD_RESET_CONFIRM_URL': '#/password/reset/confirm/{uid}/{token}',
     'ACTIVATION_URL': '#/activate/{uid}/{token}',
     'SEND_ACTIVATION_EMAIL': False,
+    'USER_CREATE_PASSWORD_RETYPE': True,
     'SERIALIZERS': {
         'user_create': 'src.profiles.serializers.FatUserCreateSerializer',
-        'current_user': 'src.profiles.serializers.FatUserUpdateSerializer'
+        'current_user': 'src.profiles.serializers.FatUserUpdateSerializer',
+        'user_create_password_retype': 'src.profiles.serializers.FatUserCreateSerializer'
     },
 }
+
+CKEDITOR_UPLOAD_PATH = "media/uploads/"
