@@ -15,7 +15,7 @@ class Question(models.Model):
     title = models.CharField(max_length=150)
     viewed = models.IntegerField(default=0, editable=False)
     text = models.TextField()
-    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='question')
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='questions')
     tags = models.ManyToManyField(Tags)
     rating = models.IntegerField(editable=False, default=0)
 
@@ -39,7 +39,7 @@ class Answer(models.Model):
     date = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True, null=True, blank=True)
     rating = models.IntegerField(editable=False, default=0)
-    accepted = models.BooleanField(default=False)
+    accepted = models.BooleanField(default=False, editable=False)
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='answers')
 
 
