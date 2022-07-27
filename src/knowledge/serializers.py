@@ -12,6 +12,7 @@ class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Tag
         fields = ('id', 'name', 'article')
+        ref_name = 'tag_knowledge'
 
 
 class ListArticleSerializer(serializers.ModelSerializer):

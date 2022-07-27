@@ -28,6 +28,7 @@ class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Category
         fields = ('name', 'parent')
+        ref_name = 'courses_category'
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -39,6 +40,7 @@ class UserSerializer(serializers.ModelSerializer):
             'last_name',
             'avatar',
         )
+        ref_name = 'userCourse'
 
 
 class LessonSerializer(serializers.ModelSerializer):
