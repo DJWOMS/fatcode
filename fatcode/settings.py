@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'djoser',
     'ckeditor',
+    'drf_yasg',
     'ckeditor_uploader',
     'corsheaders',
 
