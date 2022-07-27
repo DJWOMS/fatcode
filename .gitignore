@@ -6,7 +6,10 @@ idea
 *.egg-info/
 .installed.cfg
 *.egg
-**/migrations/
+
+**/migrations/**
+!**/migrations
+!**/migrations/__init__.py
 
 dist
 db.sqlite3
@@ -14,8 +17,7 @@ db.sqlite3
 venv
 
 .env.dev
-prod_settings.py
-local_settings.py
+.env.prod
 
 __pycache__/
 */__pycache__/
@@ -36,5 +38,3 @@ Makefile
 
 doc-dev
 
-migrations/
-*/migrations/
