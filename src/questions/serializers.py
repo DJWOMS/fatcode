@@ -118,6 +118,7 @@ class AnswerReviewSerializer(serializers.ModelSerializer):
         validated_data['answer'].update_rating()
         return review
 
+
 class UpdateQuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Question
