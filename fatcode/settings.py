@@ -18,7 +18,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     '127.0.0.1',
-    '0.0.0.0'
 ]
 
 
@@ -37,6 +36,7 @@ INSTALLED_APPS = [
     'ckeditor',
     'ckeditor_uploader',
     'corsheaders',
+
     'src.profiles',
     'src.courses',
     'src.questions',
@@ -161,4 +161,6 @@ CKEDITOR_UPLOAD_PATH = "media/uploads/"
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8000",
     "http://127.0.0.1:8000",
+    "http://127.0.0.1:8080",
+    "http://127.0.0.1:4200",
 ]
