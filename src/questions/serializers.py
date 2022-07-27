@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from . import models
 from src.courses.serializers import UserSerializer
+from .validators import QuestionValidator
 
 
 class TagsSerializer(serializers.ModelSerializer):
@@ -10,7 +11,8 @@ class TagsSerializer(serializers.ModelSerializer):
 
 
 class AnswerSerializer(serializers.ModelSerializer):
-    author = UserSerializer()
+    author = UserSerializer(required=False)
+    children = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Answer
@@ -21,13 +23,29 @@ class AnswerSerializer(serializers.ModelSerializer):
             'date',
             'updated',
             'rating',
-            'accepted'
+            'accepted',
+            'question',
+            'children'
         )
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        answer = models.Answer.objects.create(
+            question=validated_data['question'],
+            author=user
+        )
+        return answer
+
+    def get_children(self, instance):
+        children = models.Answer.objects.filter(parent=instance)
+        serializer = AnswerSerializer(children, many=True)
+        return serializer.data
 
 
 class RetrieveQuestionSerializer(serializers.ModelSerializer):
-    author = UserSerializer()
-    answer = AnswerSerializer(many=True)
+    author = UserSerializer(read_only=True)
+    answers = AnswerSerializer(many=True, read_only=True)
+    # review = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Question
@@ -39,8 +57,8 @@ class RetrieveQuestionSerializer(serializers.ModelSerializer):
             'rating',
             'author',
             'updated',
-            'answer',
-            'title'
+            'answers',
+            'title',
         )
 
 
@@ -51,7 +69,14 @@ class ListQuestionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Question
-        fields = ('title', 'rating', 'author', 'viewed', 'correct_answers')
+        fields = (
+            'title',
+            'rating',
+            'author',
+            'viewed',
+            'correct_answers',
+            'answer_count'
+        )
 
     def get_correct_answers(self, instance):
         return instance.correct_answers_count()
@@ -60,13 +85,56 @@ class ListQuestionSerializer(serializers.ModelSerializer):
         return instance.answers_count()
 
 
-class QuestionReview(serializers.ModelSerializer):
+class QuestionReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.QuestionReview
         fields = ('grade', 'question')
 
+    def validate(self, data):
+        data['user'] = self.context['request'].user
+        validator = QuestionValidator()
+        validator.check_review(data)
+        return data
 
-class AnswerReview(serializers.ModelSerializer):
+    def create(self, validated_data):
+        review = self.Meta.model.objects.create(**validated_data)
+        validated_data['question'].update_rating()
+        return review
+
+
+class AnswerReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.AnswerReview
         fields = ('grade', 'answer')
+
+    def validate(self, data):
+        data['user'] = self.context['request'].user
+        validator = QuestionValidator()
+        validator.check_review(data)
+        return data
+
+    def create(self, validated_data):
+        review = self.Meta.model.objects.create(**validated_data)
+        validated_data['answer'].update_rating()
+        return review
+
+class UpdateQuestionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Question
+        fields = ('text',)
+
+    def validate(self, data):
+        validator = QuestionValidator()
+        validator.check_author(self.context['request'].user, self.instance.author)
+        return data
+
+
+class UpdateAnswerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Answer
+        fields = ('text',)
+
+    def validate(self, data):
+        validator = QuestionValidator()
+        validator.check_author(self.context['request'].user, self.instance.author)
+        return data
