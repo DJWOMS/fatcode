@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'djoser',
     'ckeditor',
     'ckeditor_uploader',
+    'corsheaders',
     'src.profiles',
     'src.courses',
     'src.questions',
@@ -45,6 +46,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -146,6 +148,7 @@ DJOSER = {
     'ACTIVATION_URL': '#/activate/{uid}/{token}',
     'SEND_ACTIVATION_EMAIL': False,
     'USER_CREATE_PASSWORD_RETYPE': True,
+    'LOGIN_FIELD': 'email',
     'SERIALIZERS': {
         'user_create': 'src.profiles.serializers.FatUserCreateSerializer',
         'current_user': 'src.profiles.serializers.FatUserUpdateSerializer',
@@ -154,3 +157,8 @@ DJOSER = {
 }
 
 CKEDITOR_UPLOAD_PATH = "media/uploads/"
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+]
