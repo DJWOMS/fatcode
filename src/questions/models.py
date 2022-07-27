@@ -31,6 +31,11 @@ class Question(models.Model):
     def correct_answers_count(self):
         return Answer.objects.filter(question=self, accepted=True)
 
+    def update_rating(self):
+        self.rating += QuestionReview.objects.filter(question=self, grade=True).count()
+        self.rating -= QuestionReview.objects.filter(question=self, grade=False).count()
+        return super().save()
+
 
 class Answer(models.Model):
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='answer')
@@ -41,6 +46,11 @@ class Answer(models.Model):
     rating = models.IntegerField(editable=False, default=0)
     accepted = models.BooleanField(default=False, editable=False)
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='answers')
+
+    def update_rating(self):
+        self.rating += AnswerReview.objects.filter(answer=self, grade=True).count()
+        self.rating -= AnswerReview.objects.filter(answer=self, grade=False).count()
+        return super().save()
 
 
 class QuestionReview(models.Model):

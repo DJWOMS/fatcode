@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from . import models
 from src.courses.serializers import UserSerializer
-from rest_framework import status
+from .validators import QuestionValidator
 
 
 class TagsSerializer(serializers.ModelSerializer):
@@ -45,6 +45,7 @@ class AnswerSerializer(serializers.ModelSerializer):
 class RetrieveQuestionSerializer(serializers.ModelSerializer):
     author = UserSerializer(read_only=True)
     answers = AnswerSerializer(many=True, read_only=True)
+    # review = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Question
@@ -57,7 +58,7 @@ class RetrieveQuestionSerializer(serializers.ModelSerializer):
             'author',
             'updated',
             'answers',
-            'title'
+            'title',
         )
 
 
@@ -84,17 +85,38 @@ class ListQuestionSerializer(serializers.ModelSerializer):
         return instance.answers_count()
 
 
-class QuestionReview(serializers.ModelSerializer):
+class QuestionReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.QuestionReview
         fields = ('grade', 'question')
 
+    def validate(self, data):
+        data['user'] = self.context['request'].user
+        validator = QuestionValidator()
+        validator.check_review(data)
+        return data
 
-class AnswerReview(serializers.ModelSerializer):
+    def create(self, validated_data):
+        review = self.Meta.model.objects.create(**validated_data)
+        validated_data['question'].update_rating()
+        return review
+
+
+class AnswerReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.AnswerReview
         fields = ('grade', 'answer')
 
+    def validate(self, data):
+        data['user'] = self.context['request'].user
+        validator = QuestionValidator()
+        validator.check_review(data)
+        return data
+
+    def create(self, validated_data):
+        review = self.Meta.model.objects.create(**validated_data)
+        validated_data['answer'].update_rating()
+        return review
 
 class UpdateQuestionSerializer(serializers.ModelSerializer):
     class Meta:
@@ -102,12 +124,8 @@ class UpdateQuestionSerializer(serializers.ModelSerializer):
         fields = ('text',)
 
     def validate(self, data):
-        if self.context['request'].user is not self.instance.author:
-            serializers.ValidationError({
-                'error': 'Вы не можете изменить чужой вопрос'
-            },
-                status.HTTP_403_FORBIDDEN
-            )
+        validator = QuestionValidator()
+        validator.check_author(self.context['request'].user, self.instance.author)
         return data
 
 
@@ -115,3 +133,8 @@ class UpdateAnswerSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Answer
         fields = ('text',)
+
+    def validate(self, data):
+        validator = QuestionValidator()
+        validator.check_author(self.context['request'].user, self.instance.author)
+        return data

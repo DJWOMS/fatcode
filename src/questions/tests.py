@@ -1,12 +1,21 @@
 from rest_framework import status
 from rest_framework.test import APITestCase
-from .models import Question, QuestionReview, AnswerReview, Answer, Tags
+from .models import Question, QuestionReview, AnswerReview, Answer
 from src.profiles.models import FatUser
 from rest_framework.authtoken.models import Token
 from . import serializers
 
 
 class QuestionApiViewTestCase(APITestCase):
+
+    def create_answerObject(self):
+        answer = Answer.objects.create(
+            question=self.question,
+            text='123',
+            author=self.user
+        )
+        return answer
+
     def setUp(self):
         self.user = FatUser.objects.create_user(
             username='user',
@@ -39,17 +48,9 @@ class QuestionApiViewTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, serialize.data)
 
-    def create_objectAnswer(self):
-        answer = Answer.objects.create(
-            question=self.question,
-            text='123',
-            author=self.user
-        )
-        return answer
-
     def test_update_question(self):
         data = {
-            'text': 'title2',
+            'text': 'text2'
         }
         response = self.client.patch(f'/questions/update_question/{self.question.id}/', data)
         self.question = Question.objects.get(id=self.question.id)
@@ -60,11 +61,47 @@ class QuestionApiViewTestCase(APITestCase):
         data = {
             'text': 'updated_text'
         }
-        answer = Answer.objects.create(
-            author=self.question.author,
-            text='created_text',
-            question=self.question
-        )
+        answer = self.create_answerObject()
         response = self.client.patch(f'/questions/update_answer/{answer.id}/', data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_delete_answer(self):
+        answer = self.create_answerObject()
+        response = self.client.delete(f'/questions/delete_answer/{answer.id}/')
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Answer.objects.exists(), False)
+
+    def test_delete_question(self):
+        response = self.client.delete(f'/questions/delete_question/{self.question.id}/')
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Question.objects.exists(), False)
+
+    def test_question_review(self):
+        data = {
+            'grade': 'false',
+            'question': self.question.id,
+        }
+        response = self.client.post('/questions/question_review/', data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_repeat_question_review(self):
+        review = QuestionReview.objects.create(
+            question=self.question,
+            user=self.user,
+            grade=False
+        )
+        data = {
+            'grade': False,
+            'question': self.question.id,
+        }
+        response = self.client.post('/questions/question_review/', data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_answer_review(self):
+        answer = self.create_answerObject()
+        data = {
+            'grade': False,
+            'answer': f'{answer.id}',
+        }
+        response = self.client.post('/questions/answer_review/', data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
