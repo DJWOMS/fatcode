@@ -157,4 +157,4 @@ DJOSER = {
 
 CKEDITOR_UPLOAD_PATH = "media/uploads/"
 
-CORS_ALLOWED_ORIGINS = os.environ.get("DJANGO_ALLOWED_HOSTS").split(" ")
+CORS_ALLOWED_ORIGINS = os.environ.get("CORS_ALLOWED_HOSTS").split(" ")
