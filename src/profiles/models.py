@@ -36,7 +36,6 @@ class FatUser(AbstractUser):
     )
     middle_name = models.CharField(max_length=150, null=True, blank=True)
     socials = models.ManyToManyField(Social, through='FatUserSocial')
-    courses = models.ManyToManyField(Course, through='FatUserCourse')
 
 
 class FatUserSocial(models.Model):
@@ -48,19 +47,3 @@ class FatUserSocial(models.Model):
         on_delete=models.CASCADE,
         related_name='user_social')
     user_url = models.CharField(max_length=20, default='')
-
-
-class FatUserCourse(models.Model):
-    """Intermediate table for the ManyToMany FatUser and Course relationship"""
-
-    STATUS = (
-        ('in_process', 'in_process'),
-        ('completed', 'completed')
-    )
-
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    user = models.ForeignKey(
-        FatUser,
-        on_delete=models.CASCADE,
-        related_name='user_courses')
-    status = models.CharField(max_length=10, choices=STATUS, default='in_process')
