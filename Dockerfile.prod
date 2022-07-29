@@ -12,8 +12,6 @@ RUN pip install --upgrade pip
 
 COPY . .
 
-
-COPY ./requirements.txt .
 RUN pip wheel --no-cache-dir --no-deps --wheel-dir /app/wheels -r requirements.txt
 
 
@@ -39,7 +37,7 @@ COPY --from=builder /app/wheels /wheels
 COPY --from=builder /app/requirements.txt .
 RUN pip install --no-cache /wheels/*
 
-COPY ./entrypoint.prod.sh $APP_HOME
+COPY ./entrypoint.prod.sh $HOME
 
 COPY . $APP_HOME
 
@@ -47,4 +45,4 @@ RUN chown -R app:app $APP_HOME
 
 USER app
 
-ENTRYPOINT ["/home/app/entrypoint.prod.sh"]
+# ENTRYPOINT ["/home/app/entrypoint.prod.sh"]
