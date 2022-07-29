@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from src.profiles import models
 from django.utils.translation import gettext_lazy as _
+from src.courses.models import UserCourseThrough
 
 
 class SocialInLineFatUser(admin.TabularInline):
@@ -9,7 +10,7 @@ class SocialInLineFatUser(admin.TabularInline):
 
 
 class CourseInLineFatUser(admin.TabularInline):
-    model = models.FatUser.courses.through
+    model = UserCourseThrough
 
 
 class FatUserAdmin(UserAdmin):

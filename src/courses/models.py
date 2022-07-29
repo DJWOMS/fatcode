@@ -119,7 +119,7 @@ class UserCourseThrough(models.Model):
     student = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name='course'
+        related_name='courses'
     )
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='student')
     progress = models.IntegerField(default=0)

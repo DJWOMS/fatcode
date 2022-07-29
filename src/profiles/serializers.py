@@ -1,14 +1,14 @@
 from djoser.serializers import UserSerializer, UserCreateSerializer, UserCreatePasswordRetypeSerializer
 from djoser.conf import settings
 from rest_framework.validators import UniqueValidator
-from src.profiles.models import FatUser, Social, FatUserSocial, FatUserCourse
+from src.profiles.models import FatUser, Social, FatUserSocial
 from rest_framework import serializers
 from src.profiles.validators import AvatarValidator
 from django.dispatch import receiver
 from django.db.models.signals import post_save
 from rest_framework.authtoken.models import Token
 from datetime import datetime
-from src import courses as fat_courses
+from src.courses.serializers import ListCourseSerializer
 
 
 class FatUserCreateSerializer(UserCreatePasswordRetypeSerializer):
@@ -76,20 +76,13 @@ class ListSocialSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class FatUserCourseSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = FatUserCourse
-        fields = '__all__'
-
-
 class UserFatSerializer(serializers.ModelSerializer):
     """Serialization for user's internal display"""
 
     avatar = serializers.ImageField(validators=[AvatarValidator()])
     user_social = UserSocialSerializer(many=True)
     socials = ListSocialSerializer(many=True)
-    user_courses = FatUserCourseSerializer(many=True)
-    courses = fat_courses.serializers.DetailCourseSerializer(many=True)
+    courses = ListCourseSerializer(many=True)
 
     class Meta:
         model = FatUser
@@ -100,7 +93,7 @@ class UserFatSerializer(serializers.ModelSerializer):
             "is_staff",
             "is_superuser",
             "groups",
-            "user_permissions"
+            "user_permissions",
         )
 
     def update(self, instance, validated_data):
@@ -128,6 +121,7 @@ class UserFatPublicSerializer(serializers.ModelSerializer):
     avatar = serializers.ImageField(read_only=True)
     user_social = UserSocialSerializer(many=True)
     socials = ListSocialSerializer(many=True)
+    courses = ListCourseSerializer(many=True)
 
     class Meta:
         model = FatUser
@@ -140,7 +134,6 @@ class UserFatPublicSerializer(serializers.ModelSerializer):
             "is_superuser",
             "groups",
             "user_permissions",
-            'courses'
         )
 
 
