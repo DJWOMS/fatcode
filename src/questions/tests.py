@@ -43,7 +43,7 @@ class QuestionApiViewTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_get_detail_question(self):
-        response = self.client.get(f'/api/v1/questions/detail/{self.question.id}/')
+        response = self.client.get(f'/api/v1/questions/{self.question.id}/')
         serialize = serializers.RetrieveQuestionSerializer(self.question)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, serialize.data)
@@ -52,7 +52,7 @@ class QuestionApiViewTestCase(APITestCase):
         data = {
             'text': 'text2'
         }
-        response = self.client.patch(f'/api/v1/questions/update_question/{self.question.id}/', data)
+        response = self.client.patch(f'/api/v1/questions/{self.question.id}/', data)
         self.question = Question.objects.get(id=self.question.id)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(self.question.text, data['text'])
@@ -62,17 +62,17 @@ class QuestionApiViewTestCase(APITestCase):
             'text': 'updated_text'
         }
         answer = self.create_answerObject()
-        response = self.client.patch(f'/api/v1/questions/update_answer/{answer.id}/', data)
+        response = self.client.patch(f'/api/v1/questions/answer/{answer.id}/', data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_delete_answer(self):
         answer = self.create_answerObject()
-        response = self.client.delete(f'/api/v1/questions/delete_answer/{answer.id}/')
+        response = self.client.delete(f'/api/v1/questions/answer/{answer.id}/')
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Answer.objects.exists(), False)
 
     def test_delete_question(self):
-        response = self.client.delete(f'/api/v1/questions/delete_question/{self.question.id}/')
+        response = self.client.delete(f'/api/v1/questions/{self.question.id}/')
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Question.objects.exists(), False)
 
@@ -117,6 +117,6 @@ class QuestionApiViewTestCase(APITestCase):
             text='123',
             author=user
         )
-        response = self.client.delete(f'/api/v1/questions/delete_answer/{answer.id}/')
+        response = self.client.delete(f'/api/v1/questions/answer/{answer.id}/')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
