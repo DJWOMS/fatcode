@@ -38,15 +38,7 @@ class QuestionView(ModelViewSet):
 class AnswerView(ModelViewSet):
     lookup_field = 'id'
     queryset = Answer.objects.all()
-
-    def get_permissions(self):
-        permission_class = {
-            'update': IsAuthor,
-            'partial_update': IsAuthor,
-            'destroy': IsAuthor
-        }
-        self.permission_classes = [permission_class[self.action]]
-        return super(AnswerView, self).get_permissions()
+    permission_classes = [IsAuthor]
 
     def get_serializer_class(self):
         serializer_classes = {
