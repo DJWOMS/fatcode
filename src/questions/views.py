@@ -8,6 +8,7 @@ from rest_framework.generics import (
 from . import serializers
 from rest_framework.permissions import IsAuthenticated
 from .models import Question, Answer, QuestionReview, AnswerReview
+from .permissions import IsAuthor
 
 
 class ListQuestionsView(ListAPIView):
@@ -29,28 +30,28 @@ class CreateAnswerView(CreateAPIView):
 
 class UpdateQuestionView(UpdateAPIView):
     serializer_class = serializers.UpdateQuestionSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthor]
     queryset = Question.objects.all()
     lookup_field = 'id'
 
 
 class UpdateAnswerView(UpdateAPIView):
     serializer_class = serializers.UpdateAnswerSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthor]
     queryset = Answer.objects.all()
     lookup_field = 'id'
 
 
 class DestroyAnswerView(DestroyAPIView):
     serializer_class = serializers.AnswerSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthor]
     queryset = Answer.objects.all()
     lookup_field = 'id'
 
 
 class DestroyQuestionView(DestroyAPIView):
     serializer_class = serializers.RetrieveQuestionSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthor]
     queryset = Question.objects.all()
     lookup_field = 'id'
 
