@@ -40,12 +40,12 @@ class AnswerView(ModelViewSet):
     queryset = Answer.objects.all()
 
     def get_permissions(self):
-        permissions = {
+        permission_class = {
             'update': IsAuthor,
             'partial_update': IsAuthor,
             'destroy': IsAuthor
         }
-        self.permission_classes = [permissions[self.action]]
+        self.permission_classes = [permission_class[self.action]]
         return super(AnswerView, self).get_permissions()
 
     def get_serializer_class(self):
