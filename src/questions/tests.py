@@ -117,7 +117,6 @@ class QuestionApiViewTestCase(APITestCase):
             text='123',
             author=user
         )
-
         response = self.client.delete(f'/api/v1/questions/delete_answer/{answer.id}/')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 

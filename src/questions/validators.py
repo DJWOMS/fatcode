@@ -4,12 +4,6 @@ from . import models
 
 class QuestionValidator:
 
-    def check_author(self, user, author):
-        if user != author:
-            raise serializers.ValidationError({
-                'error': 'Вы не являетесь автором'
-            })
-
     def check_review(self, data):
         if 'question' in data:
             if models.QuestionReview.objects.filter(**data).exists():
