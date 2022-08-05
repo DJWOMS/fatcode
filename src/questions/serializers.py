@@ -124,18 +124,9 @@ class UpdateQuestionSerializer(serializers.ModelSerializer):
         model = models.Question
         fields = ('text',)
 
-    def validate(self, data):
-        validator = QuestionValidator()
-        validator.check_author(self.context['request'].user, self.instance.author)
-        return data
-
 
 class UpdateAnswerSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Answer
         fields = ('text',)
 
-    def validate(self, data):
-        validator = QuestionValidator()
-        validator.check_author(self.context['request'].user, self.instance.author)
-        return data

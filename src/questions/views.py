@@ -1,67 +1,69 @@
-from rest_framework.generics import (
-    CreateAPIView,
-    ListAPIView,
-    RetrieveAPIView,
-    UpdateAPIView,
-    DestroyAPIView
-)
 from . import serializers
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.viewsets import ModelViewSet
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from .models import Question, Answer, QuestionReview, AnswerReview
+from .permissions import IsAuthor
 
 
-class ListQuestionsView(ListAPIView):
+class ListQuestionsView(ModelViewSet):
     serializer_class = serializers.ListQuestionSerializer
     queryset = Question.objects.all()
 
 
-class RetrieveQuestionView(RetrieveAPIView):
-    serializer_class = serializers.RetrieveQuestionSerializer
+class QuestionView(ModelViewSet):
     queryset = Question.objects.all()
     lookup_field = 'id'
 
+    def get_serializer_class(self):
+        serializer_class = {
+            'retrieve': serializers.RetrieveQuestionSerializer,
+            'update': serializers.UpdateQuestionSerializer,
+            'partial_update': serializers.UpdateQuestionSerializer,
+            'destroy': serializers.RetrieveQuestionSerializer
+        }
+        return serializer_class[self.action]
 
-class CreateAnswerView(CreateAPIView):
+    def get_permissions(self):
+        permission_class = {
+            'create': IsAuthenticated,
+            'update': IsAuthor,
+            'retrieve': AllowAny,
+            'partial_update': IsAuthor,
+            'destroy': IsAuthor
+        }
+        self.permission_classes = [permission_class[self.action]]
+        return super(QuestionView, self).get_permissions()
+
+
+class AnswerView(ModelViewSet):
+    lookup_field = 'id'
+    queryset = Answer.objects.all()
+    permission_classes = [IsAuthor]
+
+    def get_serializer_class(self):
+        serializer_classes = {
+            'update': serializers.UpdateAnswerSerializer,
+            'destroy': serializers.AnswerSerializer,
+            'partial_update': serializers.UpdateAnswerSerializer,
+        }
+        return serializer_classes[self.action]
+
+
+class CreateAnswerView(ModelViewSet):
     serializer_class = serializers.AnswerSerializer
     permission_classes = [IsAuthenticated]
     queryset = Answer.objects.all()
 
 
-class UpdateQuestionView(UpdateAPIView):
-    serializer_class = serializers.UpdateQuestionSerializer
-    permission_classes = [IsAuthenticated]
-    queryset = Question.objects.all()
-    lookup_field = 'id'
-
-
-class UpdateAnswerView(UpdateAPIView):
-    serializer_class = serializers.UpdateAnswerSerializer
-    permission_classes = [IsAuthenticated]
-    queryset = Answer.objects.all()
-    lookup_field = 'id'
-
-
-class DestroyAnswerView(DestroyAPIView):
-    serializer_class = serializers.AnswerSerializer
-    permission_classes = [IsAuthenticated]
-    queryset = Answer.objects.all()
-    lookup_field = 'id'
-
-
-class DestroyQuestionView(DestroyAPIView):
-    serializer_class = serializers.RetrieveQuestionSerializer
-    permission_classes = [IsAuthenticated]
-    queryset = Question.objects.all()
-    lookup_field = 'id'
-
-
-class CreateQuestionReview(CreateAPIView):
+class CreateQuestionReview(ModelViewSet):
     serializer_class = serializers.QuestionReviewSerializer
     permission_classes = [IsAuthenticated]
     queryset = QuestionReview.objects.all()
 
 
-class CreateAnswerReview(CreateAPIView):
+class CreateAnswerReview(ModelViewSet):
     serializer_class = serializers.AnswerReviewSerializer
     permission_classes = [IsAuthenticated]
     queryset = AnswerReview.objects.all()
+
+

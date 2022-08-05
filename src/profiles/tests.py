@@ -8,7 +8,7 @@ user_create_data = {
     'username': 'anton',
     'password': 'V97tn7M4rU',
     're_password': 'V97tn7M4rU',
-    'email': 'anton@example.com'
+    'email': 'antonenique@example.com'
 }
 
 
@@ -20,10 +20,9 @@ class ProfileRegTests(APITestCase):
                 format='json'
         )
 
-        user = FatUser.objects.get(username='anton')
-
+        user = FatUser.objects.get(email='antonenique@example.com')
         self.assertEqual(user.username, 'anton')
-        self.assertEqual(user.email, 'anton@example.com')
+        self.assertEqual(user.email, 'antonenique@example.com')
 
     def test_create_user_error_pass(self):
         data = user_create_data.copy()
@@ -36,14 +35,14 @@ class ProfileRegTests(APITestCase):
 
     def test_create_user_required(self):
         error_msg = 'Обязательное Поле.'
-        request = self.client.post('/auth/users/', {}, format='json')
+        request = self.client.post('/api/v1/auth/users/', {}, format='json')
         self.assertEqual(request.data['email'][0].title(), error_msg)
         self.assertEqual(request.data['username'][0].title(), error_msg)
         self.assertEqual(request.data['password'][0].title(), error_msg)
         self.assertEqual(request.data['re_password'][0].title(), error_msg)
 
     def test_create_user_unique(self):
-        self.client.post('/auth/users/', user_create_data, format='json')
+        self.client.post('/api/v1/auth/users/', user_create_data, format='json')
         request = self.client.post('/auth/users/', user_create_data, format='json')
         self.assertEqual(
             request.data['email'][0].title(),

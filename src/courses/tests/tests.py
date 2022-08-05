@@ -5,11 +5,11 @@ from src.profiles.models import FatUser
 from rest_framework.authtoken.models import Token
 
 
-def create_user(name):
+def create_user(email, name):
     user = FatUser.objects.create_user(
         username=name,
         password='password',
-        email='email@mail.ru'
+        email=email
     )
     return user
 
@@ -20,8 +20,8 @@ def create_course():
         name='first_course',
         description='description',
         slug='slug',
-        author=create_user('user1'),
-        mentor=create_user('user2'),
+        author=create_user('ahjkhjkhjkhjk@xz.ru', 'asdasdasdasdsds@mail.ru'),
+        mentor=create_user('lklklklk', '12312sszxczxzxccz@mail.ru'),
         category=category
     )
     return course
@@ -39,7 +39,7 @@ def create_lesson():
 class AuthUserTestCase(APITestCase):
 
     def setUp(self):
-        self.user = create_user('user3')
+        self.user = create_user('zxczxczxczxxx', 'oaidoasdioasdois@mail.ru')
         self.token = Token.objects.create(user=self.user)
         self.api_authentication()
 
@@ -71,40 +71,38 @@ class AuthUserTestCase(APITestCase):
     def api_authentication(self):
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token}')
 
+    def test_search_courses(self):
+        course = create_course()
+        response = self.client.get(f'/courses/list/?name=firs')
+        self.assertEqual(response.data, status.HTTP_200_OK)
 
-class NotAuthUserTestCase(APITestCase):
 
-    def test_student_work(self):
-        lesson = create_lesson()
-        quiz = Quiz.objects.create(
-            lesson=lesson,
-            text='text',
-            hint='hint',
-        )
-        data = {
-            "lesson": f'{lesson.id}',
-            'quiz_answer': f'{quiz.id}'
-        }
-        response = self.client.post('/courses/check_work/', data)
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+# class NotAuthUserTestCase(APITestCase):
+#
+#     def test_detail_course(self):
+#         create_lesson()
+#         response = self.client.get('/courses/lesson/1/')
+#         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+#
+#     def test_detail_lesson(self):
+#         create_lesson()
+#         response = self.client.get('/courses/lesson/1/')
+#         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+#
+#     def test_help_mentor(self):
+#         lesson = create_lesson()
+#         data = {'lesson': f'{lesson.id}'}
+#         response = self.client.post('/courses/help_mentor/', data)
+#         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+#
+#     def test_list_courses(self):
+#         create_course()
+#         response = self.client.get('/courses/list/')
+#         self.assertEqual(response.status_code, status.HTTP_200_OK)
+#
+#     def test_search_courses(self):
+#         course = create_course()
+#         response = self.client.get(f'/courses/list/?name=firs')
+#         self.assertEqual(response.data, status.HTTP_200_OK)
 
-    def test_detail_course(self):
-        create_lesson()
-        response = self.client.get('/courses/lesson/1/')
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_detail_lesson(self):
-        create_lesson()
-        response = self.client.get('/courses/lesson/1/')
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-
-    def test_help_mentor(self):
-        lesson = create_lesson()
-        data = {'lesson': f'{lesson.id}'}
-        response = self.client.post('/courses/help_mentor/', data)
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-
-    def test_list_courses(self):
-        create_course()
-        response = self.client.get('/courses/list/')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
