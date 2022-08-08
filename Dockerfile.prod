@@ -37,7 +37,7 @@ COPY --from=builder /app/wheels /wheels
 COPY --from=builder /app/requirements.txt .
 RUN pip install --no-cache /wheels/*
 
-COPY ./entrypoint.prod.sh $HOME
+COPY ./entrypoint.prod.sh $APP_HOME
 
 COPY . $APP_HOME
 
@@ -45,4 +45,4 @@ RUN chown -R app:app $APP_HOME
 
 USER app
 
-#ENTRYPOINT ["/home/app/web/entrypoint.prod.sh"]
+# ENTRYPOINT ["/home/app/web/entrypoint.prod.sh"]
