@@ -3,6 +3,8 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 
+from .yasg import urlpatterns as doc_urls
+
 
 urlpatterns = [
     path('api/v1/admin/', admin.site.urls),
@@ -14,9 +16,9 @@ urlpatterns = [
     path('api/v1/knowledge/', include('src.knowledge.urls')),
     path('api/v1/courses/', include('src.courses.urls')),
     path('api/v1/questions/', include('src.questions.urls')),
-
 ]
 
+urlpatterns += doc_urls
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
