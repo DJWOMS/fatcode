@@ -17,12 +17,24 @@ services:
       - 8000:8000
     volumes:
       - ./:/app
-      - ./static:/home/app/static
-      - ./media:/home/app/media
+      - static_volume:/home/app/static
+      - media_volume:/home/app/media
     env_file:
       - ./.env.prod
     depends_on:
       - db
 
+  nginx:
+    build: ./nginx
+    ports:
+      - 80:80
+    volumes:
+      - static_volume:/home/app/web/static
+      - media_volume:/home/app/web/media
+    depends_on:
+      - web
+
 volumes:
   fat_db_data:
+  static_volume:
+  media_volume:
