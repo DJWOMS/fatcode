@@ -1,4 +1,6 @@
 from rest_framework.generics import ListAPIView, RetrieveAPIView
+from .services import ListArticleViewPagination
+
 from src.knowledge import models, serializers
 
 
@@ -27,6 +29,7 @@ class DetailTagView(RetrieveAPIView):
 class ListArticleView(ListAPIView):
     queryset = models.Article.objects.all()
     serializer_class = serializers.ListArticleSerializer
+    pagination_class = ListArticleViewPagination
 
 
 class DetailArticleView(RetrieveAPIView):
