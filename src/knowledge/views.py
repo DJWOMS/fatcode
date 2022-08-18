@@ -1,4 +1,6 @@
 from rest_framework.generics import ListAPIView, RetrieveAPIView
+from rest_framework.pagination import PageNumberPagination
+
 from src.knowledge import models, serializers
 
 
@@ -24,9 +26,16 @@ class DetailTagView(RetrieveAPIView):
     lookup_field = 'id'
 
 
+class ListArticleViewPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 15
+
+
 class ListArticleView(ListAPIView):
     queryset = models.Article.objects.all()
     serializer_class = serializers.ListArticleSerializer
+    pagination_class = ListArticleViewPagination
 
 
 class DetailArticleView(RetrieveAPIView):
