@@ -139,8 +139,9 @@ class StudentWork(models.Model):
                 'file': open(file, 'rb')
             }, timeout=20
         )
-        response = json.loads(request.content.decode('utf-8'))
-        return response
+        if request.status_code == 200:
+            response = json.loads(request.content.decode('utf-8'))
+            return response
 
     def check_answer(self):
         student_answer = list(self.code_answer.replace(' ', ''))

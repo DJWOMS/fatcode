@@ -30,7 +30,7 @@ class CourseAdmin(admin.ModelAdmin):
 @admin.register(models.Lesson)
 class LessonAdmin(admin.ModelAdmin):
     inlines = [QuizTabular, CodeTabular]
-    list_display = ('name', 'course', 'lesson_type')
+    list_display = ('id', 'course', 'lesson_type')
 
     class Meta:
         fields = '__all__'
