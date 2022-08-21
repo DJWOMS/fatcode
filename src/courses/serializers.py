@@ -133,7 +133,7 @@ class DetailCourseSerializer(serializers.ModelSerializer):
 class StudentWorkSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.StudentWork
-        fields = ('lesson', 'code_answer', 'quiz_answer', 'completed', )
+        fields = ('lesson', 'code_answer', 'quiz_answer', 'completed', 'error')
 
     def validate(self, data):
         validate_class = StudentWorkValidator()

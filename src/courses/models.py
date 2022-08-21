@@ -1,5 +1,8 @@
 from django.db import models
 from django.conf import settings
+import requests
+import os
+import json
 
 
 class Tags(models.Model):
@@ -73,6 +76,7 @@ class Lesson(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='lessons')
     slug = models.SlugField()
     description = models.TextField()
+    test = models.FileField(upload_to='files/test/python/', null=True, blank=True)
 
     class Meta:
         ordering = ['sorted']
@@ -98,18 +102,47 @@ class StudentWork(models.Model):
     completed = models.BooleanField(default=False)
     code_answer = models.TextField(null=True, blank=True)
     quiz_answer = models.ForeignKey(Quiz, on_delete=models.CASCADE, null=True, blank=True)
+    error = models.TextField(null=True, blank=True)
 
     def save(self, *args, **kwargs):
         if self.quiz_answer:
             self.completed = self.check_quiz()
         if self.code_answer:
-            self.completed = self.check_code()
+            self.completed = self.test_code()
         return super().save()
 
     def check_quiz(self):
         return self.quiz_answer.right
 
-    def check_code(self):
+    def __create_testfile__(self):
+        path_file = f'/app/media/files/test/python/{self.lesson.course.name}.py'
+        with open(self.lesson.test.path, 'r') as lesson_test, open(path_file, 'w') as test:
+            test.write(f'{self.code_answer} \n')
+            for line in lesson_test:
+                test.write(line)
+        return path_file
+
+    def test_code(self):
+        response = self.request_test()
+        if 'test_django exited with code 0' in response['result']['stdout']:
+            return True
+        self.error = response['result']['stdout']
+        return False
+
+    def request_test(self):
+        file = self.__create_testfile__()
+        headers = {'Authorization': f"Bearer {os.environ.get('FASTAPI_TOKEN')}"}
+        request = requests.post(
+            'http://fast-test_api_1:8008/api/python/test/',
+            headers=headers,
+            files={
+                'file': open(file, 'rb')
+            }, timeout=20
+        )
+        response = json.loads(request.content.decode('utf-8'))
+        return response
+
+    def check_answer(self):
         student_answer = list(self.code_answer.replace(' ', ''))
         answer = list(self.lesson.code.first().answer.replace(' ', ''))
         return student_answer == answer
