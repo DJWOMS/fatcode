@@ -1,4 +1,8 @@
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters
 from rest_framework.generics import ListAPIView, RetrieveAPIView
+
+from .filters import ArticleFilter
 from .services import ListArticleViewPagination
 
 from src.knowledge import models, serializers
@@ -30,6 +34,9 @@ class ListArticleView(ListAPIView):
     queryset = models.Article.objects.all()
     serializer_class = serializers.ListArticleSerializer
     pagination_class = ListArticleViewPagination
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_class = ArticleFilter
+    search_fields = ['title']
 
 
 class DetailArticleView(RetrieveAPIView):
