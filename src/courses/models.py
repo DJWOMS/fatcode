@@ -133,11 +133,11 @@ class StudentWork(models.Model):
         file = self.__create_testfile__()
         headers = {'Authorization': f"Bearer {os.environ.get('FASTAPI_TOKEN')}"}
         request = requests.post(
-            'http://fast-test_api_1:8008/api/python/test/',
+            f'http://fast-test_api_1:8008/api/python/test/{self.lesson.course.name}/',
             headers=headers,
             files={
                 'file': open(file, 'rb')
-            }, timeout=20
+            }, timeout=120
         )
         if request.status_code == 200:
             response = json.loads(request.content.decode('utf-8'))
