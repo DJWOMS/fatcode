@@ -2,7 +2,7 @@
 idea
 .DS_Store
 .git
-
+.git
 *.egg-info/
 .installed.cfg
 *.egg
