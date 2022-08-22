@@ -37,7 +37,7 @@ class FatUser(AbstractUser):
     )
     middle_name = models.CharField(max_length=150, null=True, blank=True)
     socials = models.ManyToManyField(Social, through='FatUserSocial')
-
+    experience = models.IntegerField(default=0)
     email = models.EmailField(_("email address"), blank=True, unique=True)
 
     USERNAME_FIELD = "email"
