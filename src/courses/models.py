@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from .services import check_quiz, check_code
 
 
 class Tags(models.Model):
@@ -101,18 +102,10 @@ class StudentWork(models.Model):
 
     def save(self, *args, **kwargs):
         if self.quiz_answer:
-            self.completed = self.check_quiz()
+            self.completed = check_quiz()
         if self.code_answer:
-            self.completed = self.check_code()
+            self.completed = check_code()
         return super().save()
-
-    def check_quiz(self):
-        return self.quiz_answer.right
-
-    def check_code(self):
-        student_answer = list(self.code_answer.replace(' ', ''))
-        answer = list(self.lesson.code.first().answer.replace(' ', ''))
-        return student_answer == answer
 
 
 class UserCourseThrough(models.Model):
