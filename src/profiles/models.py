@@ -6,12 +6,9 @@ from src.courses.models import Course
 from django.utils.translation import gettext_lazy as _
 
 
-def user_directory_path(instance: 'FatUser', filename: str):
-    """File will be uploaded to MEDIA_ROOT/users/avatar/user_<id>/<filename>"""
-
-    # return example a2fabc70-be8e-49ac-9a8f-95d36a893d3d.png
-    return f'users/avatar/user_{instance.id}/' \
-           f'{str(uuid.uuid4()) + "." + filename.split(".")[-1]}'
+def user_directory_path(instance: 'FatUser', filename: str) -> str:
+    """Generate path to file in upload"""
+    return f'users/avatar/user_{instance.id}/{str(uuid.uuid4())}.{filename.split(".")[-1]}'
 
 
 class Social(models.Model):
