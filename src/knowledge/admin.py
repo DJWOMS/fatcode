@@ -16,7 +16,7 @@ class ArticleAdminForm(forms.ModelForm):
 
 class ArticleAdmin(admin.ModelAdmin):
     form = ArticleAdminForm
-    list_display = ('title', 'author', 'published', 'date_creation')
+    list_display = ('title', 'author', 'date_creation', 'date_update', 'published')
 
 
 class CategoryAdmin(admin.ModelAdmin):
