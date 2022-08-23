@@ -7,35 +7,35 @@ from PIL import Image
 
 
 @deconstructible
-class AvatarValidator:
+class ImageValidator:
     """
-    Avatar validator. Checks the image size and file size.
+    Avatar and logo validator. Checks the image size and file size.
     Use @deconstructible decorator for serialization during migration
     """
 
-    def __init__(self):
-        self.allowed_avatar_size = (100, 100)
-        self.allowed_avatar_bytes = 1048576  # 1Mb
+    def __init__(self, img_size: tuple, img_bytes: int):
+        self.img_size = img_size
+        self.img_bytes = img_bytes
 
     def __call__(self, value: 'ImageFieldFile, InMemoryUploadedFile'):
-        valid_avatar_size = self.check_avatar_size(value)
-        valid_avatar_bytes = self.check_avatar_bytes(value)
+        valid_image_size = self.check_image_size(value)
+        valid_image_bytes = self.check_image_bytes(value)
 
-        if not valid_avatar_size or not valid_avatar_bytes:
+        if not valid_image_size or not valid_image_bytes:
             raise ValidationError('Неправильный размер изображения')
 
-    def check_avatar_bytes(self, value: 'ImageFieldFile, InMemoryUploadedFile'):
-        if value.size > self.allowed_avatar_bytes:
+    def check_image_bytes(self, value: 'ImageFieldFile, InMemoryUploadedFile'):
+        if value.size > self.img_bytes:
             return False
         return True
 
-    def check_avatar_size(self, value: 'ImageFieldFile, InMemoryUploadedFile'):
+    def check_image_size(self, value: 'ImageFieldFile, InMemoryUploadedFile'):
         image_functions = {InMemoryUploadedFile: lambda val: val.image,
                            ImageFieldFile: lambda val: image_functions[val.file.__class__](val.file),
                            File: lambda val: Image.open(val)}
 
-        avatar_size = image_functions[value.__class__](value).size
+        image_size = image_functions[value.__class__](value).size
 
-        if avatar_size != self.allowed_avatar_size:
+        if image_size != self.img_size:
             return False
         return True
