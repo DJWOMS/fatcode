@@ -46,6 +46,7 @@ class Article(models.Model):
         blank=True,
         related_name='article')
     tag = models.ManyToManyField(Tag, blank=True, related_name='article')
+    video_url = models.URLField(max_length=500, null=True, blank=True)
 
     class Meta:
         ordering = ['date_creation']
