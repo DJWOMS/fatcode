@@ -1,4 +1,4 @@
-from djoser.serializers import UserSerializer, UserCreateSerializer, UserCreatePasswordRetypeSerializer
+from djoser.serializers import UserSerializer, UserCreatePasswordRetypeSerializer
 from djoser.conf import settings
 from rest_framework.validators import UniqueValidator
 from src.profiles.models import FatUser, Social, FatUserSocial
@@ -11,7 +11,7 @@ from datetime import datetime
 from src.courses.serializers import ListCourseSerializer
 
 
-class FatUserCreateSerializer(UserCreatePasswordRetypeSerializer):
+class UserCreateSerializer(UserCreatePasswordRetypeSerializer):
     """Serialization to create user"""
 
     email = serializers.EmailField(
@@ -33,7 +33,7 @@ class FatUserCreateSerializer(UserCreatePasswordRetypeSerializer):
         )
 
 
-class FatUserUpdateSerializer(UserSerializer):
+class UserUpdateSerializer(UserSerializer):
     """Serialization to change user data"""
 
     email = serializers.EmailField(
@@ -76,7 +76,7 @@ class ListSocialSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class UserFatSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     """Serialization for user's internal display"""
 
     avatar = serializers.ImageField(validators=[AvatarValidator()])
@@ -115,7 +115,7 @@ class UserFatSerializer(serializers.ModelSerializer):
                 instance.user_social.create(social=soc['social'], user_url=soc['user_url'])
 
 
-class UserFatPublicSerializer(serializers.ModelSerializer):
+class UserPublicSerializer(serializers.ModelSerializer):
     """Serialization for public user display"""
 
     avatar = serializers.ImageField(read_only=True)
