@@ -36,5 +36,5 @@ class LessonAdmin(admin.ModelAdmin):
         fields = '__all__'
 
 
-admin.site.register(models.Tags)
+admin.site.register(models.Tag)
 admin.site.register(models.Category)

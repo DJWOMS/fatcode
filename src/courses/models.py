@@ -3,7 +3,7 @@ from django.conf import settings
 from .services import check_quiz, check_code
 
 
-class Tags(models.Model):
+class Tag(models.Model):
     name = models.CharField(max_length=20)
 
     def __str__(self):
@@ -43,7 +43,7 @@ class Course(models.Model):
         null=True,
         blank=True
     )
-    tags = models.ManyToManyField(Tags)
+    tags = models.ManyToManyField(Tag)
 
     def __str__(self):
         return self.name
@@ -56,7 +56,7 @@ class Course(models.Model):
 
 
 class Lesson(models.Model):
-    LESSON_CHOISE = (
+    LESSON_CHOICE = (
         ('quiz', 'Квиз'),
         ('python', 'Python'),
         ('sql', 'SQL'),
@@ -64,7 +64,7 @@ class Lesson(models.Model):
         ('html', 'HTML'),
         ('css', 'CSS')
     )
-    lesson_type = models.CharField(max_length=500, choices=LESSON_CHOISE)
+    lesson_type = models.CharField(max_length=500, choices=LESSON_CHOICE)
     name = models.CharField(max_length=500)
     viewed = models.IntegerField(default=0, editable=False)
     hint = models.TextField(null=True, blank=True)
@@ -135,7 +135,11 @@ class CodeQuestion(models.Model):
 
 class HelpUser(models.Model):
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)
-    mentor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='help_mentor')
+    mentor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='help_mentor'
+    )
     student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     date = models.DateTimeField(auto_now_add=True)
 
