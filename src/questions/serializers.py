@@ -6,7 +6,7 @@ from .validators import QuestionValidator
 
 class TagsSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.Tags
+        model = models.Tag
         fields = ('name',)
 
 

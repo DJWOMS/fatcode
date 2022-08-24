@@ -27,12 +27,6 @@ class CourseAdmin(admin.ModelAdmin):
         fields = '__all__'
 
 
-@admin.register(models.Category)
-class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('name', 'parent')
-    list_filter = ('name', 'parent')
-
-
 @admin.register(models.Lesson)
 class LessonAdmin(admin.ModelAdmin):
     inlines = [QuizTabular, CodeTabular]
@@ -43,3 +37,4 @@ class LessonAdmin(admin.ModelAdmin):
 
 
 admin.site.register(models.Tags)
+admin.site.register(models.Category)
