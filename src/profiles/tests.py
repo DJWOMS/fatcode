@@ -70,13 +70,13 @@ class ProfileAuthTests(APITestCase):
         self.assertEqual(request.status_code, 200)
         self.assertTrue('auth_token' in request.data)
 
-    def test_user_pub_pofile(self):
+    def test_user_pub_profile(self):
         user = FatUser.objects.get(username='anton')
         request = self.client.get(f'/api/v1/{user.pk}/')
         self.assertEqual(request.status_code, 200)
         self.assertFalse('email' in request.data)
 
-    def test_user_pofile(self):
+    def test_user_profile(self):
         user = FatUser.objects.get(username='anton')
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {user.auth_token}')
 

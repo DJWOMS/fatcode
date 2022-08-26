@@ -3,7 +3,7 @@ from django.db.models import Q, Count
 from django.conf import settings
 
 
-class Tags(models.Model):
+class Tag(models.Model):
     name = models.CharField(max_length=50)
 
     def __str__(self):
@@ -17,7 +17,7 @@ class Question(models.Model):
     viewed = models.IntegerField(default=0, editable=False)
     text = models.TextField()
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='questions')
-    tags = models.ManyToManyField(Tags)
+    tags = models.ManyToManyField(Tag)
     rating = models.IntegerField(editable=False, default=0)
 
     def __str__(self):

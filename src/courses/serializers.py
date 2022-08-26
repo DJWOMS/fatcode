@@ -23,7 +23,7 @@ class QuizSerializer(serializers.ModelSerializer):
 
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.Tags
+        model = models.Tag
         fields = ('name',)
 
 

@@ -1,12 +1,16 @@
 from django.urls import path
+from rest_framework.routers import DefaultRouter
+
 from src.profiles import views
 
 urlpatterns = [
-    path(r'user/<int:pk>/', views.UserFatView.as_view({
-        'get': 'retrieve', 'put': 'update', 'patch': 'partial_update'
-    })),
+    path(r'user/<int:pk>/', views.UserView.as_view(
+        {'get': 'retrieve', 'put': 'update', 'patch': 'partial_update'}
+    )),
 
-    path('<int:pk>/', views.UserFatPublicView.as_view({'get': 'retrieve'})),
-    path('social/', views.ListSocialView.as_view()),
-    path('social/<int:id>/', views.DetailSocialView.as_view()),
+    path('<int:pk>/', views.UserPublicView.as_view({'get': 'retrieve'}))
 ]
+
+router = DefaultRouter()
+router.register(r'social', views.SocialView, basename='social')
+urlpatterns += router.urls

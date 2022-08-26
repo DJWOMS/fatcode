@@ -3,6 +3,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .models import Question, Answer, QuestionReview, AnswerReview
 from .permissions import IsAuthor
+from ..base.classes import MixedSerializer, MixedPermissionSerializer
 
 
 class ListQuestionsView(ModelViewSet):
@@ -10,43 +11,33 @@ class ListQuestionsView(ModelViewSet):
     queryset = Question.objects.all()
 
 
-class QuestionView(ModelViewSet):
+class QuestionView(MixedPermissionSerializer, ModelViewSet):
     queryset = Question.objects.all()
     lookup_field = 'id'
-
-    def get_serializer_class(self):
-        serializer_class = {
-            'retrieve': serializers.RetrieveQuestionSerializer,
-            'update': serializers.UpdateQuestionSerializer,
-            'partial_update': serializers.UpdateQuestionSerializer,
-            'destroy': serializers.RetrieveQuestionSerializer
-        }
-        return serializer_class[self.action]
-
-    def get_permissions(self):
-        permission_class = {
-            'create': IsAuthenticated,
-            'update': IsAuthor,
-            'retrieve': AllowAny,
-            'partial_update': IsAuthor,
-            'destroy': IsAuthor
-        }
-        self.permission_classes = [permission_class[self.action]]
-        return super(QuestionView, self).get_permissions()
+    serializer_classes_by_action = {
+        'retrieve': serializers.RetrieveQuestionSerializer,
+        'update': serializers.UpdateQuestionSerializer,
+        'partial_update': serializers.UpdateQuestionSerializer,
+        'destroy': serializers.RetrieveQuestionSerializer
+    }
+    permission_classes_by_action = {
+        'create': (IsAuthenticated,),
+        'update': (IsAuthor,),
+        'retrieve': (AllowAny,),
+        'partial_update': (IsAuthor,),
+        'destroy': (IsAuthor,)
+    }
 
 
-class AnswerView(ModelViewSet):
+class AnswerView(MixedSerializer, ModelViewSet):
     lookup_field = 'id'
     queryset = Answer.objects.all()
     permission_classes = [IsAuthor]
-
-    def get_serializer_class(self):
-        serializer_classes = {
-            'update': serializers.UpdateAnswerSerializer,
-            'destroy': serializers.AnswerSerializer,
-            'partial_update': serializers.UpdateAnswerSerializer,
-        }
-        return serializer_classes[self.action]
+    serializer_classes_by_action = {
+        'update': serializers.UpdateAnswerSerializer,
+        'destroy': serializers.AnswerSerializer,
+        'partial_update': serializers.UpdateAnswerSerializer,
+    }
 
 
 class CreateAnswerView(ModelViewSet):
