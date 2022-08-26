@@ -1,6 +1,9 @@
 from django.db import models
 from django.conf import settings
-from .services import check_quiz, check_code
+
+import requests
+import os
+import json
 
 
 class Tag(models.Model):
@@ -74,6 +77,7 @@ class Lesson(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='lessons')
     slug = models.SlugField()
     description = models.TextField()
+    test = models.FileField(upload_to='files/test/python/', null=True, blank=True)
 
     class Meta:
         ordering = ['sorted']
@@ -99,14 +103,23 @@ class StudentWork(models.Model):
     completed = models.BooleanField(default=False)
     code_answer = models.TextField(null=True, blank=True)
     quiz_answer = models.ForeignKey(Quiz, on_delete=models.CASCADE, null=True, blank=True)
+    error = models.TextField(null=True, blank=True)
 
-    def save(self, *args, **kwargs):
-        if self.quiz_answer:
-            self.completed = check_quiz()
-        if self.code_answer:
-            self.completed = check_code()
-        return super().save()
+    def check_quiz(self):
+        return self.quiz_answer.right
 
+    def create_testfile(self):
+        path_file = f'/app/media/files/test/python/{self.lesson.course.name}.py'
+        with open(self.lesson.test.path, 'r') as lesson_test, open(path_file, 'w') as test:
+            test.write(f'{self.code_answer} \n')
+            for line in lesson_test:
+                test.write(line)
+        return path_file
+
+    def check_answer(self):
+        student_answer = list(self.code_answer.replace(' ', ''))
+        answer = list(self.lesson.code.first().answer.replace(' ', ''))
+        return student_answer == answer
 
 class UserCourseThrough(models.Model):
     student = models.ForeignKey(

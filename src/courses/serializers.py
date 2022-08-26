@@ -1,7 +1,10 @@
+import json
+import requests.exceptions
 from rest_framework import serializers
 from . import models
 from src.profiles.models import FatUser
 from .validators import StudentWorkValidator
+from .service import Service
 
 
 class CodeQuestionSerializer(serializers.ModelSerializer):
@@ -133,7 +136,7 @@ class DetailCourseSerializer(serializers.ModelSerializer):
 class StudentWorkSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.StudentWork
-        fields = ('lesson', 'code_answer', 'quiz_answer', 'completed', )
+        fields = ('lesson', 'code_answer', 'quiz_answer', 'completed', 'error')
 
     def validate(self, data):
         validate_class = StudentWorkValidator()
@@ -141,7 +144,20 @@ class StudentWorkSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
-        return models.StudentWork.objects.create(**validated_data, student=self.context['request'].user)
+        work = models.StudentWork.objects.create(**validated_data, student=self.context['request'].user)
+        file = work.create_testfile()
+        service = Service()
+        try:
+            service.request(file, validated_data['lesson'].course.name)
+            if service.status_code == 200:
+                body = json.loads(service.content)
+                if 'test_django exited with code 0' in body['result']['stdout']:
+                    work.completed = True
+                    return work
+                work.error = body['result']['stdout']
+        except requests.exceptions.ConnectionError:
+            raise serializers.ValidationError('server not allowed')
+        return work
 
 
 class HelpUserSerializer(serializers.ModelSerializer):
