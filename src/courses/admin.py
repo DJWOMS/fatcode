@@ -36,5 +36,10 @@ class LessonAdmin(admin.ModelAdmin):
         fields = '__all__'
 
 
+@admin.register(models.Category)
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ('name', 'parent')
+    list_filter = ('name', 'parent')
+
+
 admin.site.register(models.Tag)
-admin.site.register(models.Category)
