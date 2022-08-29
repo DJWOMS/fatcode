@@ -1,4 +1,5 @@
 from rest_framework.test import APITestCase
+
 from src.knowledge import models
 from src.profiles.models import FatUser
 
@@ -15,7 +16,7 @@ class TestKnowledge(APITestCase):
         )
         models.Article.objects.create(
             title='first article',
-            text = 'text of the first article',
+            text='text of the first article',
             author=user
         )
 
@@ -34,8 +35,9 @@ class TestKnowledge(APITestCase):
 
     def test_article_list(self):
         request = self.client.get('/api/v1/knowledge/article/')
+        print(request.data)
         self.assertEqual(request.status_code, 200)
-        self.assertEqual(len(request.data), 2)
+        self.assertEqual(len(request.data["results"]), 2)
 
     def test_article_detail(self):
         article = models.Article.objects.get(title='first article')

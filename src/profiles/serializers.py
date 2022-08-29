@@ -8,7 +8,7 @@ from django.dispatch import receiver
 from django.db.models.signals import post_save
 from rest_framework.authtoken.models import Token
 from datetime import datetime
-from src.courses.serializers import ListCourseSerializer
+from src.courses.serializers import CourseSerializer
 
 
 class UserCreateSerializer(UserCreatePasswordRetypeSerializer):
@@ -18,10 +18,10 @@ class UserCreateSerializer(UserCreatePasswordRetypeSerializer):
         required=True,
         max_length=100,
         validators=[
-           UniqueValidator(
-               queryset=FatUser.objects.all(),
-               message='Такой email уже используется',
-           )
+            UniqueValidator(
+                queryset=FatUser.objects.all(),
+                message='Такой email уже используется',
+            )
         ])
 
     class Meta:
@@ -40,10 +40,10 @@ class UserUpdateSerializer(UserSerializer):
         required=True,
         max_length=100,
         validators=[
-           UniqueValidator(
-               queryset=FatUser.objects.all(),
-               message='Такой email уже используется'
-           )
+            UniqueValidator(
+                queryset=FatUser.objects.all(),
+                message='Такой email уже используется'
+            )
         ])
 
     avatar = serializers.ImageField(validators=[ImageValidator((100, 100), 1048576)])
@@ -60,6 +60,7 @@ class UserUpdateSerializer(UserSerializer):
             'avatar',
         )
         read_only_fields = (settings.LOGIN_FIELD,)
+        ref_name = "User update data"
 
 
 class UserSocialSerializer(serializers.ModelSerializer):
@@ -76,13 +77,13 @@ class ListSocialSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserDataSerializer(serializers.ModelSerializer):
     """Serialization for user's internal display"""
 
     avatar = serializers.ImageField(validators=[ImageValidator((100, 100), 1048576)])
     user_social = UserSocialSerializer(many=True)
     socials = ListSocialSerializer(many=True)
-    courses = ListCourseSerializer(many=True)
+    courses = CourseSerializer(many=True)
 
     class Meta:
         model = FatUser
@@ -95,6 +96,8 @@ class UserSerializer(serializers.ModelSerializer):
             "groups",
             "user_permissions",
         )
+
+    ref_name = 'User data'
 
     def update(self, instance, validated_data):
         if validated_data.get('user_social', None):
@@ -121,7 +124,7 @@ class UserPublicSerializer(serializers.ModelSerializer):
     avatar = serializers.ImageField(read_only=True)
     user_social = UserSocialSerializer(many=True)
     socials = ListSocialSerializer(many=True)
-    courses = ListCourseSerializer(many=True)
+    courses = CourseSerializer(many=True)
 
     class Meta:
         model = FatUser

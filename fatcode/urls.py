@@ -14,7 +14,7 @@ urlpatterns = [
     path('api/v1/auth/', include('djoser.urls.authtoken')),
     path('api/v1/profiles/', include('src.profiles.urls')),
     path('api/v1/knowledge/', include('src.knowledge.urls')),
-    path('api/v1/courses/', include('src.courses.urls')),
+    path('api/v1/', include('src.courses.urls')),
     path('api/v1/questions/', include('src.questions.urls')),
 ]
 

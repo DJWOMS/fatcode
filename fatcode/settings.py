@@ -17,13 +17,16 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
     'rest_framework',
     'rest_framework.authtoken',
+    'django_filters',
     'djoser',
     'ckeditor',
     'drf_yasg',
     'ckeditor_uploader',
     'corsheaders',
+
     'src.profiles',
     'src.courses',
     'src.questions',
@@ -106,7 +109,7 @@ AUTH_USER_MODEL = 'profiles.FatUser'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication'
+        'rest_framework.authentication.TokenAuthentication',
     ],
 }
 
