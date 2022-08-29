@@ -1,10 +1,15 @@
-from django.urls import path
-from . import views
+from rest_framework import routers
+from django.urls import path, include
+
+from .views import CourseModelView, LessonModelView, StudentWorkView, HelpUserView
+
+router = routers.SimpleRouter()
+
+router.register(r'courses', CourseModelView),
+router.register(r'lessons', LessonModelView),
+router.register(r'works', StudentWorkView),
+router.register(r'helps', HelpUserView)
 
 urlpatterns = [
-    path('detail/<int:id>/', views.DetailCourseView.as_view()),
-    path('list/', views.ListCourseView.as_view()),
-    path('lesson/<int:id>/', views.DetailLessonView.as_view()),
-    path('check_work/', views.StudentWorkView.as_view()),
-    path('help_mentor/', views.HelpUserView.as_view())
+    path('', include(router.urls)),
 ]

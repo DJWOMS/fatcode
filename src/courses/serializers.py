@@ -1,35 +1,37 @@
+from rest_framework import serializers
+
 import json
 import requests.exceptions
-from rest_framework import serializers
-from . import models
+
 from src.profiles.models import FatUser
 from .validators import StudentWorkValidator
 from .service import Service
+from .models import Course, CodeQuestion, Quiz, Tag, Category, Lesson, StudentWork, HelpUser
 
 
 class CodeQuestionSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.CodeQuestion
+        model = CodeQuestion
         fields = ('code', 'answer')
         read_only_fields = ('code', 'answer')
 
 
 class QuizSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.Quiz
+        model = Quiz
         fields = ('text', 'lesson')
         read_only_fields = ('right', 'hint')
 
 
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.Tag
+        model = Tag
         fields = ('name',)
 
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.Category
+        model = Category
         fields = ('name', 'parent')
         ref_name = 'courses_category'
 
@@ -43,99 +45,48 @@ class UserSerializer(serializers.ModelSerializer):
             'last_name',
             'avatar',
         )
-        ref_name = 'userCourse'
+        ref_name = "Fat user"
 
 
 class LessonSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.Lesson
-        fields = (
-            'lesson_type',
-            'name',
-            'viewed',
-            'video_url',
-            'published',
-            'slug',
-            'description',
-            'hint'
-        )
-
-
-class DetailLessonSerializer(serializers.ModelSerializer):
+    """Lesson"""
     code = CodeQuestionSerializer(many=True)
     quiz = QuizSerializer(many=True)
     work = serializers.SerializerMethodField()
 
     class Meta:
-        model = models.Lesson
-        fields = (
-            'lesson_type',
-            'name',
-            'viewed',
-            'video_url',
-            'published',
-            'slug',
-            'description',
-            'code',
-            'quiz',
-            'work'
-        )
+        model = Lesson
+        fields = [
+            'id', 'lesson_type', 'name', 'viewed', 'video_url', 'published',
+            'slug', 'description', 'hint', 'code', 'quiz', 'work'
+        ]
 
     def get_work(self, instance):
         user = self.context['request'].user
-        work = models.StudentWork.objects.filter(student=user, lesson=instance).first()
+        work = StudentWork.objects.filter(student=user.id, lesson=instance).first()
         serialize_work = StudentWorkSerializer(work)
         return serialize_work.data
 
 
-class ListCourseSerializer(serializers.ModelSerializer):
+class CourseSerializer(serializers.ModelSerializer):
+    """Course"""
     author = UserSerializer()
     tags = TagSerializer(many=True)
-    category = CategorySerializer()
-
-    class Meta:
-        model = models.Course
-        fields = (
-            'author',
-            'tags',
-            'category',
-            'name',
-            'description',
-            'published',
-            'updated',
-            'slug',
-            'id',
-            'view_count'
-        )
-
-
-class DetailCourseSerializer(serializers.ModelSerializer):
-    mentor = UserSerializer()
-    author = UserSerializer()
-    tags = TagSerializer(many=True)
-    category = CategorySerializer()
     lessons = LessonSerializer(many=True)
+    category = CategorySerializer()
+    mentor = UserSerializer()
 
     class Meta:
-        model = models.Course
-        fields = (
-            'name',
-            'description',
-            'slug',
-            'view_count',
-            'published',
-            'updated',
-            'mentor',
-            'author',
-            'tags',
-            'category',
-            'lessons',
-        )
+        model = Course
+        fields = [
+            'name', 'description', 'slug', 'view_count', 'published',
+            'updated', 'author', 'students', 'category', 'mentor', 'tags', 'lessons'
+        ]
 
 
 class StudentWorkSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.StudentWork
+        model = StudentWork
         fields = ('lesson', 'code_answer', 'quiz_answer', 'completed', 'error')
 
     def validate(self, data):
@@ -144,7 +95,7 @@ class StudentWorkSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
-        work = models.StudentWork.objects.create(**validated_data, student=self.context['request'].user)
+        work = StudentWork.objects.create(**validated_data, student=self.context['request'].user)
         file = work.create_testfile()
         service = Service()
         try:
@@ -162,12 +113,10 @@ class StudentWorkSerializer(serializers.ModelSerializer):
 
 class HelpUserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.HelpUser
+        model = HelpUser
         fields = ('lesson',)
 
     def create(self, validated_data):
         mentor = validated_data['lesson'].course.mentor
         student = self.context['request'].user
-        return models.HelpUser.objects.create(mentor=mentor, student=student, **validated_data)
-
-
+        return HelpUser.objects.create(mentor=mentor, student=student, **validated_data)

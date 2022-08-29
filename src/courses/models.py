@@ -1,10 +1,6 @@
 from django.db import models
 from django.conf import settings
 
-import requests
-import os
-import json
-
 
 class Tag(models.Model):
     name = models.CharField(max_length=20)
@@ -120,6 +116,7 @@ class StudentWork(models.Model):
         student_answer = list(self.code_answer.replace(' ', ''))
         answer = list(self.lesson.code.first().answer.replace(' ', ''))
         return student_answer == answer
+
 
 class UserCourseThrough(models.Model):
     student = models.ForeignKey(

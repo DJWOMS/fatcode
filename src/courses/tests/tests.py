@@ -1,108 +1,82 @@
+from django.urls import reverse
+
 from rest_framework import status
 from rest_framework.test import APITestCase
-from src.courses.models import Lesson, Course, Category, Quiz
-from src.profiles.models import FatUser
 from rest_framework.authtoken.models import Token
 
-
-def create_user(email, name):
-    user = FatUser.objects.create_user(
-        username=name,
-        password='password',
-        email=email
-    )
-    return user
+from src.courses.models import Lesson, Course, Category
+from src.profiles.models import FatUser
 
 
-def create_course():
-    category = Category.objects.create(name='category1')
-    course = Course.objects.create(
-        name='first_course',
-        description='description',
-        slug='slug',
-        author=create_user('ahjkhjkhjkhjk@xz.ru', 'asdasdasdasdsds@mail.ru'),
-        mentor=create_user('lklklklk', '12312sszxczxzxccz@mail.ru'),
-        category=category
-    )
-    return course
-
-
-def create_lesson():
-    lesson = Lesson.objects.create(
-        name='first_lesson',
-        course=create_course(),
-        lesson_type='quiz',
-    )
-    return lesson
-
-
-class AuthUserTestCase(APITestCase):
+class TestCourses(APITestCase):
 
     def setUp(self):
-        self.user = create_user('zxczxczxczxxx', 'oaidoasdioasdois@mail.ru')
-        self.token = Token.objects.create(user=self.user)
-        self.api_authentication()
+        user_test1 = FatUser.objects.create_user(
+            username='alexey',
+            password='pwpk3oJ*T7',
+            email='alexey@mail.ru'
+        )
+        user_test1.save()
 
-    def test_help_mentor(self):
-        lesson = create_lesson()
-        data = {'lesson': f'{lesson.id}'}
-        response = self.client.post('/courses/help_mentor/', data)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.user_test1_token = Token.objects.create(user=user_test1)
 
-    def test_detail_course(self):
-        create_lesson()
-        response = self.client.get('/courses/lesson/1/')
+        self.category = Category.objects.create(name='category1')
+        self.course = Course.objects.create(
+            id=1,
+            name='Django blog',
+            description='description',
+            slug='slug',
+            author=user_test1,
+            category=self.category,
+
+        )
+        self.lesson = Lesson.objects.create(
+            id=1,
+            lesson_type="python",
+            name='django',
+            published='2022-08-29',
+            slug='billie-jean',
+            description='Lorem ipsum dolor sit amet.',
+            course=self.course,
+        )
+
+    def test_get_courses_list(self):
+        url = reverse("course-list")
+        response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_student_work_quiz(self):
-        lesson = create_lesson()
-        quiz = Quiz.objects.create(
-            lesson=lesson,
-            text='text',
-            hint='hint',
-        )
-        data = {
-            "lesson": f'{lesson.id}',
-            'quiz_answer': f'{quiz.id}'
-        }
-        response = self.client.post('/courses/check_work/', data)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+    def test_get_course_detail(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.user_test1_token.key)
+        url = reverse("course-detail", kwargs={"id": self.course.id})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json().get("name"), "Django blog")
 
-    def api_authentication(self):
-        self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token}')
+    def test_get_course_detail_not_auth(self):
+        url = reverse("course-detail", kwargs={"id": self.course.id})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_search_courses(self):
-        course = create_course()
-        response = self.client.get(f'/courses/list/?name=firs')
-        self.assertEqual(response.data, status.HTTP_200_OK)
+    def test_get_course_detail_invalid(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.user_test1_token.key)
+        url = reverse("course-detail", kwargs={"id": 25})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
+    def test_get_lesson_list(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.user_test1_token.key)
+        url = reverse("lesson-list")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-# class NotAuthUserTestCase(APITestCase):
-#
-#     def test_detail_course(self):
-#         create_lesson()
-#         response = self.client.get('/courses/lesson/1/')
-#         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-#
-#     def test_detail_lesson(self):
-#         create_lesson()
-#         response = self.client.get('/courses/lesson/1/')
-#         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-#
-#     def test_help_mentor(self):
-#         lesson = create_lesson()
-#         data = {'lesson': f'{lesson.id}'}
-#         response = self.client.post('/courses/help_mentor/', data)
-#         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-#
-#     def test_list_courses(self):
-#         create_course()
-#         response = self.client.get('/courses/list/')
-#         self.assertEqual(response.status_code, status.HTTP_200_OK)
-#
-#     def test_search_courses(self):
-#         course = create_course()
-#         response = self.client.get(f'/courses/list/?name=firs')
-#         self.assertEqual(response.data, status.HTTP_200_OK)
+    def test_get_lesson_list_not_auth(self):
+        url = reverse("lesson-list")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-
+    def test_get_lesson_detail(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.user_test1_token.key)
+        url = reverse("lesson-detail", kwargs={"id": self.lesson.id})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json().get("lesson_type"), "python")

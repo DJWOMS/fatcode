@@ -1,38 +1,50 @@
-from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView
-from .models import Course, Lesson, StudentWork, HelpUser
-from . import serializers
-from rest_framework.permissions import IsAuthenticated
-from .filters import CourseFilter
+from rest_framework.viewsets import ModelViewSet
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+
 from django_filters.rest_framework import DjangoFilterBackend
 
+from .filters import CourseFilter
+from .models import Course, Lesson, StudentWork, HelpUser
+from .serializers import CourseSerializer, LessonSerializer, StudentWorkSerializer, HelpUserSerializer
 
-class DetailCourseView(RetrieveAPIView):
+
+class CourseModelView(ModelViewSet):
+    """Courses"""
     queryset = Course.objects.all()
-    serializer_class = serializers.DetailCourseSerializer
-    lookup_field = 'id'
-
-
-class ListCourseView(ListAPIView):
-    queryset = Course.objects.all()
+    serializer_class = CourseSerializer
     filter_backends = [DjangoFilterBackend]
+    lookup_field = 'id'
     filterset_class = CourseFilter
-    serializer_class = serializers.ListCourseSerializer
+
+    def get_permissions(self):
+        """
+        Instantiates and returns the list of permissions that this view requires.
+        """
+        if self.action == 'list':
+            permission_classes = [IsAuthenticatedOrReadOnly]
+        else:
+            permission_classes = [IsAuthenticated]
+
+        return [permission() for permission in permission_classes]
 
 
-class DetailLessonView(RetrieveAPIView):
+class LessonModelView(ModelViewSet):
+    """Detail lesson"""
     queryset = Lesson.objects.all()
     lookup_field = 'id'
     permission_classes = [IsAuthenticated]
-    serializer_class = serializers.DetailLessonSerializer
+    serializer_class = LessonSerializer
 
 
-class StudentWorkView(CreateAPIView):
+class StudentWorkView(ModelViewSet):
+    """Student work"""
     queryset = StudentWork.objects.all()
     permission_classes = [IsAuthenticated]
-    serializer_class = serializers.StudentWorkSerializer
+    serializer_class = StudentWorkSerializer
 
 
-class HelpUserView(CreateAPIView):
-    queryset = HelpUser
+class HelpUserView(ModelViewSet):
+    """Help user"""
+    queryset = HelpUser.objects.all()
     permission_classes = [IsAuthenticated]
-    serializer_class = serializers.HelpUserSerializer
+    serializer_class = HelpUserSerializer
