@@ -3,7 +3,7 @@ from djoser.conf import settings
 from rest_framework.validators import UniqueValidator
 from src.profiles.models import FatUser, Social, FatUserSocial
 from rest_framework import serializers
-from src.profiles.validators import AvatarValidator
+from src.profiles.validators import ImageValidator
 from django.dispatch import receiver
 from django.db.models.signals import post_save
 from rest_framework.authtoken.models import Token
@@ -46,7 +46,7 @@ class UserUpdateSerializer(UserSerializer):
            )
         ])
 
-    avatar = serializers.ImageField(validators=[AvatarValidator()])
+    avatar = serializers.ImageField(validators=[ImageValidator((100, 100), 1048576)])
 
     class Meta:
         model = FatUser
@@ -79,7 +79,7 @@ class ListSocialSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     """Serialization for user's internal display"""
 
-    avatar = serializers.ImageField(validators=[AvatarValidator()])
+    avatar = serializers.ImageField(validators=[ImageValidator((100, 100), 1048576)])
     user_social = UserSocialSerializer(many=True)
     socials = ListSocialSerializer(many=True)
     courses = ListCourseSerializer(many=True)
