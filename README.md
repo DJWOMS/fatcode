@@ -40,4 +40,4 @@
 
 #### Запустить тесты
 
-    docker-compose run app sh -c "python manage.py test"
+    docker-compose web app sh -c "python manage.py test"
