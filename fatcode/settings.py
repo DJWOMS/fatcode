@@ -125,4 +125,17 @@ DJOSER = {
 
 CKEDITOR_UPLOAD_PATH = "media/uploads/"
 
+
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+
+        }
+    }
+}
+
 CORS_ALLOWED_ORIGINS = os.environ.get("CORS_ALLOWED_HOSTS", "http://127.0.0.1:8000").split(" ")
+
