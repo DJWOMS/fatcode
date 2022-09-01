@@ -8,6 +8,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 class DetailCourseView(RetrieveAPIView):
     queryset = Course.objects.all()
+    permission_classes = [IsAuthenticated]
     serializer_class = serializers.DetailCourseSerializer
     lookup_field = 'id'
 
