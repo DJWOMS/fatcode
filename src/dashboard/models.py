@@ -30,8 +30,8 @@ class Card(models.Model):
     description = models.TextField(blank=True, null=True)
     create_date = models.DateTimeField(auto_now_add=True)
     due_date = models.DateTimeField(default=timezone.now)
-    labels = models.ManyToManyField('Label', blank=True, null=True)
-    members = models.ManyToManyField(FatUser, related_name='cards_member', blank=True, null=True)
+    labels = models.ManyToManyField('Label', blank=True)
+    members = models.ManyToManyField(FatUser, related_name='cards_member', blank=True)
 
 
 class Label(models.Model):
