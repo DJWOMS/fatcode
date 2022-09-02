@@ -95,6 +95,7 @@ class UserSerializer(serializers.ModelSerializer):
             "groups",
             "user_permissions",
         )
+        ref_name = "Fat user"
 
     def update(self, instance, validated_data):
         if validated_data.get('user_social', None):
