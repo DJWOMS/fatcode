@@ -42,7 +42,7 @@ class ListSocialSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     """Serialization for user's internal display"""
-
+    email = serializers.EmailField(read_only=True)
     avatar = serializers.ImageField(validators=[ImageValidator((100, 100), 1048576)])
     user_social = UserSocialSerializer(many=True)
     socials = ListSocialSerializer(many=True)
