@@ -118,9 +118,7 @@ DJOSER = {
     'USER_CREATE_PASSWORD_RETYPE': True,
     'LOGIN_FIELD': 'email',
     'SERIALIZERS': {
-        'user_create': 'src.profiles.serializers.UserCreateSerializer',
         'current_user': 'src.profiles.serializers.UserUpdateSerializer',
-        'user_create_password_retype': 'src.profiles.serializers.UserCreateSerializer'
     },
 }
 

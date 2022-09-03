@@ -1,4 +1,4 @@
-from djoser.serializers import UserSerializer, UserCreatePasswordRetypeSerializer
+from djoser.serializers import UserSerializer
 from djoser.conf import settings
 from rest_framework.validators import UniqueValidator
 from src.profiles.models import FatUser, Social, FatUserSocial
@@ -11,42 +11,8 @@ from datetime import datetime
 from src.courses.serializers import ListCourseSerializer
 
 
-class UserCreateSerializer(UserCreatePasswordRetypeSerializer):
-    """Serialization to create user"""
-
-    email = serializers.EmailField(
-        required=True,
-        max_length=100,
-        validators=[
-           UniqueValidator(
-               queryset=FatUser.objects.all(),
-               message='Такой email уже используется',
-           )
-        ])
-
-    class Meta:
-        model = FatUser
-        fields = tuple(FatUser.REQUIRED_FIELDS) + (
-            settings.LOGIN_FIELD,
-            settings.USER_ID_FIELD,
-            "password",
-        )
-
-
 class UserUpdateSerializer(UserSerializer):
     """Serialization to change user data"""
-
-    email = serializers.EmailField(
-        required=True,
-        max_length=100,
-        validators=[
-           UniqueValidator(
-               queryset=FatUser.objects.all(),
-               message='Такой email уже используется'
-           )
-        ])
-
-    avatar = serializers.ImageField(validators=[ImageValidator((100, 100), 1048576)])
 
     class Meta:
         model = FatUser
@@ -55,9 +21,7 @@ class UserUpdateSerializer(UserSerializer):
             settings.LOGIN_FIELD,
             'first_name',
             'last_name',
-            'middle_name',
-            'email',
-            'avatar',
+            'middle_name'
         )
         read_only_fields = (settings.LOGIN_FIELD,)
 
