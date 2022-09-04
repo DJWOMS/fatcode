@@ -4,7 +4,7 @@ services:
   db:
     image: postgres:14.0-alpine
     volumes:
-      - fat_db_data:/var/lib/postgresql/data/
+      - fatcode_db_data:/var/lib/postgresql/data/
     env_file:
       - ./.env.prod
 
@@ -19,7 +19,7 @@ services:
     ports:
       - 8000:8000
     volumes:
-      - ./:/app/web
+      - ./:/home/app/web
       - static_volume:/home/app/web/static
       - media_volume:/home/app/web/media
     env_file:
@@ -38,6 +38,6 @@ services:
       - web
 
 volumes:
-  fat_db_data:
+  fatcode_db_data:
   static_volume:
   media_volume:
