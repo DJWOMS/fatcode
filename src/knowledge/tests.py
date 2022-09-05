@@ -20,13 +20,15 @@ class TestKnowledge(APITestCase):
         models.Article.objects.create(
             title='first article',
             text='text of the first article',
-            author=user
+            author=user,
+            published=True,
         )
 
         models.Article.objects.create(
             title='second article',
             text='text of the second article',
-            author=user
+            author=user,
+            published=True,
         )
 
         models.Tag.objects.create(name='python')
@@ -46,6 +48,7 @@ class TestKnowledge(APITestCase):
         article = models.Article.objects.get(title='first article')
         url = reverse("article-detail", kwargs={"id": article.id})
         request = self.client.get(url)
+        print(request.data)
         self.assertEqual(request.status_code, status.HTTP_200_OK)
         self.assertEqual(request.data['title'], 'first article')
         self.assertEqual(request.data['text'], 'text of the first article')
