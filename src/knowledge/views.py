@@ -31,7 +31,7 @@ class DetailTagView(RetrieveAPIView):
 
 
 class ListArticleView(ListAPIView):
-    queryset = models.Article.objects.all()
+    queryset = models.Article.objects.filter(published=True)
     serializer_class = serializers.ListArticleSerializer
     pagination_class = ListArticleViewPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
@@ -40,6 +40,6 @@ class ListArticleView(ListAPIView):
 
 
 class DetailArticleView(RetrieveAPIView):
-    queryset = models.Article.objects.all()
+    queryset = models.Article.objects.filter(published=True)
     serializer_class = serializers.DetailArticleSerializer
     lookup_field = 'id'
