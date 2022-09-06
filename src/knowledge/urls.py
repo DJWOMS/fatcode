@@ -9,4 +9,6 @@ urlpatterns = [
     path('tag/<int:id>/', views.DetailTagView.as_view(), name="tag-detail"),
     path('article/', views.ListArticleView.as_view(), name="article-list"),
     path('article/<int:id>/', views.DetailArticleView.as_view(), name="article-detail"),
+    path('letters/', views.GlossaryListView.as_view(), name='glossary-letter'),
+    path('glossary/', views.GlossaryArticleListView.as_view(), name='glossary-list'),
 ]

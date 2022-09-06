@@ -48,7 +48,6 @@ class TestKnowledge(APITestCase):
         article = models.Article.objects.get(title='first article')
         url = reverse("article-detail", kwargs={"id": article.id})
         request = self.client.get(url)
-        print(request.data)
         self.assertEqual(request.status_code, status.HTTP_200_OK)
         self.assertEqual(request.data['title'], 'first article')
         self.assertEqual(request.data['text'], 'text of the first article')
