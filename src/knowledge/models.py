@@ -26,6 +26,17 @@ class Tag(models.Model):
         return self.name
 
 
+class Glossary(models.Model):
+    """Glossary for knowledge base article"""
+    letter = models.CharField(max_length=1, unique=True)
+
+    class Meta:
+        ordering = ['letter']
+
+    def __str__(self):
+        return self.letter
+
+
 class Article(models.Model):
     """Knowledge Base Articles"""
 
@@ -44,6 +55,10 @@ class Article(models.Model):
     category = models.ManyToManyField(Category, related_name='article')
     tag = models.ManyToManyField(Tag, blank=True, related_name='article')
     video_url = models.URLField(max_length=500, null=True, blank=True)
+    glossary = models.ManyToManyField(
+        Glossary,
+        blank=True
+    )
 
     class Meta:
         ordering = ['date_creation']

@@ -55,3 +55,21 @@ class DetailArticleSerializer(serializers.ModelSerializer):
             'tag',
             'video_url'
         ]
+
+
+class GlossaryLetterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Glossary
+        fields = [
+            "id",
+            "letter",
+        ]
+
+
+class GlossaryArticleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Article
+        fields = [
+            "id",
+            "title",
+        ]
