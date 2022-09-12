@@ -15,7 +15,7 @@ user_create_data = {
 
 class ProfileRegTests(APITestCase):
     def test_create_user(self):
-        request = self.client.post('/api/v1/auth/users/', user_create_data, format='json')
+        self.client.post('/api/v1/auth/users/', user_create_data, format='json')
         user = FatUser.objects.get(email='antonenique@example.com')
         self.assertEqual(user.username, 'anton')
         self.assertEqual(user.email, 'antonenique@example.com')
@@ -40,7 +40,7 @@ class ProfileRegTests(APITestCase):
         request = self.client.post('/api/v1/auth/users/', user_create_data, format='json')
         self.assertEqual(
             request.data['email'][0].title(),
-            'Такой Email Уже Используется'
+            'Пользователь С Таким Адрес Электронной Почты Уже Существует.'
         )
 
         self.assertEqual(
@@ -70,7 +70,7 @@ class ProfileAuthTests(APITestCase):
 
     def test_user_profile(self):
         user = FatUser.objects.get(username='anton')
-        url = reverse("user", kwargs={"pk": user.pk})
+        url = reverse("user")
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {user.auth_token}')
         request = self.client.get(url)
         self.assertEqual(request.status_code, 200)

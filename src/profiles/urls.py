@@ -4,7 +4,7 @@ from rest_framework.routers import DefaultRouter
 from src.profiles import views
 
 urlpatterns = [
-    path(r'user/<int:pk>/', views.UserView.as_view(
+    path(r'user/', views.UserView.as_view(
         {'get': 'retrieve', 'put': 'update', 'patch': 'partial_update'}
     ), name="user"),
 
