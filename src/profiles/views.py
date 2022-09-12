@@ -1,3 +1,5 @@
+from rest_framework.generics import UpdateAPIView
+
 from src.profiles import models, serializers
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework import permissions

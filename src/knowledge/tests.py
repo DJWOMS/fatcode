@@ -61,13 +61,6 @@ class TestKnowledge(APITestCase):
         self.assertEqual(request.status_code, status.HTTP_200_OK)
         self.assertEqual(len(request.data), 2)
 
-    def test_tag_detail(self):
-        tag = models.Tag.objects.get(name='python')
-        url = reverse("tag-detail", kwargs={"id": tag.id})
-        request = self.client.get(url)
-        self.assertEqual(request.status_code, status.HTTP_200_OK)
-        self.assertEqual(request.data['name'], 'python')
-
     def test_category_list(self):
         url = reverse("category-list")
         request = self.client.get(url)

@@ -24,12 +24,6 @@ class ListTagView(ListAPIView):
     serializer_class = serializers.TagSerializer
 
 
-class DetailTagView(RetrieveAPIView):
-    queryset = models.Tag.objects.all()
-    serializer_class = serializers.TagSerializer
-    lookup_field = 'id'
-
-
 class ListArticleView(ListAPIView):
     queryset = models.Article.objects.filter(published=True)
     serializer_class = serializers.ListArticleSerializer
