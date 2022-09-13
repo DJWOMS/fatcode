@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from django.urls import reverse
 
 from rest_framework.test import APITestCase
@@ -23,7 +25,6 @@ class TestKnowledge(APITestCase):
             author=user,
             published=True,
         )
-
         models.Article.objects.create(
             title='second article',
             text='text of the second article',
@@ -33,6 +34,8 @@ class TestKnowledge(APITestCase):
 
         models.Tag.objects.create(name='python')
         models.Tag.objects.create(name='django')
+
+        models.Glossary.objects.create(letter="f")
 
         models.Category.objects.create(name='Python')
         web_cat = models.Category.objects.create(name='Web')
@@ -58,13 +61,6 @@ class TestKnowledge(APITestCase):
         self.assertEqual(request.status_code, status.HTTP_200_OK)
         self.assertEqual(len(request.data), 2)
 
-    def test_tag_detail(self):
-        tag = models.Tag.objects.get(name='python')
-        url = reverse("tag-detail", kwargs={"id": tag.id})
-        request = self.client.get(url)
-        self.assertEqual(request.status_code, status.HTTP_200_OK)
-        self.assertEqual(request.data['name'], 'python')
-
     def test_category_list(self):
         url = reverse("category-list")
         request = self.client.get(url)
@@ -79,3 +75,9 @@ class TestKnowledge(APITestCase):
         self.assertEqual(request.status_code, status.HTTP_200_OK)
         self.assertEqual(request.data['name'], 'Django')
         self.assertEqual(request.data['parent'], category_par.pk)
+
+    def test_get_glossary_letters(self):
+        url = reverse("glossary-letter")
+        request = self.client.get(url)
+        self.assertEqual(request.status_code, status.HTTP_200_OK)
+        self.assertEqual(request.data[0], OrderedDict([('id', 1), ('letter', 'f')]))

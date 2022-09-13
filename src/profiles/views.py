@@ -1,5 +1,6 @@
 from rest_framework.generics import get_object_or_404
 
+
 from src.profiles import models, serializers
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework import permissions

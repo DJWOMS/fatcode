@@ -8,7 +8,7 @@ class CharFilterInFilter(filters.BaseInFilter, filters.CharFilter):
 
 
 class ArticleFilter(filters.FilterSet):
-    category = filters.CharFilter(field_name='category', lookup_expr='icontains')
+    category = filters.CharFilter(field_name='category__name', lookup_expr="icontains")
     date_creation = filters.CharFilter(field_name='date_creation', lookup_expr='year')
     tag = CharFilterInFilter(field_name="tag__name", lookup_expr="in")
 

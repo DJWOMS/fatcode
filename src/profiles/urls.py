@@ -8,7 +8,7 @@ urlpatterns = [
         {'get': 'retrieve', 'put': 'update', 'patch': 'partial_update'}
     ), name="user"),
 
-    path('<int:pk>/', views.UserPublicView.as_view({'get': 'retrieve'}), name="user-pub")
+    path('<int:pk>/', views.UserPublicView.as_view({'get': 'retrieve'}), name="user-pub"),
 ]
 
 router = DefaultRouter()
