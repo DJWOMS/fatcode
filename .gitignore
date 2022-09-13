@@ -36,4 +36,4 @@ make.bat
 Makefile
 
 doc-dev
-
+.vscode/*
