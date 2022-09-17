@@ -2,6 +2,7 @@ from rest_framework.permissions import BasePermissionMetaclass
 
 
 class IsAuthor(metaclass=BasePermissionMetaclass):
+
     def has_permission(self, request, view):
         return request.user.is_authenticated
 
