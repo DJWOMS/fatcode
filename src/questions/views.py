@@ -13,30 +13,34 @@ class ListQuestionsView(ModelViewSet):
 
 class QuestionView(MixedPermissionSerializer, ModelViewSet):
     queryset = Question.objects.all()
-    lookup_field = 'id'
+    lookup_field = "id"
     serializer_classes_by_action = {
-        'retrieve': serializers.RetrieveQuestionSerializer,
-        'update': serializers.UpdateQuestionSerializer,
-        'partial_update': serializers.UpdateQuestionSerializer,
-        'destroy': serializers.RetrieveQuestionSerializer
+        "retrieve": serializers.RetrieveQuestionSerializer,
+        "update": serializers.UpdateQuestionSerializer,
+        "partial_update": serializers.UpdateQuestionSerializer,
+        "destroy": serializers.RetrieveQuestionSerializer,
+        "create": serializers.CreateQuestionSerializer,
     }
     permission_classes_by_action = {
-        'create': (IsAuthenticated,),
-        'update': (IsAuthor,),
-        'retrieve': (AllowAny,),
-        'partial_update': (IsAuthor,),
-        'destroy': (IsAuthor,)
+        "create": (IsAuthenticated,),
+        "update": (IsAuthor,),
+        "retrieve": (AllowAny,),
+        "partial_update": (IsAuthor,),
+        "destroy": (IsAuthor,),
     }
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
 
 
 class AnswerView(MixedSerializer, ModelViewSet):
-    lookup_field = 'id'
+    lookup_field = "id"
     queryset = Answer.objects.all()
     permission_classes = [IsAuthor]
     serializer_classes_by_action = {
-        'update': serializers.UpdateAnswerSerializer,
-        'destroy': serializers.AnswerSerializer,
-        'partial_update': serializers.UpdateAnswerSerializer,
+        "update": serializers.UpdateAnswerSerializer,
+        "destroy": serializers.AnswerSerializer,
+        "partial_update": serializers.UpdateAnswerSerializer,
     }
 
 
@@ -56,5 +60,3 @@ class CreateAnswerReview(ModelViewSet):
     serializer_class = serializers.AnswerReviewSerializer
     permission_classes = [IsAuthenticated]
     queryset = AnswerReview.objects.all()
-
-
