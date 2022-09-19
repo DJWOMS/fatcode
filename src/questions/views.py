@@ -29,6 +29,9 @@ class QuestionView(MixedPermissionSerializer, ModelViewSet):
         "destroy": (IsAuthor,),
     }
 
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+
 
 class AnswerView(MixedSerializer, ModelViewSet):
     lookup_field = "id"

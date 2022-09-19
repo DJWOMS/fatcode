@@ -54,15 +54,11 @@ class CreateQuestionSerializer(serializers.ModelSerializer):
             "text",
         )
 
-    def create(self, validated_data):
-        user = self.context["request"].user
-        new_question = models.Question.objects.create(**validated_data, author=user)
-        return new_question
-
 
 class RetrieveQuestionSerializer(serializers.ModelSerializer):
     author = UserSerializer(read_only=True)
     answers = AnswerSerializer(many=True, read_only=True)
+    tags = TagsSerializer(many=True, read_only=True)
     # review = serializers.SerializerMethodField()
 
     class Meta:
@@ -84,6 +80,7 @@ class ListQuestionSerializer(serializers.ModelSerializer):
     author = UserSerializer()
     correct_answers = serializers.SerializerMethodField()
     answer_count = serializers.SerializerMethodField()
+    tags = TagsSerializer(many=True, read_only=True)
 
     class Meta:
         model = models.Question
