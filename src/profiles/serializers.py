@@ -1,14 +1,16 @@
+from datetime import datetime
+
 from djoser.serializers import UserSerializer
 from djoser.conf import settings
-from rest_framework.validators import UniqueValidator
-from src.profiles.models import FatUser, Social, FatUserSocial
-from rest_framework import serializers
-from src.profiles.validators import ImageValidator
 from django.dispatch import receiver
 from django.db.models.signals import post_save
+
+from rest_framework import serializers
 from rest_framework.authtoken.models import Token
-from datetime import datetime
+
 from src.courses.serializers import ListCourseSerializer
+from src.profiles.models import FatUser, Social, FatUserSocial
+from src.profiles.validators import ImageValidator
 
 
 class UserUpdateSerializer(UserSerializer):

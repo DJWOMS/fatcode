@@ -1,7 +1,12 @@
+import io
+from PIL import Image
+
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 
 from rest_framework import status
 from rest_framework.test import APITestCase
+from rest_framework.authtoken.models import Token
 
 from src.profiles.models import FatUser, Social
 
@@ -11,6 +16,11 @@ user_create_data = {
     're_password': 'V97tn7M4rU',
     'email': 'antonenique@example.com'
 }
+
+image = io.BytesIO()
+Image.new("RGB", (100, 100)).save(image, "JPEG")
+
+avatar_file = SimpleUploadedFile("avatar.jpg", image.getvalue())
 
 
 class ProfileRegTests(APITestCase):
@@ -97,3 +107,58 @@ class TestSocial(APITestCase):
         request = self.client.get(url)
         self.assertEqual(request.status_code, status.HTTP_200_OK)
         self.assertEqual(request.data['title'], 'Social 1')
+
+
+class FatUserProfileTest(APITestCase):
+
+    def setUp(self):
+        self.user_test1 = FatUser.objects.create_user(
+            username='alexey',
+            password='pwpk3oJ*T7',
+            email='alexey@mail.ru'
+        )
+        self.user_test1.save()
+
+        self.user_test1_token = Token.objects.create(user=self.user_test1)
+
+        avatar = io.BytesIO()
+        Image.new("RGB", (100, 100)).save(avatar, "JPEG")
+        self.avatar_file = SimpleUploadedFile("avatar.jpg", image.getvalue())
+
+    def test_user_avatar_post(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.user_test1_token.key)
+        url = reverse("user-avatar")
+        data = {
+            "id": self.user_test1.id,
+            "avatar": self.avatar_file,
+        }
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_user_avatar_post_not_auth(self):
+        url = reverse("user-avatar")
+        data = {
+            "id": self.user_test1.id,
+            "avatar": self.avatar_file,
+        }
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_user_avatar_put(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.user_test1_token.key)
+        url = reverse("user-avatar")
+        data = {
+            "id": self.user_test1.id,
+            "avatar": self.avatar_file,
+        }
+        response = self.client.put(url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_user_avatar_put_not_auth(self):
+        url = reverse("user-avatar")
+        data = {
+            "id": self.user_test1.id,
+            "avatar": self.avatar_file,
+        }
+        response = self.client.put(url, data)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
