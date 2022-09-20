@@ -1,3 +1,6 @@
 from django.shortcuts import render
+from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView
 
-# Create your views here.
+
+class CheckInventoryView(RetrieveAPIView):
+    pass
