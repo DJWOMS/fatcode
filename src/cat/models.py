@@ -6,7 +6,7 @@ import uuid
 
 def cat_directory_path(instance: 'Cat', filename: str) -> str:
     """Generate path to file in upload"""
-    return f'cats/avatar/user_{instance.id}/{str(uuid.uuid4())}.{filename.split(".")[-1]}'
+    return f'cat/avatar/user_{instance.id}/{str(uuid.uuid4())}.{filename.split(".")[-1]}'
 
 def product_directory_path(instance: 'Product', filename: str) -> str:
     """Generate path to file in upload"""
@@ -72,3 +72,8 @@ class Item(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='item')
     quantity = models.IntegerField()
     inventory = models.ForeignKey(Inventory, on_delete=models.CASCADE, related_name='item')
+
+
+class Achievement(models.Model):
+    cat = models.ForeignKey(Cat, on_delete=models.CASCADE, related_name='achievement')
+    text = models.TextField()
