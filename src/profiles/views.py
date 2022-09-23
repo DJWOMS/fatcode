@@ -38,7 +38,7 @@ class SocialView(ReadOnlyModelViewSet):
 class UserUpdateAvatar(ModelViewSet):
     """Create and update user avatar"""
 
-    parser_classes = [parsers. MultiPartParser]
+    parser_classes = [parsers.MultiPartParser]
     serializer_class = serializers.UpdateUserAvatarSerializer
     permission_classes = [permissions.IsAuthenticated]
 
