@@ -1,7 +1,7 @@
 from rest_framework.permissions import BasePermissionMetaclass
 
 
-class IsUserCat(metaclass=BasePermissionMetaclass):
+class IsCatUser(metaclass=BasePermissionMetaclass):
 
     def has_permission(self, request, view):
         return request.user.is_authenticated
