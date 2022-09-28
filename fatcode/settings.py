@@ -21,6 +21,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'djoser',
     'ckeditor',
+    'django_filters',
     'drf_yasg',
     'ckeditor_uploader',
     'corsheaders',
@@ -118,12 +119,22 @@ DJOSER = {
     'USER_CREATE_PASSWORD_RETYPE': True,
     'LOGIN_FIELD': 'email',
     'SERIALIZERS': {
-        'user_create': 'src.profiles.serializers.UserCreateSerializer',
         'current_user': 'src.profiles.serializers.UserUpdateSerializer',
-        'user_create_password_retype': 'src.profiles.serializers.UserCreateSerializer'
     },
 }
 
 CKEDITOR_UPLOAD_PATH = "media/uploads/"
 
+
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+        }
+    }
+}
+
 CORS_ALLOWED_ORIGINS = os.environ.get("CORS_ALLOWED_HOSTS", "http://127.0.0.1:8000").split(" ")
+

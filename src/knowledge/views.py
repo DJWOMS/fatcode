@@ -24,14 +24,8 @@ class ListTagView(ListAPIView):
     serializer_class = serializers.TagSerializer
 
 
-class DetailTagView(RetrieveAPIView):
-    queryset = models.Tag.objects.all()
-    serializer_class = serializers.TagSerializer
-    lookup_field = 'id'
-
-
 class ListArticleView(ListAPIView):
-    queryset = models.Article.objects.all()
+    queryset = models.Article.objects.filter(published=True)
     serializer_class = serializers.ListArticleSerializer
     pagination_class = ListArticleViewPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
@@ -40,6 +34,24 @@ class ListArticleView(ListAPIView):
 
 
 class DetailArticleView(RetrieveAPIView):
-    queryset = models.Article.objects.all()
+    queryset = models.Article.objects.filter(published=True)
     serializer_class = serializers.DetailArticleSerializer
     lookup_field = 'id'
+
+
+class GlossaryListView(ListAPIView):
+    """Letter for article"""
+    queryset = models.Glossary.objects.all()
+    serializer_class = serializers.GlossaryLetterSerializer
+
+
+class GlossaryArticleListView(ListAPIView):
+    """Glossary article"""
+    serializer_class = serializers.GlossaryArticleSerializer
+
+    def get_queryset(self):
+        letter = self.request.query_params.get('letter')
+        if letter is not None:
+            queryset = models.Article.objects.filter(
+                published=True, glossary__letter=letter)
+            return queryset
