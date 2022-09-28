@@ -1,7 +1,7 @@
 from rest_framework.permissions import BasePermissionMetaclass
 
 
-class IsAuthor(metaclass=BasePermissionMetaclass):
+class IsCatUser(metaclass=BasePermissionMetaclass):
 
     def has_permission(self, request, view):
         return request.user.is_authenticated
@@ -10,9 +10,8 @@ class IsAuthor(metaclass=BasePermissionMetaclass):
         if request.user.is_superuser:
             return True
 
-        if obj.author == request.user:
+        if obj.user == request.user:
             return True
 
         return False
-
 

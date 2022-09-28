@@ -1,5 +1,3 @@
-import json
-import requests.exceptions
 from rest_framework import serializers
 from . import models
 from src.profiles.models import FatUser

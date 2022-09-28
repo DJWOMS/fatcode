@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'src.profiles',
     'src.courses',
+    'src.cat',
     'src.questions',
     'src.knowledge',
 ]
