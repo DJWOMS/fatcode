@@ -4,7 +4,7 @@ services:
   db:
     image: postgres:14.0-alpine
     volumes:
-      - fat_db_data:/var/lib/postgresql/data/
+      - fatcode_db_data:/var/lib/postgresql/data/
     env_file:
       - ./.env.prod
 
@@ -12,11 +12,14 @@ services:
     build:
       context: ./
       dockerfile: Dockerfile.prod
-    command: gunicorn fatcode.wsgi:application --bind 0.0.0.0:8000
+    command: >
+      sh -c "python manage.py makemigrations --noinput && 
+      python manage.py migrate
+      && gunicorn fatcode.wsgi:application --bind 0.0.0.0:8000"
     ports:
       - 8000:8000
     volumes:
-      - ./:/app/web
+      - ./:/home/app/web
       - static_volume:/home/app/web/static
       - media_volume:/home/app/web/media
     env_file:
@@ -35,6 +38,6 @@ services:
       - web
 
 volumes:
-  fat_db_data:
+  fatcode_db_data:
   static_volume:
   media_volume:

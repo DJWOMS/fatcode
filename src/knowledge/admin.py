@@ -1,5 +1,5 @@
 from django.contrib import admin
-from src.knowledge.models import Category, Tag, Article
+from src.knowledge.models import Category, Tag, Article, Glossary
 from django import forms
 from ckeditor_uploader.widgets import CKEditorUploadingWidget
 
@@ -18,10 +18,17 @@ class ArticleAdmin(admin.ModelAdmin):
     form = ArticleAdminForm
     list_display = ('title', 'author', 'published', 'date_creation')
     list_filter = ('author', 'category', 'published')
+    filter_horizontal = ('glossary',)
 
 
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ('name', 'parent')
+
+
+@admin.register(Glossary)
+class GlossaryAdmin(admin.ModelAdmin):
+    """Glossary"""
+    pass
 
 
 admin.site.register(Article, ArticleAdmin)
