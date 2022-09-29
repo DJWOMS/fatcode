@@ -30,7 +30,7 @@ class TeamListView(generics.ListAPIView):
         return teams
 
 
-class TeamView(MixedSerializer, viewsets.ModelViewSet):
+class TeamView(MixedPermission, viewsets.ModelViewSet):
     """ CRUD team view"""
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     queryset = Team.objects.all().prefetch_related('members', 'social_links')
@@ -223,7 +223,7 @@ class TeamAvatarView(viewsets.ModelViewSet):
     """ Updating team avatar """
     queryset = Team.objects.all()
     serializer_class = serializers.TeamAvatarSerializer
-    permission_classes = [permissions.IsAuthenticated, perm.IsAuthor]
+    permission_classes = [permissions.IsAuthenticated, IsAuthor]
     parser_classes = (parsers.MultiPartParser,)
 
 
