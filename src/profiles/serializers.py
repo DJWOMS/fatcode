@@ -10,7 +10,7 @@ from rest_framework.authtoken.models import Token
 
 from src.courses.serializers import ListCourseSerializer
 from src.profiles.models import FatUser, Social, FatUserSocial
-from src.profiles.validators import ImageValidator
+from src.base.validators import ImageValidator
 
 
 class UserUpdateSerializer(UserSerializer):
