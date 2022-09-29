@@ -25,6 +25,7 @@ __pycache__/
 *.pyc
 
 !*media/.gitkeep
+!*media/default
 media/*
 
 log/debug.log
