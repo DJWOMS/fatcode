@@ -29,6 +29,7 @@ class Cat(models.Model):
     level = models.IntegerField(default=0)
     die = models.BooleanField(default=False)
     hungry = models.IntegerField(default=100)
+    name = models.CharField(max_length=500, default='Толик')
     color = models.CharField(max_length=500)
     help_count = models.IntegerField(default=3)
 

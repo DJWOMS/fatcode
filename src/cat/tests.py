@@ -1,6 +1,7 @@
 from rest_framework.test import APITestCase
 from src.profiles.models import FatUser
 from rest_framework.authtoken.models import Token
+from src.cat import models
 
 
 def create_user(email, name):
@@ -17,10 +18,5 @@ class CatTestCase(APITestCase):
     def setUp(self):
         self.user = create_user('zxczxczxczxxx', 'oaidoasdioasdois@mail.ru')
         self.token = Token.objects.create(user=self.user)
-        self.api_authentication()
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token}')
 
-#
-#     def test_detail_course(self):
-#         create_lesson()
-#         response = self.client.get('/courses/lesson/1/')
-#         self.assertEqual(response.status_code, status.HTTP_200_OK)
