@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     'src.knowledge',
     'src.team',
     'src.repository',
+    'src.dashboard',
 ]
 
 MIDDLEWARE = [
