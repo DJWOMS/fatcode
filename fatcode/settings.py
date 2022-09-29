@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     'src.cat',
     'src.questions',
     'src.knowledge',
+    'src.team',
 ]
 
 MIDDLEWARE = [

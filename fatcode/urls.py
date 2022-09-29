@@ -16,6 +16,7 @@ urlpatterns = [
     path('api/v1/knowledge/', include('src.knowledge.urls')),
     path('api/v1/courses/', include('src.courses.urls')),
     path('api/v1/questions/', include('src.questions.urls')),
+    path('api/v1/team/', include('src.questions.urls')),
 ]
 
 urlpatterns += doc_urls
