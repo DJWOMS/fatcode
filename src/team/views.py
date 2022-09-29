@@ -3,7 +3,8 @@ from rest_framework import generics, permissions, viewsets, parsers, status
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
-from src.base import permissions as perm
+from src.base.permissions import IsAuthor
+from . import permissions as perm
 from src.base.classes import MixedSerializer, MixedPermission
 from src.base.service import post_view_count
 from src.team.models import Team, Post, Comment, TeamMember, Invitation, SocialLink
@@ -36,8 +37,8 @@ class TeamView(MixedSerializer, viewsets.ModelViewSet):
     serializer_class = serializers.TeamSerializer
     permission_classes_by_action = {
         'get': [permissions.AllowAny],
-        'update': [perm.IsAuthor],
-        'destroy': [perm.IsAuthor]
+        'update': [IsAuthor],
+        'destroy': [IsAuthor]
     }
 
     def perform_create(self, serializer):
@@ -182,8 +183,8 @@ class PostView(MixedPermission, viewsets.ModelViewSet):
     permission_classes_by_action = {
         'retrieve': [perm.IsMemberOfTeamForPost],
         'create': [perm.IsMemberOfTeam],
-        'update': [perm.IsAuthor],
-        'destroy': [perm.IsAuthor]
+        'update': [IsAuthor],
+        'destroy': [IsAuthor]
     }
 
     def retrieve(self, request, *args, **kwargs):
@@ -206,8 +207,8 @@ class CommentsView(MixedPermission, viewsets.ModelViewSet):
     serializer_class = serializers.TeamCommentCreateSerializer
     permission_classes_by_action = {
         'create': [perm.IsMemberOfTeamForComment],
-        'update': [perm.IsAuthor],
-        'destroy': [perm.IsAuthor]
+        'update': [IsAuthor],
+        'destroy': [IsAuthor]
     }
 
     def perform_create(self, serializer):
