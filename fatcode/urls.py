@@ -15,6 +15,7 @@ urlpatterns = [
     path('api/v1/profiles/', include('src.profiles.urls')),
     path('api/v1/knowledge/', include('src.knowledge.urls')),
     path('api/v1/courses/', include('src.courses.urls')),
+    path('api/v1/cat/', include('src.cat.urls')),
     path('api/v1/questions/', include('src.questions.urls')),
 ]
 
