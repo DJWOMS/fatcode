@@ -52,6 +52,7 @@ class Project(models.Model):
         null=True
     )
     toolkit = models.ManyToManyField(Toolkit, related_name="projects")
+    teams = models.ManyToManyField(Team, related_name='project_teams')
     avatar = models.ImageField(
         upload_to='project/avatar/',
         default='/default/project.jpg',
