@@ -22,7 +22,7 @@ class Team(models.Model):
             ImageValidator((50, 50), 524288)
         ]
     )
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='project_teams')
+    project = models.ManyToManyField(Project, related_name='project_teams')
     user = models.ForeignKey(FatUser, on_delete=models.CASCADE, related_name='teams')
     create_date = models.DateTimeField(auto_now_add=True)
 
