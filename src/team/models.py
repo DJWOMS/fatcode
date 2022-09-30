@@ -6,7 +6,6 @@ from django.dispatch import receiver
 
 from src.profiles.models import FatUser
 from src.base.validators import ImageValidator
-from src.repository.models import Project
 
 
 class Team(models.Model):
