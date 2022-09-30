@@ -42,7 +42,7 @@ class ListSocialSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class UpdateUserAvatarSerializer(serializers.ModelSerializer):
+class UserAvatarSerializer(serializers.ModelSerializer):
     """Update user avatar"""
     avatar = serializers.ImageField(validators=[ImageValidator((100, 100), 1048576)])
 

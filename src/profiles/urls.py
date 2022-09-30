@@ -12,7 +12,7 @@ urlpatterns = [
         {'get': 'retrieve'}
     ), name="user-pub"),
 
-    path('avatar/', views.UserUpdateAvatar.as_view(
+    path('avatar/', views.UserAvatar.as_view(
         {'put': 'update', 'post': 'create'}
     ), name='user-avatar')
 ]

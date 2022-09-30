@@ -12,11 +12,6 @@ def user_directory_path(instance: 'FatUser', filename: str) -> str:
     return f'users/avatar/user_{instance.id}/{str(uuid.uuid4())}.{filename.split(".")[-1]}'
 
 
-class CoinManager(models.Manager):
-    """User coin manager"""
-    pass
-
-
 class Social(models.Model):
     """Social networks"""
 
@@ -47,9 +42,7 @@ class FatUser(AbstractUser):
     socials = models.ManyToManyField(Social, through='FatUserSocial')
     experience = models.IntegerField(default=0)
     email = models.EmailField(_("email address"), unique=True)
-    coins = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-
-    coin_manager = CoinManager()
+    coins = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["username"]
