@@ -107,7 +107,6 @@ class ProjectList(ListAPIView):
 # #     print(avatar)
 # #     return _data_project
 #
-#
 # def project_detail(request, project_id: int):
 #     try:
 #         project = models.Project.objects.select_related(
