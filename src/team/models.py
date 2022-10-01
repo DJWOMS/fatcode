@@ -14,7 +14,7 @@ class Team(models.Model):
     avatar = models.ImageField(
         upload_to='team/avatar/',
         default='default/team.jpg',
-        blank=True,
+        blank=False,
         null=True,
         validators=[
             FileExtensionValidator(allowed_extensions=['jpg']),
