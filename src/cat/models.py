@@ -28,6 +28,7 @@ class Cat(models.Model):
     xp = models.IntegerField(default=0, editable=False)
     level = models.IntegerField(default=0, editable=False)
     die = models.BooleanField(default=False)
+    next_level_xp = models.IntegerField(default=100)
     hungry = models.IntegerField(default=100, editable=False)
     name = models.CharField(max_length=500, default='Толик')
     color = models.CharField(max_length=500, default='#000000')
