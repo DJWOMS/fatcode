@@ -1,6 +1,7 @@
 version: "3"
 
 services:
+
   db:
     image: postgres
     container_name: db_fatcode
@@ -23,6 +24,23 @@ services:
       - db
     env_file:
       - .env.dev
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+  celery:
+    restart: always
+    build:
+      context: .
+    command: celery -A fatcode worker -l info
+    volumes:
+      - ./:/app
+    depends_on:
+      - db
+      - redis
+      - web
 
 volumes:
   db_fatcode_vol:
+  celery_vol:
+
