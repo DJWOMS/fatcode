@@ -33,7 +33,6 @@ services:
     build:
       context: .
     command: celery -A fatcode worker -l info
-
     volumes:
       - ./:/app
     depends_on:
@@ -51,5 +50,3 @@ services:
       - db
 volumes:
   db_fatcode_vol:
-  celery_vol:
-
