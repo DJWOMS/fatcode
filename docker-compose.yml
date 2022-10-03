@@ -33,13 +33,22 @@ services:
     build:
       context: .
     command: celery -A fatcode worker -l info
+
     volumes:
       - ./:/app
     depends_on:
-      - db
       - redis
       - web
-
+  celery-beat:
+    build: .
+    command: celery -A fatcode beat -l info
+    volumes:
+      - ./:/usr/src/app/
+    env_file:
+      - .env.dev
+    depends_on:
+      - redis
+      - db
 volumes:
   db_fatcode_vol:
   celery_vol:
