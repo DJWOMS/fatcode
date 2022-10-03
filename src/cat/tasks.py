@@ -7,6 +7,6 @@ from .services import CatService
 def hungry_cat():
     queryset = Cat.objects.filter(die=False)
     for cat in queryset:
-        cat_manager = CatService(cat)
-        cat_manager.hungry()
+        cat_service = CatService(cat)
+        cat_service.hungry()
 
