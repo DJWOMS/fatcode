@@ -3,7 +3,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy as _
 
-from src.profiles.validators import ImageValidator
+from src.base.validators import ImageValidator
 from src.courses.models import Course
 
 
@@ -42,7 +42,8 @@ class FatUser(AbstractUser):
     socials = models.ManyToManyField(Social, through='FatUserSocial')
     experience = models.IntegerField(default=0)
     email = models.EmailField(_("email address"), unique=True)
-    coins = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    coins = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["username"]
 

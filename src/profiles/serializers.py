@@ -10,7 +10,7 @@ from rest_framework.authtoken.models import Token
 
 from src.courses.serializers import ListCourseSerializer
 from src.profiles.models import FatUser, Social, FatUserSocial
-from src.profiles.validators import ImageValidator
+from src.base.validators import ImageValidator
 
 
 class UserUpdateSerializer(UserSerializer):
@@ -42,7 +42,7 @@ class ListSocialSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class UpdateUserAvatarSerializer(serializers.ModelSerializer):
+class UserAvatarSerializer(serializers.ModelSerializer):
     """Update user avatar"""
     avatar = serializers.ImageField(validators=[ImageValidator((100, 100), 1048576)])
 
@@ -124,3 +124,11 @@ def check_first_login(instance: Token, *args, **kwargs):
     if user.first_login is None:
         user.first_login = datetime.now()
         user.save()
+
+
+class GetUserSerializer(serializers.ModelSerializer):
+    """Serialization for other serializers"""
+
+    class Meta:
+        model = FatUser
+        fields = ("id", "username", "avatar")

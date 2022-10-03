@@ -1,4 +1,5 @@
 from django.db.models import F
+
 from src.profiles.models import FatUser
 
 
@@ -20,3 +21,24 @@ class CoinService:
         if balance > price:
             self.user.coins -= price
             return self.user.save()
+        return ValueError('Недостаточно средств')
+
+
+def add_coins(user_id: int, coin: int):
+    user = FatUser.objects.get(id=user_id)
+    user.coins += coin
+    user.save()
+    return user
+
+
+def buy_with_coins(user_id: int, price: int):
+    user = FatUser.objects.get(id=user_id)
+
+    if user.coins >= price:
+        user.coins -= price
+        user.save()
+
+    if user.coins < price:
+        raise ValueError("Недостаточно монет")
+
+    return user
