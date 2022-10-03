@@ -35,11 +35,11 @@ class SocialView(ReadOnlyModelViewSet):
     serializer_class = serializers.ListSocialSerializer
 
 
-class UserUpdateAvatar(ModelViewSet):
+class UserAvatar(ModelViewSet):
     """Create and update user avatar"""
 
     parser_classes = [parsers.MultiPartParser]
-    serializer_class = serializers.UpdateUserAvatarSerializer
+    serializer_class = serializers.UserAvatarSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
