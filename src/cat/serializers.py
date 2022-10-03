@@ -2,13 +2,6 @@ from rest_framework import serializers
 from . import models
 
 
-class PublicCatSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = models.Cat
-        fields = ('name', 'color')
-
-
 class ShopProductSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -40,12 +33,9 @@ class CatInventorySerializer(serializers.ModelSerializer):
         read_only_fields = ('cat', )
 
 
-class PublicItemSerializer(serializers.ModelSerializer):
-    cat = PublicCatSerializer()
+class PublicCatSerializer(serializers.ModelSerializer):
     inventory = CatInventorySerializer()
 
     class Meta:
-        models = models.Item
-        fields = ('product', 'quantity', 'inventory')
-
-
+        model = models.Cat
+        fields = ('name', 'color', 'hungry', 'xp', 'level', 'avatar', 'die', 'help_count')
