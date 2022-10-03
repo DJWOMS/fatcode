@@ -12,18 +12,15 @@ class CatService:
     def _level_up(self):
         self.cat.level += 1
         self.cat.xp = 0
-        return self.cat.save()
-
-    def level_up(self):
-        if self.cat.xp == self.cat.next_level_xp:
-            return self._level_up()
 
     def _kill_cat(self):
         self.cat.die = True
         return self.cat.save()
 
     def _increase_xp(self,  xp):
-        self.cat.xp = xp
+        self.cat.xp += xp
+        if self.cat.xp >= self.cat.next_level_xp:
+            self._level_up()
         return self.cat.save()
 
     def remove_hp(self):
