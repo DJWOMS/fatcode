@@ -1,7 +1,8 @@
 from rest_framework.generics import ListAPIView
-
+from django_filters import rest_framework as filters
 from src.repository.models import Category, Toolkit, Project
 from . import serializers
+from .filters import ProjectFilter
 
 
 class CategoryListView(ListAPIView):
@@ -16,6 +17,8 @@ class ToolkitListView(ListAPIView):
 
 class ProjectList(ListAPIView):
     queryset = Project.objects.all()
+    filterset_class = ProjectFilter
+    filter_backends = (filters.DjangoFilterBackend,)
     serializer_class = serializers.ProjectListSerializer
 
 
