@@ -1,7 +1,12 @@
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.generics import ListAPIView
+from django_filters import rest_framework as filters
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from src.repository.models import Category, Toolkit, Project
 from . import serializers
+from .filters import ProjectFilter
 
 
 class CategoryListView(ListAPIView):
@@ -16,41 +21,21 @@ class ToolkitListView(ListAPIView):
 
 class ProjectList(ListAPIView):
     queryset = Project.objects.all()
+    filterset_class = ProjectFilter
+    filter_backends = (filters.DjangoFilterBackend,)
     serializer_class = serializers.ProjectListSerializer
 
 
-# def project_list(request, filters: schemas.Filters = Query(...)):
-#     projects = models.Project.objects.all()
-#     # services.get_projects_stats(projects)
-#     _filters = filters.dict(exclude_none=True)
-#
-#     _date_min = date.today() - timedelta(days=_filters.pop('last_commit_min'))
-#     _date_max = date.today() - timedelta(days=_filters.pop('last_commit_max'))
-#
-#     projects = projects.filter(
-#         star_count__range=(_filters.pop('star_min'), _filters.pop('star_max')),
-#         fork_count__range=(_filters.pop('fork_min'), _filters.pop('fork_max')),
-#         commit_count__range=(_filters.pop('commit_min'), _filters.pop('commit_max')),
-#         last_commit__date__range=(_date_max, _date_min),
-#         # **_filters
-#     )
-#     if _filters.get('name'):
-#         projects = projects.filter(name__icontains=_filters.get('name'))
-#     if _filters.get('category_id'):
-#         projects = projects.filter(category__id=_filters.get('category_id'))
-#     if _filters.get('toolkit'):
-#         projects = projects.filter(toolkit__id=_filters.get('toolkit'))
-#     return projects
-#
-#
-# def project_by_user(request):
-#     return models.Project.objects.select_related(
-#         'user', 'category', 'team'
-#     ).prefetch_related(
-#         'toolkit'
-#     ).filter(Q(user=request.auth) | Q(team__members__user=request.auth)).distinct()
-#
-#
+class ProjectByUser(APIView):
+    def get(self, request):
+        queryset = Project.objects.select_related(
+            'user', 'category',
+        ).prefetch_related(
+            'toolkit'
+        ).filter(user=request.user, teams__members__user=request.user).values()
+        return Response(queryset)
+
+
 # # @repository.get("project/by_user/{user_id}/", response=List[schemas.Project], auth=AuthToken())
 # # def project_by_user_public(request, user_id: int):
 # #     return models.Project.objects.select_related(
