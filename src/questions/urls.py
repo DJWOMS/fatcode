@@ -2,9 +2,15 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path("", views.QuestionView.as_view({"post": "create"}), name="question-create"),
     path(
-        "list/", views.ListQuestionsView.as_view({"get": "list"}), name="question-list"
+        "",
+         views.QuestionView.as_view({"post": "create"}),
+         name="question-create"
+         ),
+    path(
+        "list/",
+        views.ListQuestionsView.as_view({"get": "list"}),
+        name="question-list"
     ),
     path(
         "answer/<int:id>/",

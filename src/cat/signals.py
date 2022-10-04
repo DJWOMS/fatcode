@@ -4,6 +4,6 @@ from .models import Cat, Inventory
 
 
 @receiver(post_save, sender=Cat)
-def create_profile(sender, instance, created, **kwargs):
+def create_inventory(sender, instance, created, **kwargs):
     if created:
         Inventory.objects.create(cat=instance)

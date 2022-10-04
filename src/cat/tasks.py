@@ -10,3 +10,10 @@ def hungry_cat():
         cat_service = CatService(cat)
         cat_service.hungry()
 
+
+@shared_task
+def update_hint():
+    queryset = Cat.objects.all()
+    for cat in queryset:
+        cat.help_count = 3
+        cat.save()

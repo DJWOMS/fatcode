@@ -1,5 +1,5 @@
+import decimal
 from django.db.models import F
-
 from src.profiles.models import FatUser
 
 
@@ -20,8 +20,9 @@ class CoinService:
         balance = self.check_balance()
         if balance > price:
             self.user.coins -= price
-            return self.user.save()
-        return ValueError('Недостаточно средств')
+            self.user.save()
+            return self.user
+        raise ValueError('Недостаточно средств')
 
 
 def add_coins(user_id: int, coin: int):

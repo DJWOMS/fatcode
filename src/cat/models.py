@@ -61,7 +61,8 @@ class Category(models.Model):
 class Product(models.Model):
     TYPE_CHOICES = (
         ('toy', 'Игрушка'),
-        ('hair', 'Прическа')
+        ('hair', 'Прическа'),
+        ('food', "Еда")
     )
     name = models.CharField(max_length=300)
     price = models.IntegerField()

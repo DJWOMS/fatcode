@@ -1,4 +1,4 @@
-from .models import Cat, Product, Item
+from .models import Cat, Product, Item, Hint
 from .settings import CatSettings
 from src.profiles.services import CoinService
 
@@ -38,10 +38,22 @@ class CatService:
 
     def buy_item(self, product: Product, quantity: int):
         coin_manager = CoinService(self.cat.user)
-        if coin_manager.buy(product.price * quantity):
-            item = Item.objects.create(product=product, inventory=self.cat.user.inventory, quantity=quantity)
+        if coin_manager.buy(product.price * abs(quantity)):
+            inventory = self.cat.inventory.first()
+            try:
+                item = Item.objects.get(product=product, inventory=inventory)
+                item.quantity += abs(quantity)
+                item.save()
+            except Item.DoesNotExist:
+                item = Item.objects.create(product=product, inventory=inventory, quantity=abs(quantity))
             return item
 
     def check_inventory(self):
-        queryset = Item.objects.filter(inventory=self.cat.user.inventory)
+        queryset = Item.objects.filter(inventory=self.cat.inventory.first())
         return queryset
+
+    def get_hint(self, lesson):
+        if self.cat.help_count != 0:
+            return self.cat.hint.get(lesson=lesson)
+        raise ValueError('У вас кончились подсказки')
+
