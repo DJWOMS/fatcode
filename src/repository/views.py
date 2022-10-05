@@ -1,5 +1,5 @@
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.generics import ListAPIView
+from rest_framework.generics import ListAPIView, CreateAPIView
 from django_filters import rest_framework as filters
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -7,23 +7,24 @@ from rest_framework.views import APIView
 from src.repository.models import Category, Toolkit, Project
 from . import serializers
 from .filters import ProjectFilter
+from ..team.permissions import is_author_of_team_for_project
 
 
 class CategoryListView(ListAPIView):
     queryset = Category.objects.all()
-    serializer_class = serializers.CategoryListSerializer
+    serializer_class = serializers.CategorySerializer
 
 
 class ToolkitListView(ListAPIView):
     queryset = Toolkit.objects.all()
-    serializer_class = serializers.ToolkitListSerializer
+    serializer_class = serializers.ToolkitSerializer
 
 
 class ProjectList(ListAPIView):
     queryset = Project.objects.all()
     filterset_class = ProjectFilter
     filter_backends = (filters.DjangoFilterBackend,)
-    serializer_class = serializers.ProjectListSerializer
+    serializer_class = serializers.ProjectSerializer
 
 
 class ProjectByUser(APIView):
@@ -36,13 +37,16 @@ class ProjectByUser(APIView):
         return Response(queryset)
 
 
-# # @repository.get("project/by_user/{user_id}/", response=List[schemas.Project], auth=AuthToken())
-# # def project_by_user_public(request, user_id: int):
-# #     return models.Project.objects.select_related(
-# #         'user', 'category', 'team'
-# #     ).prefetch_related('toolkit').filter(Q(user_id=user_id) | Q(team__members__user_id=user_id))
-#
-#
+class ProjectByUserPublic(APIView):
+    def get(self, request, pk):
+        queryset = Project.objects.select_related(
+            'user', 'category'
+        ).prefetch_related(
+            'toolkit', 'teams'
+        ).filter(user_id=pk, teams__members__user_id=pk).values()
+        return Response(queryset)
+
+
 # def project_create(request, project: schemas.ProjectCreate):
 #     if is_author_of_team_for_project(project.team_id, request.auth):
 #         if models.Project.objects.filter(repository=project.repository):
