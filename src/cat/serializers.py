@@ -60,8 +60,22 @@ class CreateItemSerializer(serializers.ModelSerializer):
 
 
 class HintSerializer(serializers.ModelSerializer):
+    hint = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Hint
-        fields = ('text', )
+        fields = ('lesson', 'cat', 'hint')
 
+    def get_hint(self, instance):
+        return instance.lesson.hint
+
+    def validate(self, data):
+        if self.context['request'].user != data['cat'].user:
+            raise serializers.ValidationError('Не твой кот')
+        if data['cat'].help_count > 0:
+            return data
+        raise serializers.ValidationError('У вас закончились подсказки')
+
+    def create(self, validated_data):
+        service = CatService(validated_data['cat'])
+        return service.get_hint(validated_data['lesson'])

@@ -1,4 +1,4 @@
-from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView
+from rest_framework.generics import ListAPIView, CreateAPIView
 from rest_framework.viewsets import ModelViewSet
 from . import models
 from . import serializers
@@ -27,7 +27,8 @@ class InventoryView(MixedSerializer, ModelViewSet):
         return queryset
 
 
-class HintView(ModelViewSet):
-    lookup_field = 'id'
+class HintView(CreateAPIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = [serializers.HintSerializer]
+    serializer_class = serializers.HintSerializer
+
+

@@ -53,7 +53,8 @@ class CatService:
         return queryset
 
     def get_hint(self, lesson):
-        if self.cat.help_count != 0:
-            return self.cat.hint.get(lesson=lesson)
-        raise ValueError('У вас кончились подсказки')
+        hint, created = Hint.objects.get_or_create(lesson=lesson, cat=self.cat)
+        self.cat.help_count -= 1
+        self.cat.save()
+        return hint
 
