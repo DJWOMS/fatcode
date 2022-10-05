@@ -29,9 +29,9 @@ class ProjectList(ListAPIView):
 class ProjectByUser(APIView):
     def get(self, request):
         queryset = Project.objects.select_related(
-            'user', 'category',
+            'user', 'category'
         ).prefetch_related(
-            'toolkit'
+            'toolkit', 'teams'
         ).filter(user=request.user, teams__members__user=request.user).values()
         return Response(queryset)
 
