@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from . import models
+from .services import CatService
 
 
 class ShopProductSerializer(serializers.ModelSerializer):
@@ -39,3 +40,42 @@ class PublicCatSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Cat
         fields = ('name', 'color', 'hungry', 'xp', 'level', 'avatar', 'die', 'help_count')
+
+
+class CreateItemSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.Item
+        fields = ('quantity', 'product')
+
+    def create(self, validated_data):
+        url_params = self.context.get('request').parser_context.get('kwargs')
+        inventory = models.Inventory.objects.get(id=url_params['id'])
+        service = CatService(inventory.cat)
+        try:
+            item = service.buy_item(validated_data['product'], abs(validated_data['quantity']))
+        except ValueError:
+            raise serializers.ValidationError('Недостаточно средств')
+        return item
+
+
+class HintSerializer(serializers.ModelSerializer):
+    hint = serializers.SerializerMethodField()
+
+    class Meta:
+        model = models.Hint
+        fields = ('lesson', 'cat', 'hint')
+
+    def get_hint(self, instance):
+        return instance.lesson.hint
+
+    def validate(self, data):
+        if self.context['request'].user != data['cat'].user:
+            raise serializers.ValidationError('Не твой кот')
+        if data['cat'].help_count > 0:
+            return data
+        raise serializers.ValidationError('У вас закончились подсказки')
+
+    def create(self, validated_data):
+        service = CatService(validated_data['cat'])
+        return service.get_hint(validated_data['lesson'])
