@@ -54,7 +54,16 @@ class CatService:
 
     def get_hint(self, lesson):
         hint, created = Hint.objects.get_or_create(lesson=lesson, cat=self.cat)
-        self.cat.help_count -= 1
+        self.cat.helpw_count -= 1
         self.cat.save()
         return hint
 
+    def feed_cat(self, item):
+        if item.quantity > 0:
+            item.quantity -= 1
+            self.cat.hungry = 100
+            self.cat.save()
+            item.save()
+        else:
+            item.delete()
+        return item.inventory

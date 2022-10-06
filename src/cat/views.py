@@ -19,7 +19,8 @@ class InventoryView(MixedSerializer, ModelViewSet):
     permission_classes = [IsInventoryCatUser]
     serializer_classes_by_action = {
         'create': serializers.CreateItemSerializer,
-        'list':  serializers.CatInventorySerializer
+        'list':  serializers.CatInventorySerializer,
+        'update': serializers.UpdateInventoryItemSerializer
     }
 
     def get_queryset(self):
