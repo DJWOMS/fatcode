@@ -7,6 +7,7 @@ class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Category
         fields = ('id', 'name', 'parent')
+        ref_name = 'category_knowledge'
 
 
 class TagSerializer(serializers.ModelSerializer):
