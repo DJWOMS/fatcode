@@ -61,9 +61,9 @@ class CatService:
     def feed_cat(self, item):
         if item.quantity > 0:
             item.quantity -= 1
-            self.cat.hungry = 100
-            self.cat.save()
             item.save()
         else:
             item.delete()
+        self.cat.hungry = 100
+        self.cat.save()
         return item.inventory
