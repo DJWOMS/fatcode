@@ -54,7 +54,7 @@ class CatService:
 
     def get_hint(self, lesson):
         hint, created = Hint.objects.get_or_create(lesson=lesson, cat=self.cat)
-        self.cat.helpw_count -= 1
+        self.cat.help_count -= 1
         self.cat.save()
         return hint
 

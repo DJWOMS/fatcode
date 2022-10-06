@@ -11,7 +11,7 @@ services:
       - .env.dev
   web:
     build: .
-    container_name: fatcodee
+    container_name: fatcode
     command: >
       sh -c "python manage.py makemigrations && 
       python manage.py migrate
