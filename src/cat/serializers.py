@@ -87,6 +87,5 @@ class UpdateInventoryItemSerializer(serializers.ModelSerializer):
         fields = ('item', )
 
     def update(self, instance, validated_data):
-        cat = instance.cat
-        service = CatService(cat)
+        service = CatService(instance.cat)
         return service.feed_cat(validated_data['item'][0])
