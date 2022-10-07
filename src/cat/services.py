@@ -48,10 +48,6 @@ class CatService:
                 item = Item.objects.create(product=product, inventory=inventory, quantity=abs(quantity))
             return item
 
-    def check_inventory(self):
-        queryset = Item.objects.filter(inventory=self.cat.inventory.first())
-        return queryset
-
     def get_hint(self, lesson):
         hint, created = Hint.objects.get_or_create(lesson=lesson, cat=self.cat)
         self.cat.help_count -= 1
