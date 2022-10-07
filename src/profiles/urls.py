@@ -5,7 +5,7 @@ from src.profiles import views
 
 urlpatterns = [
     path(r'user/', views.UserView.as_view(
-        {'get': 'retrieve', 'put': 'update', 'patch': 'partial_update'}
+        {'get': 'retrieve', 'put': 'partial_update', 'patch': 'partial_update'}
     ), name="user"),
 
     path('<int:pk>/', views.UserPublicView.as_view(
