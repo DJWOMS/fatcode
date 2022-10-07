@@ -11,3 +11,9 @@ class IsInventoryCatUser(metaclass=BasePermissionMetaclass):
             cat_user = models.Cat.objects.filter(user=request.user, inventory__id=view.kwargs['id']).exists()
             return cat_user
 
+    def has_object_permission(self, request, view, obj):
+        if request.user.is_superuser:
+            return True
+        if obj.cat.user == request.user:
+            return True
+        return False

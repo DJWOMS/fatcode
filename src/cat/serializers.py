@@ -22,7 +22,7 @@ class InventoryItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Item
-        fields = ('product', 'quantity')
+        fields = ('id', 'product', 'quantity')
 
 
 class CatInventorySerializer(serializers.ModelSerializer):
@@ -30,7 +30,7 @@ class CatInventorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Inventory
-        fields = ('item', )
+        fields = ('id', 'item', )
         read_only_fields = ('cat', )
 
 
@@ -79,3 +79,14 @@ class HintSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         service = CatService(validated_data['cat'])
         return service.get_hint(validated_data['lesson'])
+
+
+class UpdateInventoryItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Inventory
+        fields = ('item', )
+
+    def update(self, instance, validated_data):
+        cat = instance.cat
+        service = CatService(cat)
+        return service.feed_cat(validated_data['item'][0])
