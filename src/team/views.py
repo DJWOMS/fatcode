@@ -219,12 +219,12 @@ class CommentsView(MixedPermission, viewsets.ModelViewSet):
         instance.save()
 
 
-class TeamAvatarView(viewsets.ModelViewSet):
-    """ Updating team avatar """
-    queryset = Team.objects.all()
-    serializer_class = serializers.TeamAvatarSerializer
-    permission_classes = [permissions.IsAuthenticated, IsAuthor]
-    parser_classes = (parsers.MultiPartParser,)
+# class TeamAvatarView(viewsets.ModelViewSet):
+#     """ Updating team avatar """
+#     queryset = Team.objects.all()
+#     serializer_class = serializers.TeamAvatarSerializer
+#     permission_classes = [permissions.IsAuthenticated, IsAuthor]
+#     parser_classes = (parsers.MultiPartParser,)
 
 
 class TeamListByUserView(generics.ListAPIView):
