@@ -1,23 +1,23 @@
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.generics import ListAPIView, CreateAPIView
+from rest_framework.generics import ListAPIView, UpdateAPIView
 from django_filters import rest_framework as filters
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from src.repository.models import Category, Toolkit, Project
-from . import serializers
+from . import serializers, models, services
 from .filters import ProjectFilter
 from ..team.permissions import is_author_of_team_for_project
 
 
 class CategoryListView(ListAPIView):
     queryset = Category.objects.all()
-    serializer_class = serializers.CategorySerializer
+    serializer_class = serializers.ProjectCategorySerializer
 
 
 class ToolkitListView(ListAPIView):
     queryset = Toolkit.objects.all()
-    serializer_class = serializers.ToolkitSerializer
+    serializer_class = serializers.ProjectToolkitSerializer
 
 
 class ProjectList(ListAPIView):
@@ -28,6 +28,8 @@ class ProjectList(ListAPIView):
 
 
 class ProjectByUser(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request):
         queryset = Project.objects.select_related(
             'user', 'category'
@@ -45,6 +47,14 @@ class ProjectByUserPublic(APIView):
             'toolkit', 'teams'
         ).filter(user_id=pk, teams__members__user_id=pk).values()
         return Response(queryset)
+
+
+class ProjectCreate(APIView):
+    def post(self, request):
+        if is_author_of_team_for_project(1, request.auth):
+            print("ok")
+        else:
+            print("no")
 
 
 # def project_create(request, project: schemas.ProjectCreate):
@@ -78,30 +88,31 @@ class ProjectByUserPublic(APIView):
 #         return new_project
 #     return Response(status=403, data="Forbidden")
 #
-#
-# @repository.put("project/{project_id}/", response=schemas.Project, auth=AuthToken())
-# def project_update(request, project_id: int, project: schemas.ProjectUpdate):
-#     _data_project = get_object_or_404(models.Project, id=project_id, user=request.auth)
-#     _tool_kit = project.dict().pop('toolkit')
-#     for attr, value in project.dict(exclude={'toolkit'}).items():
-#         setattr(_data_project, attr, value)
-#     _data_project.save()
-#     _data_project.toolkit.set(_tool_kit)
-#     return _data_project
-#
-#
+
+
+class ProjectUpdate(UpdateAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = Project.objects.only('name', 'description', 'repository')
+    serializer_class = serializers.ProjectUpdateSerializer
+
+
 # # @repository.put("project/avatar/{project_id}/", response=schemas.Project) #, auth=AuthToken())
 # # def project_update_avatar(request, project_id: int, avatar: UploadedFile = Form(...)):
 # #     _data_project = get_object_or_404(models.Project, id=project_id, user=request.auth)
 # #     print(avatar)
 # #     return _data_project
-#
-# def project_detail(request, project_id: int):
-#     try:
-#         project = models.Project.objects.select_related(
-#             'user', 'category', 'team'
-#         ).prefetch_related('toolkit').get(id=project_id)
-#     except models.Project.DoesNotExist:
-#         return Response(status=404, data="Does not found")
-#     services.get_project_stats(project)
-#     return project
+
+
+class ProjectDetail(APIView):
+    def get(self, request, pk):
+        try:
+            project = Project.objects.select_related(
+                'user', 'category'
+            ).prefetch_related(
+                'teams', 'toolkit'
+            ).values().get(id=pk)
+        except models.Project.DoesNotExist:
+            return Response(status=404, data="Does not found")
+        # services.get_project_stats(project)
+        return Response(project)
+
