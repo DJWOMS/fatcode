@@ -40,7 +40,7 @@ class ProjectByUser(APIView):
 
 
 class ProjectByUserPublic(APIView):
-    def get(self, request, pk):
+    def get(self, pk):
         queryset = Project.objects.select_related(
             'user', 'category'
         ).prefetch_related(
@@ -51,43 +51,34 @@ class ProjectByUserPublic(APIView):
 
 class ProjectCreate(APIView):
     def post(self, request):
-        if is_author_of_team_for_project(1, request.auth):
-            print("ok")
-        else:
-            print("no")
+        if is_author_of_team_for_project(request.data['teams'][0], request.user):
+            if models.Project.objects.filter(repository=request.data['repository']):
+                return Response(status=400, data="The repository exists.")
+            try:
+                repository = services.get_my_repository(request.data['repository'], request.user)
+            except Exception as e:
+                return Response(status=400, data="The repository wasn't found.")
+            project_commits = repository.get_commits()
+            last_commit = repository.get_commit(project_commits[0].sha)
 
+            teams = models.Team.objects.get(id=request.data['teams'][0])
 
-# def project_create(request, project: schemas.ProjectCreate):
-#     if is_author_of_team_for_project(project.team_id, request.auth):
-#         if models.Project.objects.filter(repository=project.repository):
-#             return Response(status=400, data="The repository exists.")
-#         try:
-#             repository = services.get_my_repository(project.repository, request.auth)
-#         except Exception as e:
-#             return Response(status=400, data="The repository wasn't found.")
-#         project_commits = repository.get_commits()
-#         last_commit = repository.get_commit(project_commits[0].sha)
-#
-#         team = models.Team.objects.get(id=project.team_id)
-#
-#         new_project = models.Project.objects.create(
-#             user=request.auth,
-#             name=project.name,
-#             avatar=team.avatar,
-#             description=project.description,
-#             category_id=project.category_id,
-#             repository=repository.html_url,
-#             star_count=repository.stargazers_count,
-#             fork_count=repository.forks_count,
-#             commit_count=project_commits.totalCount,
-#             last_commit=last_commit.commit.committer.date,
-#             team=team
-#         )
-#         new_project.toolkit.add(*project.toolkit)
-#
-#         return new_project
-#     return Response(status=403, data="Forbidden")
-#
+            new_project = models.Project.objects.create(
+                user=request.auth,
+                name=request.data['name'],
+                avatar=request.data['avatar'],
+                description=request.data['description'],
+                category_id=request.data['category'],
+                repository=request.data['repository'],
+                star_count=request.data['star'],
+                fork_count=request.data['fork'],
+                commit_count=request.data['commit'],
+                last_commit=last_commit,
+                toolkit=request.data['toolkit'][0],
+                teams=teams
+            )
+            return Response(new_project)
+        return Response(status=403, data="Forbidden")
 
 
 class ProjectUpdate(UpdateAPIView):
@@ -96,15 +87,8 @@ class ProjectUpdate(UpdateAPIView):
     serializer_class = serializers.ProjectUpdateSerializer
 
 
-# # @repository.put("project/avatar/{project_id}/", response=schemas.Project) #, auth=AuthToken())
-# # def project_update_avatar(request, project_id: int, avatar: UploadedFile = Form(...)):
-# #     _data_project = get_object_or_404(models.Project, id=project_id, user=request.auth)
-# #     print(avatar)
-# #     return _data_project
-
-
 class ProjectDetail(APIView):
-    def get(self, request, pk):
+    def get(self, pk):
         try:
             project = Project.objects.select_related(
                 'user', 'category'
