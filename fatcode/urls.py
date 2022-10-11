@@ -20,6 +20,7 @@ urlpatterns = [
     path('api/v1/team/', include('src.team.urls')),
     path('api/v1/dashboard/', include('src.dashboard.urls')),
     path('api/v1/repository/', include('src.repository.urls')),
+    path('api/v1/support/', include('src.support.urls'))
 ]
 
 urlpatterns += doc_urls

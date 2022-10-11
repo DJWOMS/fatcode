@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'src.team',
     'src.repository',
     'src.dashboard',
+    'src.support'
 ]
 
 MIDDLEWARE = [
