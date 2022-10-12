@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'src.team',
     'src.repository',
     'src.dashboard',
+    'src.support',
 ]
 
 MIDDLEWARE = [
@@ -128,7 +129,6 @@ DJOSER = {
 }
 
 CKEDITOR_UPLOAD_PATH = "media/uploads/"
-
 
 SWAGGER_SETTINGS = {
     'SECURITY_DEFINITIONS': {
