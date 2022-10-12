@@ -4,14 +4,12 @@ from .services import CatService
 
 
 class ShopProductSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = models.Product
         fields = '__all__'
 
 
 class InventoryProductSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = models.Product
         fields = ('name', 'image', 'genus', 'category')
@@ -30,8 +28,8 @@ class CatInventorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Inventory
-        fields = ('id', 'item', )
-        read_only_fields = ('cat', )
+        fields = ('id', 'item',)
+        read_only_fields = ('cat',)
 
 
 class PublicCatSerializer(serializers.ModelSerializer):
@@ -43,7 +41,6 @@ class PublicCatSerializer(serializers.ModelSerializer):
 
 
 class CreateItemSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = models.Item
         fields = ('quantity', 'product')
@@ -84,8 +81,14 @@ class HintSerializer(serializers.ModelSerializer):
 class UpdateInventoryItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Inventory
-        fields = ('item', )
+        fields = ('item',)
 
     def update(self, instance, validated_data):
         service = CatService(instance.cat)
         return service.feed_cat(validated_data['item'][0])
+
+
+class PhraseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Phrase
+        fields = ("id", "name", "text", "cat")

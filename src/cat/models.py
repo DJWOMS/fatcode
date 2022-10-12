@@ -8,6 +8,7 @@ def cat_directory_path(instance: 'Cat', filename: str) -> str:
     """Generate path to file in upload"""
     return f'cat/avatar/user_{instance.id}/{str(uuid.uuid4())}.{filename.split(".")[-1]}'
 
+
 def product_directory_path(instance: 'Product', filename: str) -> str:
     """Generate path to file in upload"""
     return f'product/image/product_{instance.id}/{str(uuid.uuid4())}.{filename.split(".")[-1]}'
@@ -37,6 +38,7 @@ class Cat(models.Model):
 
 
 class Phrase(models.Model):
+    name = models.CharField(max_length=20, blank=True, null=True)
     text = models.TextField()
     cat = models.ForeignKey(Cat, on_delete=models.CASCADE)
 

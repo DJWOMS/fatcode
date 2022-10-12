@@ -1,8 +1,10 @@
 from rest_framework.generics import ListAPIView, CreateAPIView
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.permissions import IsAuthenticated
+from django_filters.rest_framework import DjangoFilterBackend
+
 from . import models
 from . import serializers
-from rest_framework.permissions import IsAuthenticated
 from .permissions import IsInventoryCatUser
 from ..base.classes import MixedSerializer
 
@@ -19,7 +21,7 @@ class InventoryView(MixedSerializer, ModelViewSet):
     permission_classes = [IsInventoryCatUser]
     serializer_classes_by_action = {
         'create': serializers.CreateItemSerializer,
-        'list':  serializers.CatInventorySerializer,
+        'list': serializers.CatInventorySerializer,
         'update': serializers.UpdateInventoryItemSerializer
     }
 
@@ -33,3 +35,9 @@ class HintView(CreateAPIView):
     serializer_class = serializers.HintSerializer
 
 
+class PhraseView(ListAPIView):
+    queryset = models.Phrase.objects.all()
+    serializer_class = serializers.PhraseSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, ]
+    filterset_fields = ["name", ]
