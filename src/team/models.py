@@ -18,7 +18,7 @@ class Team(models.Model):
         null=True,
         validators=[
             FileExtensionValidator(allowed_extensions=['jpg']),
-            ImageValidator((50, 50), 524288)
+            ImageValidator((250, 250), 524288)
         ]
     )
     user = models.ForeignKey(FatUser, on_delete=models.CASCADE, related_name='teams')

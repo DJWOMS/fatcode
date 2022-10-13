@@ -21,8 +21,10 @@ class ImageValidator:
         valid_image_size = self.check_image_size(value)
         valid_image_bytes = self.check_image_bytes(value)
 
-        if not valid_image_size or not valid_image_bytes:
+        if not valid_image_size:
             raise ValidationError('Неправильный размер изображения')
+        elif not valid_image_bytes:
+            raise ValidationError('Неправильный вес изображения')
 
     def check_image_bytes(self, value: 'ImageFieldFile, InMemoryUploadedFile'):
         if value.size > self.img_bytes:
@@ -30,12 +32,14 @@ class ImageValidator:
         return True
 
     def check_image_size(self, value: 'ImageFieldFile, InMemoryUploadedFile'):
-        image_functions = {InMemoryUploadedFile: lambda val: val.image,
-                           ImageFieldFile: lambda val: image_functions[val.file.__class__](val.file),
-                           File: lambda val: Image.open(val)}
+        image_functions = {
+            InMemoryUploadedFile: lambda val: val.image,
+            ImageFieldFile: lambda val: image_functions[val.file.__class__](val.file),
+            File: lambda val: Image.open(val)
+        }
 
         image_size = image_functions[value.__class__](value).size
 
-        if image_size != self.img_size:
+        if image_size > self.img_size:
             return False
         return True
