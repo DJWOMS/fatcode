@@ -11,6 +11,12 @@ class TagsSerializer(serializers.ModelSerializer):
         read_only_fields = ("id",)
 
 
+class CreateAnswerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Answer
+        fields = ("text", "parent", "question")
+
+
 class AnswerSerializer(serializers.ModelSerializer):
     author = GetUserSerializer(required=False)
     children = serializers.SerializerMethodField()
@@ -29,12 +35,9 @@ class AnswerSerializer(serializers.ModelSerializer):
             "children",
         )
 
-    def create(self, validated_data):
-        return models.Answer.objects.create(question=validated_data["question"])
-
     def get_children(self, instance):
         children = models.Answer.objects.filter(parent=instance)
-        serializer = AnswerSerializer(children, many=True).data
+        serializer = AnswerSerializer(children, many=True)
         return serializer.data
 
 

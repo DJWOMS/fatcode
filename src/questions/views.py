@@ -5,10 +5,11 @@ from .models import Question, Answer, QuestionReview, AnswerReview
 from ..base.permissions import IsAuthor
 from ..base.classes import MixedPermissionSerializer
 
+# TODO оптимизировать все запросы в БД
+
 
 class QuestionView(MixedPermissionSerializer, ModelViewSet):
-    queryset = Question.objects.all()
-    lookup_field = "id"
+    queryset = Question.objects.prefetch_related('tags').all()
     serializer_classes_by_action = {
         "list": serializers.ListQuestionSerializer,
         "retrieve": serializers.RetrieveQuestionSerializer,
@@ -31,16 +32,15 @@ class QuestionView(MixedPermissionSerializer, ModelViewSet):
 
 
 class AnswerView(MixedPermissionSerializer, ModelViewSet):
-    lookup_field = "id"
     queryset = Answer.objects.all()
     permission_classes = (IsAuthor,)
     permission_classes_by_action = {
         "create": (IsAuthenticated,)
     }
     serializer_classes_by_action = {
-        "create": serializers.AnswerSerializer,
+        "create": serializers.CreateAnswerSerializer,
         "update": serializers.UpdateAnswerSerializer,
-        "destroy": serializers.AnswerSerializer,
+        "destroy": serializers.CreateAnswerSerializer,
         "partial_update": serializers.UpdateAnswerSerializer,
     }
 
