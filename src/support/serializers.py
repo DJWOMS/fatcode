@@ -4,7 +4,7 @@ from . import models
 from ..profiles.serializers import UserSerializer
 
 
-class AnswerSerializer(serializers.ModelSerializer):
+class SupportAnswerSerializer(serializers.ModelSerializer):
     """Ответ пользователю"""
 
     class Meta:
@@ -31,7 +31,7 @@ class ReportCreateSerializer(serializers.ModelSerializer):
 class ReportDetailSerializer(serializers.ModelSerializer):
     """Ошибка пользователя детально с ответом"""
     user = UserSerializer()
-    answers = AnswerSerializer(many=True)
+    answers = SupportAnswerSerializer(many=True)
 
     class Meta:
         model = models.Report

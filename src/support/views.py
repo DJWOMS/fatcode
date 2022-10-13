@@ -13,8 +13,8 @@ from ..base.permissions import IsAuthor
 
 
 class ReportView(MixedSerializer, ModelViewSet):
-    parser_classes = [parsers.MultiPartParser]
-    permission_classes = [IsAuthor]
+    parser_classes = (parsers.MultiPartParser,)
+    permission_classes = (IsAuthor,)
     serializer_classes_by_action = {
         'list': ReportListSerializer,
         'retrieve': ReportDetailSerializer,

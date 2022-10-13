@@ -36,7 +36,7 @@ class QuestionView(MixedPermissionSerializer, ModelViewSet):
 class AnswerView(MixedSerializer, ModelViewSet):
     lookup_field = "id"
     queryset = Answer.objects.all()
-    permission_classes = [IsAuthor]
+    permission_classes = (IsAuthor,)
     serializer_classes_by_action = {
         "update": serializers.UpdateAnswerSerializer,
         "destroy": serializers.AnswerSerializer,
