@@ -9,6 +9,8 @@ services:
       - db_fatcode_vol:/var/lib/postgresql/data
     env_file:
       - .env.dev
+    ports:
+      - 5432:5432
 
   web:
     build: .
@@ -54,6 +56,7 @@ services:
     depends_on:
       - redis
       - db
+      - web
 
 volumes:
   db_fatcode_vol:
