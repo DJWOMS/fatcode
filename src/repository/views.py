@@ -1,50 +1,71 @@
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.generics import ListAPIView, CreateAPIView
+from rest_framework import generics, viewsets, permissions
 from django_filters import rest_framework as filters
-from rest_framework.response import Response
-from rest_framework.views import APIView
 
-from src.repository.models import Category, Toolkit, Project
-from . import serializers
 from .filters import ProjectFilter
-from ..team.permissions import is_author_of_team_for_project
+from ..base.classes import MixedSerializer, MixedPermissionSerializer
+
+from . import serializers, models
+from ..base.permissions import IsAuthor
 
 
-class CategoryListView(ListAPIView):
-    queryset = Category.objects.all()
+class CategoryListView(generics.ListAPIView):
+    queryset = models.Category.objects.all()
     serializer_class = serializers.CategorySerializer
 
 
-class ToolkitListView(ListAPIView):
-    queryset = Toolkit.objects.all()
+class ToolkitListView(generics.ListAPIView):
+    queryset = models.Toolkit.objects.all()
     serializer_class = serializers.ToolkitSerializer
 
 
-class ProjectList(ListAPIView):
-    queryset = Project.objects.all()
+class ProjectsView(MixedSerializer, viewsets.ReadOnlyModelViewSet):
+    queryset = (
+        models.Project.objects
+        .select_related('user', 'category')
+        .prefetch_related('toolkit', 'teams')
+        .all()
+    )
     filterset_class = ProjectFilter
     filter_backends = (filters.DjangoFilterBackend,)
-    serializer_class = serializers.ProjectSerializer
+    serializer_classes_by_action = {
+        'list': serializers.ProjectListSerializer,
+        'retrieve': serializers.ProjectDetailSerializer
+    }
 
 
-class ProjectByUser(APIView):
-    def get(self, request):
-        queryset = Project.objects.select_related(
-            'user', 'category'
-        ).prefetch_related(
-            'toolkit', 'teams'
-        ).filter(user=request.user, teams__members__user=request.user).values()
-        return Response(queryset)
+class UserProjectsView(MixedPermissionSerializer, viewsets.ModelViewSet):
+    permission_classes = (IsAuthor,)
+    # TODO добавить проверку при создании, что команды это команды пользователя
+    # TODO добавить проверку репозитория
+    permission_classes_by_action = {'create': (permissions.IsAuthenticated,)}
+    serializer_classes_by_action = {
+        'create': serializers.ProjectSerializer,
+        'list': serializers.ProjectListSerializer,
+        'retrieve': serializers.ProjectDetailSerializer,
+        'update': serializers.ProjectSerializer,
+        'destroy': serializers.ProjectSerializer
+    }
+
+    def get_queryset(self):
+        return (
+            models.Project.objects
+            .select_related('user', 'category')
+            .prefetch_related('toolkit', 'teams')
+            .filter(user=self.request.user, teams__members__user=self.request.user)
+        )
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
 
-class ProjectByUserPublic(APIView):
-    def get(self, request, pk):
-        queryset = Project.objects.select_related(
-            'user', 'category'
-        ).prefetch_related(
-            'toolkit', 'teams'
-        ).filter(user_id=pk, teams__members__user_id=pk).values()
-        return Response(queryset)
+# class ProjectByUserPublic(APIView):
+#     def get(self, request, pk):
+#         queryset = models.Project.objects.select_related(
+#             'user', 'category'
+#         ).prefetch_related(
+#             'toolkit', 'teams'
+#         ).filter(user_id=pk, teams__members__user_id=pk).values()
+#         return Response(queryset)
 
 
 # def project_create(request, project: schemas.ProjectCreate):

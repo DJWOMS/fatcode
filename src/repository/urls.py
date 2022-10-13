@@ -3,9 +3,12 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('category/', views.CategoryListView.as_view(), name="category-list"),
-    path('toolkit/', views.ToolkitListView.as_view(), name="toolkit-list"),
-    path('project/', views.ProjectList.as_view(), name="project-list"),
-    path('project_by_user/', views.ProjectByUser.as_view(), name="project-by-user"),
-    path('project_by_user/<int:pk>', views.ProjectByUserPublic.as_view(), name="project-by-user-public"),
+    path('category/', views.CategoryListView.as_view()),
+    path('toolkit/', views.ToolkitListView.as_view()),
+    path('project/', views.ProjectsView.as_view({"get": "list"})),
+    path('project/<int:pk>/', views.ProjectsView.as_view({"get": "retrieve"})),
+    path('project_user/', views.UserProjectsView.as_view({"get": "list", "post": "create"})),
+    path('project_user/<int:pk>/', views.UserProjectsView.as_view(
+        {"get": "retrieve", "put": "update", "delete": "destroy"}
+    )),
 ]

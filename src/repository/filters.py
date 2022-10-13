@@ -1,4 +1,4 @@
-from django_filters import FilterSet, AllValuesFilter
+from django_filters import FilterSet
 from django_filters import DateTimeFilter, NumberFilter
 
 from . import models
@@ -16,7 +16,7 @@ class ProjectFilter(FilterSet):
 
     class Meta:
         model = models.Project
-        fields = [
+        fields = (
             "name",
             "toolkit",
             "category",
@@ -28,6 +28,8 @@ class ProjectFilter(FilterSet):
             "fork_max",
             "commit_count_min",
             "commit_count_max",
-        ]
+            "user",
+            "teams"
+        )
 
 
