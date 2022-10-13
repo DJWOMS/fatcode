@@ -173,3 +173,11 @@ class ByUserTeamListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Team
         fields = ("id", "name", "avatar", "tagline", "members")
+
+
+class GetTeamSerializer(serializers.ModelSerializer):
+    """Team serializer for other app"""
+
+    class Meta:
+        model = Team
+        fields = ("id", "name")

@@ -161,7 +161,7 @@ class TeamMemberListView(generics.ListAPIView):
     serializer_class = serializers.TeamMemberSerializer
 
     def get_queryset(self):
-        return TeamMember.objects.filter(team_id=self.kwargs['pk'])
+        return TeamMember.objects.filter(team_id=self.kwargs.get('pk'))
 
 
 class PostListView(generics.ListAPIView):
