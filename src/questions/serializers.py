@@ -1,22 +1,18 @@
-from email.policy import default
 from rest_framework import serializers
 from . import models
-from src.courses.serializers import UserSerializer
 from .validators import QuestionValidator
+from ..profiles.serializers import GetUserSerializer
 
 
 class TagsSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Tag
-        fields = (
-            "id",
-            "name",
-        )
+        fields = ("id", "name")
         read_only_fields = ("id",)
 
 
 class AnswerSerializer(serializers.ModelSerializer):
-    author = UserSerializer(required=False)
+    author = GetUserSerializer(required=False)
     children = serializers.SerializerMethodField()
 
     class Meta:
@@ -34,32 +30,24 @@ class AnswerSerializer(serializers.ModelSerializer):
         )
 
     def create(self, validated_data):
-        user = self.context["request"].user
-        answer = models.Answer.objects.create(
-            question=validated_data["question"], author=user
-        )
-        return answer
+        return models.Answer.objects.create(question=validated_data["question"])
 
     def get_children(self, instance):
         children = models.Answer.objects.filter(parent=instance)
-        serializer = AnswerSerializer(children, many=True)
+        serializer = AnswerSerializer(children, many=True).data
         return serializer.data
 
 
 class CreateQuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Question
-        fields = (
-            "title",
-            "text",
-        )
+        fields = ("title", "text")
 
 
 class RetrieveQuestionSerializer(serializers.ModelSerializer):
-    author = UserSerializer(read_only=True)
+    author = GetUserSerializer(read_only=True)
     answers = AnswerSerializer(many=True, read_only=True)
     tags = TagsSerializer(many=True, read_only=True)
-    # review = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Question
@@ -77,7 +65,7 @@ class RetrieveQuestionSerializer(serializers.ModelSerializer):
 
 
 class ListQuestionSerializer(serializers.ModelSerializer):
-    author = UserSerializer()
+    author = GetUserSerializer()
     correct_answers = serializers.SerializerMethodField()
     answer_count = serializers.SerializerMethodField()
     tags = TagsSerializer(many=True, read_only=True)
@@ -108,8 +96,7 @@ class QuestionReviewSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         data["user"] = self.context["request"].user
-        validator = QuestionValidator()
-        validator.check_review(data)
+        QuestionValidator().check_review(data)
         return data
 
     def create(self, validated_data):
@@ -125,8 +112,7 @@ class AnswerReviewSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         data["user"] = self.context["request"].user
-        validator = QuestionValidator()
-        validator.check_review(data)
+        QuestionValidator().check_review(data)
         return data
 
     def create(self, validated_data):
@@ -144,9 +130,7 @@ class UpdateQuestionSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         tags_data = validated_data.pop("tags")
-        instance = super(UpdateQuestionSerializer, self).update(
-            instance, validated_data
-        )
+        instance = super(UpdateQuestionSerializer, self).update(instance, validated_data)
 
         for tag_data in tags_data:
             tag_qs = models.Tag.objects.filter(name__iexact=tag_data["name"])
@@ -154,9 +138,7 @@ class UpdateQuestionSerializer(serializers.ModelSerializer):
                 tag = tag_qs.first()
             else:
                 tag = models.Tag.objects.create(**tag_data)
-
             instance.tags.add(tag)
-
         return instance
 
 

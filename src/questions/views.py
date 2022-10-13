@@ -2,19 +2,15 @@ from . import serializers
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .models import Question, Answer, QuestionReview, AnswerReview
-from .permissions import IsAuthor
-from ..base.classes import MixedSerializer, MixedPermissionSerializer
-
-
-class ListQuestionsView(ModelViewSet):
-    serializer_class = serializers.ListQuestionSerializer
-    queryset = Question.objects.all()
+from ..base.permissions import IsAuthor
+from ..base.classes import MixedPermissionSerializer
 
 
 class QuestionView(MixedPermissionSerializer, ModelViewSet):
     queryset = Question.objects.all()
     lookup_field = "id"
     serializer_classes_by_action = {
+        "list": serializers.ListQuestionSerializer,
         "retrieve": serializers.RetrieveQuestionSerializer,
         "update": serializers.UpdateQuestionSerializer,
         "partial_update": serializers.UpdateQuestionSerializer,
@@ -23,6 +19,7 @@ class QuestionView(MixedPermissionSerializer, ModelViewSet):
     }
     permission_classes_by_action = {
         "create": (IsAuthenticated,),
+        "list": (AllowAny,),
         "update": (IsAuthor,),
         "retrieve": (AllowAny,),
         "partial_update": (IsAuthor,),
@@ -33,30 +30,31 @@ class QuestionView(MixedPermissionSerializer, ModelViewSet):
         serializer.save(author=self.request.user)
 
 
-class AnswerView(MixedSerializer, ModelViewSet):
+class AnswerView(MixedPermissionSerializer, ModelViewSet):
     lookup_field = "id"
     queryset = Answer.objects.all()
     permission_classes = (IsAuthor,)
+    permission_classes_by_action = {
+        "create": (IsAuthenticated,)
+    }
     serializer_classes_by_action = {
+        "create": serializers.AnswerSerializer,
         "update": serializers.UpdateAnswerSerializer,
         "destroy": serializers.AnswerSerializer,
         "partial_update": serializers.UpdateAnswerSerializer,
     }
 
-
-class CreateAnswerView(ModelViewSet):
-    serializer_class = serializers.AnswerSerializer
-    permission_classes = [IsAuthenticated]
-    queryset = Answer.objects.all()
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
 
 
 class CreateQuestionReview(ModelViewSet):
     serializer_class = serializers.QuestionReviewSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsAuthenticated,)
     queryset = QuestionReview.objects.all()
 
 
 class CreateAnswerReview(ModelViewSet):
     serializer_class = serializers.AnswerReviewSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsAuthenticated,)
     queryset = AnswerReview.objects.all()
