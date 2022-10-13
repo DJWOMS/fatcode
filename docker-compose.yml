@@ -9,6 +9,7 @@ services:
       - db_fatcode_vol:/var/lib/postgresql/data
     env_file:
       - .env.dev
+
   web:
     build: .
     container_name: fatcode
@@ -24,10 +25,12 @@ services:
       - db
     env_file:
       - .env.dev
+
   redis:
     image: redis:alpine
     ports:
       - "6379:6379"
+
   celery:
     restart: always
     build:
@@ -40,6 +43,7 @@ services:
     depends_on:
       - redis
       - web
+
   celery-beat:
     build: .
     command: celery -A fatcode beat -l info
@@ -50,5 +54,6 @@ services:
     depends_on:
       - redis
       - db
+
 volumes:
   db_fatcode_vol:
