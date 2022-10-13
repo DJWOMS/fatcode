@@ -25,6 +25,8 @@ INSTALLED_APPS = [
     'drf_yasg',
     'ckeditor_uploader',
     'corsheaders',
+    'silk',
+
     'django_celery_beat',
     'src.profiles',
     'src.courses',
@@ -44,6 +46,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'silk.middleware.SilkyMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
