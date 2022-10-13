@@ -1,5 +1,4 @@
 from django.db import models
-from django.db.models import Q, Count
 from django.conf import settings
 
 
@@ -16,7 +15,11 @@ class Question(models.Model):
     title = models.CharField(max_length=150)
     viewed = models.IntegerField(default=0, editable=False)
     text = models.TextField()
-    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='questions')
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='questions'
+    )
     tags = models.ManyToManyField(Tag)
     rating = models.IntegerField(editable=False, default=0)
 
@@ -39,7 +42,11 @@ class Question(models.Model):
 
 
 class Answer(models.Model):
-    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='answer')
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='answer'
+    )
     text = models.TextField()
     parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True)
     date = models.DateTimeField(auto_now_add=True)
