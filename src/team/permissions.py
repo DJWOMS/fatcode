@@ -26,9 +26,9 @@ class IsAuthorOfTeam(BasePermission):
             ).exists()
 
 
-def is_author_of_team_for_project(team, user):
+def is_author_of_team_for_project(request):
     """ Is Author of team for creating a project """
-    return Team.objects.filter(id=team, user=user)
+    return Team.objects.filter(id=request.data['teams'], user=request.user)
 
 
 class IsAuthorOfTeamForDetail(BasePermission):
