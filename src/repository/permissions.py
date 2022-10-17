@@ -11,5 +11,7 @@ class ProjectPermission(BasePermission):
             if not Project.objects.filter(repository=request.data['repository']).exists():
                 if get_my_repository(request.data['repository'], request.user):
                     return True
+        return False
+
 
 
