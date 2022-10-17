@@ -1,8 +1,9 @@
-from django.core.validators import FileExtensionValidator
 from django.db import models
+from django.core.validators import FileExtensionValidator
+
+from .validators import validate_size_video
 
 from src.profiles.models import FatUser
-from .validators import validate_size_video
 
 
 class Category(models.Model):
@@ -36,11 +37,7 @@ class Report(models.Model):
 
 
 class Answer(models.Model):
-    report = models.ForeignKey(
-        Report,
-        on_delete=models.CASCADE,
-        related_name='answers',
-    )
+    report = models.ForeignKey(Report, on_delete=models.CASCADE, related_name='answers')
     text = models.TextField()
 
     def __str__(self):
