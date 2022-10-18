@@ -3,11 +3,10 @@ from django.urls import path
 from src.knowledge import views
 
 urlpatterns = [
-    path('category/', views.ListCategoryView.as_view(), name='category-list'),
-    path('category/<int:id>/', views.DetailCategoryView.as_view(), name='category-detail'),
-    path('tag/', views.ListTagView.as_view(), name="tag-list"),
-    path('article/', views.ListArticleView.as_view(), name="article-list"),
-    path('article/<int:id>/', views.DetailArticleView.as_view(), name="article-detail"),
-    path('letters/', views.GlossaryListView.as_view(), name='glossary-letter'),
+    path('category/', views.CategoryView.as_view({"get": "list"}), name='category-list'),
+    path('article/', views.ArticleView.as_view({"get": "list"}), name="article-list"),
+    path('article/<int:pk>/', views.ArticleView.as_view({"get": "retrieve"}), name="article-detail"),
+    path('tag/', views.TagListView.as_view(), name="tag-list"),
+    path('letters/', views.GlossaryLetterListView.as_view(), name='glossary-letter'),
     path('glossary/', views.GlossaryArticleListView.as_view(), name='glossary-list'),
 ]
