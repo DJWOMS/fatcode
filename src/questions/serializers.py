@@ -2,6 +2,7 @@ from rest_framework import serializers
 from . import models
 from .validators import QuestionValidator
 from ..profiles.serializers import GetUserSerializer
+from .services import QuestionService
 
 
 class TagsSerializer(serializers.ModelSerializer):
@@ -19,7 +20,7 @@ class CreateAnswerSerializer(serializers.ModelSerializer):
 
 class AnswerSerializer(serializers.ModelSerializer):
     author = GetUserSerializer(required=False)
-    children = serializers.SerializerMethodField()
+    children_count = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Answer
@@ -32,13 +33,12 @@ class AnswerSerializer(serializers.ModelSerializer):
             "rating",
             "accepted",
             "question",
-            "children",
+            "children_count",
         )
 
-    def get_children(self, instance):
-        children = models.Answer.objects.filter(parent=instance)
-        serializer = AnswerSerializer(children, many=True)
-        return serializer.data
+    def get_children_count(self, instance):
+        children = instance.children.count()
+        return children
 
 
 class CreateQuestionSerializer(serializers.ModelSerializer):
@@ -86,10 +86,12 @@ class ListQuestionSerializer(serializers.ModelSerializer):
         )
 
     def get_correct_answers(self, instance):
-        return instance.correct_answers_count()
+        service = QuestionService(instance)
+        return service.correct_answers_count()
 
     def get_answer_count(self, instance):
-        return instance.answers_count()
+        service = QuestionService(instance)
+        return service.answers_count()
 
 
 class QuestionReviewSerializer(serializers.ModelSerializer):

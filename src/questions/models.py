@@ -48,7 +48,7 @@ class Answer(models.Model):
         related_name='answer'
     )
     text = models.TextField()
-    parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True)
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='children')
     date = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True, null=True, blank=True)
     rating = models.IntegerField(editable=False, default=0)
