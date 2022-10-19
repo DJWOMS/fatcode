@@ -106,7 +106,7 @@ class QuestionReviewSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         review = self.Meta.model.objects.create(**validated_data)
-        validated_data["question"].update_rating()
+        service = QuestionService(review).update_rating()
         return review
 
 
@@ -135,15 +135,9 @@ class UpdateQuestionSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         tags_data = validated_data.pop("tags")
+        service = QuestionService(instance)
+        service.update_tags(tags_data)
         instance = super(UpdateQuestionSerializer, self).update(instance, validated_data)
-
-        for tag_data in tags_data:
-            tag_qs = models.Tag.objects.filter(name__iexact=tag_data["name"])
-            if tag_qs.exists():
-                tag = tag_qs.first()
-            else:
-                tag = models.Tag.objects.create(**tag_data)
-            instance.tags.add(tag)
         return instance
 
 

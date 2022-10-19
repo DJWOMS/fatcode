@@ -26,20 +26,6 @@ class Question(models.Model):
     def __str__(self):
         return self.title
 
-    def answers_count(self):
-        return Answer.objects.filter(question=self).count()
-
-    def all_answers(self):
-        return Answer.objects.filter(question=self)
-
-    def correct_answers_count(self):
-        return Answer.objects.filter(question=self, accepted=True)
-
-    def update_rating(self):
-        self.rating += QuestionReview.objects.filter(question=self, grade=True).count()
-        self.rating -= QuestionReview.objects.filter(question=self, grade=False).count()
-        return super().save()
-
 
 class Answer(models.Model):
     author = models.ForeignKey(
@@ -70,4 +56,4 @@ class QuestionReview(models.Model):
 class AnswerReview(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     grade = models.BooleanField()
-    answer = models.ForeignKey(Answer, on_delete=models.CASCADE)
+    answer = models.ForeignKey(Answer, on_delete=models.CASCADE, related_name='review')

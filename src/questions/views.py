@@ -27,10 +27,6 @@ class QuestionView(MixedPermissionSerializer, ModelViewSet):
         "partial_update": (IsAuthor,),
         "destroy": (IsAuthor,),
     }
-    query_by_action = {
-        'retrieve': ('tags', 'answers', 'author',),
-        'list': ('author', 'answer', 'tags'),
-    }
 
     def get_queryset(self):
         answers = Answer.objects.select_related('author')
