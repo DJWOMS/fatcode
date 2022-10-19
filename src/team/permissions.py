@@ -1,7 +1,14 @@
 from rest_framework.permissions import BasePermission, IsAuthenticated
-
+from rest_framework import permissions
 from src.team.models import Team, TeamMember, Invitation
 
+
+class IsAuthOrReadOnly(permissions.BasePermission):
+    '''Редактирование для автора или только чтение'''
+    def has_permission(self, request, view):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return bool(request.user)
 
 class OwnerTeam(BasePermission):
     def has_permission(self, request, view):

@@ -35,6 +35,8 @@ def team_member_create(sender, instance, created, **kwargs):
         TeamMember.objects.create(user=instance.user, team_id=instance.pk)
 
 
+
+
 class TeamMember(models.Model):
     user = models.ForeignKey(FatUser, on_delete=models.CASCADE, related_name='team_members')
     team = models.ForeignKey(Team, related_name="members", on_delete=models.CASCADE)
@@ -95,6 +97,10 @@ class Comment(models.Model):
 
 
 class SocialLink(models.Model):
-    name = models.CharField(max_length=25)
-    link = models.URLField()
+    '''Социальные ссылки команды'''
+    name = models.CharField(max_length=25, blank=True, null=True)
+    link = models.URLField(max_length=25, blank=True, null=True)
     team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='social_links')
+
+    def __str__(self):
+        return self.name
