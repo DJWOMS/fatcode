@@ -41,3 +41,7 @@
 #### Запустить тесты
 
     docker-compose run web sh -c "python manage.py test"
+
+#### Войти в контейнер
+
+    docker exec -it fatcode bash
