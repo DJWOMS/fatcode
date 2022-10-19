@@ -42,42 +42,28 @@ class TestKnowledge(APITestCase):
         models.Category.objects.create(name='Django', parent=web_cat)
 
     def test_article_list(self):
-        url = reverse("article-list")
-        request = self.client.get(url)
+        request = self.client.get(reverse("article-list"))
         self.assertEqual(request.status_code, status.HTTP_200_OK)
         self.assertEqual(len(request.data["results"]), 2)
 
     def test_article_detail(self):
         article = models.Article.objects.get(title='first article')
-        url = reverse("article-detail", kwargs={"id": article.id})
-        request = self.client.get(url)
+        request = self.client.get(reverse("article-detail", kwargs={"pk": article.pk}))
         self.assertEqual(request.status_code, status.HTTP_200_OK)
         self.assertEqual(request.data['title'], 'first article')
         self.assertEqual(request.data['text'], 'text of the first article')
 
     def test_tag_list(self):
-        url = reverse("tag-list")
-        request = self.client.get(url)
+        request = self.client.get(reverse("tag-list"))
         self.assertEqual(request.status_code, status.HTTP_200_OK)
         self.assertEqual(len(request.data), 2)
 
     def test_category_list(self):
-        url = reverse("category-list")
-        request = self.client.get(url)
+        request = self.client.get(reverse("category-list"))
         self.assertEqual(request.status_code, status.HTTP_200_OK)
         self.assertEqual(len(request.data), 3)
 
-    def test_category_detail(self):
-        category = models.Category.objects.get(name='Django')
-        category_par = models.Category.objects.get(name='Web')
-        url = reverse("category-detail", kwargs={"id": category.id})
-        request = self.client.get(url)
-        self.assertEqual(request.status_code, status.HTTP_200_OK)
-        self.assertEqual(request.data['name'], 'Django')
-        self.assertEqual(request.data['parent'], category_par.pk)
-
     def test_get_glossary_letters(self):
-        url = reverse("glossary-letter")
-        request = self.client.get(url)
+        request = self.client.get(reverse("glossary-letter"))
         self.assertEqual(request.status_code, status.HTTP_200_OK)
         self.assertEqual(request.data[0], OrderedDict([('id', 1), ('letter', 'f')]))

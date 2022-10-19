@@ -2,6 +2,7 @@ from rest_framework import generics, viewsets, permissions
 from django_filters import rest_framework as filters
 
 from .filters import ProjectFilter
+from .permissions import ProjectPermission
 from ..base.classes import MixedSerializer, MixedPermissionSerializer
 
 from . import serializers, models
@@ -37,7 +38,8 @@ class UserProjectsView(MixedPermissionSerializer, viewsets.ModelViewSet):
     permission_classes = (IsAuthor,)
     # TODO добавить проверку при создании, что команды это команды пользователя
     # TODO добавить проверку репозитория
-    permission_classes_by_action = {'create': (permissions.IsAuthenticated,)}
+
+    permission_classes_by_action = {'create': (permissions.IsAuthenticated, ProjectPermission)}
     serializer_classes_by_action = {
         'create': serializers.ProjectSerializer,
         'list': serializers.ProjectListSerializer,
