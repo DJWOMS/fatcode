@@ -47,7 +47,7 @@ class TeamMember(models.Model):
 
 
 class Invitation(models.Model):
-    """ Invitation or request to team model"""
+    """ Модель заявок на вступление в команду"""
     team = models.ForeignKey(Team, related_name="invitations", on_delete=models.CASCADE)
     user = models.ForeignKey(FatUser, on_delete=models.CASCADE, related_name='invitations')
     accepted = models.BooleanField(default=False)

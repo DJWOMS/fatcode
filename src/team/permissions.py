@@ -3,7 +3,7 @@ from rest_framework import permissions
 from src.team.models import Team, TeamMember, Invitation
 
 
-class IsAuthOrReadOnly(permissions.BasePermission):
+class IsAuthor(permissions.BasePermission):
     '''Редактирование для автора или только чтение'''
     def has_permission(self, request, view):
         if request.method in permissions.SAFE_METHODS:
@@ -70,7 +70,7 @@ class IsAuthorOfTeamForInvitation(BasePermission):
 
 
 class IsMemberOfTeam(BasePermission):
-    """ Is member of team """
+    """ Если член команды """
 
     def has_permission(self, request, view):
         if view.request.data.get('team'):

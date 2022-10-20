@@ -9,8 +9,6 @@ teams = views.TeamView.as_view({
 
 detail_teams = views.TeamView.as_view({
     'get': 'retrieve',
-    'put': 'update',
-    'delete': 'destroy'
 })
 
 teams_owns = views.OwnTeamListView.as_view({
@@ -32,13 +30,58 @@ teams_member_detail = views.MemberTeamListView.as_view({
     'put': 'update',
     'delete': 'destroy'
 })
+
+add_post = views.PostView.as_view({
+    'post': 'create'
+})
+
+posts = views.PostsView.as_view({
+    'get': 'list',
+    'post': 'create'
+})
+
+update_or_delete_post = views.PostView.as_view({
+    'get': 'retrieve',
+    'put': 'update',
+    'delete': 'destroy'
+})
+comments = views.CommentsView.as_view({
+    'get': 'list'
+})
+
+invitation = views.InvitationView.as_view({
+    'get': 'list',
+    'post': 'create'
+})
+
+invitation_delete = views.InvitationView.as_view({
+    'get': 'retrieve',
+    'delete': 'destroy'
+})
+
+invitation_list = views.InvitationDetailView.as_view({
+    'get': 'list'
+})
+
+invitation_detail = views.InvitationDetailView.as_view({
+    'post': 'create',
+    'delete': 'destroy'
+})
 urlpatterns = format_suffix_patterns([
     path('teams/', teams, name='teams'),
     path('teams/<int:pk>/', detail_teams, name='detail_teams'),
     path('own_teams/', teams_owns, name='teams_owns'),
     path('own_teams/<int:pk>/', teams_owns_detail, name='teams_owns_detail'),
+    path('own_teams/<int:pk>/add_post', add_post, name='add_post'),
     path('teams_member/', teams_member, name='teams_member'),
-    path('teams_member/<int:pk>', teams_member_detail, name='teams_member_detail')
+    path('teams_member/<int:pk>/', teams_member_detail, name='teams_member_detail'),
+    path('posts/', posts, name='post'),
+    path('posts/<int:pk>/', update_or_delete_post, name='update_or_delete_post'),
+    path('comments/', comments, name='comments'),
+    path('invitation/', invitation, name='invitation'),
+    path('invitation/<int:pk>/', invitation_delete, name='invitation_delete'),
+    path('invitation_list/', invitation_list, name='invitation_list'),
+    path('invitation_list/<int:pk>/', invitation_detail, name='invitation_detail'),
 ])
 
 #
