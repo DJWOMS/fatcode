@@ -61,7 +61,6 @@ class MemberTeamListView(MixedPermission, viewsets.ModelViewSet):
     def get_queryset(self):
         if self.action == 'list':
             teams = Team.objects.filter(members__user=self.request.user)
-            print(teams)
             return teams
         # elif self.action == 'retrieve':
         #     print(self.kwargs.get('pk'))
@@ -166,7 +165,6 @@ class CommentsView(MixedPermission, viewsets.ModelViewSet):
     def get_queryset(self):
         if self.action == 'list':
             teams = TeamMember.objects.filter(user=self.request.user)
-            print(teams)
             # posts = Post.objects.filter(team__articles=self.request.user)
             return teams
 
@@ -219,7 +217,6 @@ class InvitationDetailView(MixedPermission, viewsets.ModelViewSet):
 
     def get_queryset(self):
         invitation = Invitation.objects.filter(user=self.request.user, team__invitations__user=self.request.user)
-        print(invitation)
         return invitation
 
     def get_serializer_class(self):
