@@ -1,15 +1,16 @@
 from . import serializers
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from .models import Question, Answer, QuestionReview, AnswerReview
+from .models import Question, Answer, QuestionReview, AnswerReview, Tag
+from src.profiles.models import FatUser
 from ..base.permissions import IsAuthor
 from ..base.classes import MixedPermissionSerializer
+from django.db.models import Prefetch
 
 # TODO оптимизировать все запросы в БД
 
 
 class QuestionView(MixedPermissionSerializer, ModelViewSet):
-    queryset = Question.objects.prefetch_related('tags').all()
     serializer_classes_by_action = {
         "list": serializers.ListQuestionSerializer,
         "retrieve": serializers.RetrieveQuestionSerializer,
@@ -26,6 +27,14 @@ class QuestionView(MixedPermissionSerializer, ModelViewSet):
         "partial_update": (IsAuthor,),
         "destroy": (IsAuthor,),
     }
+
+    def get_queryset(self):
+        answers = Answer.objects.select_related('author')
+        queryset = Question.objects.select_related('author').prefetch_related(
+            Prefetch('answers', queryset=answers),
+            'tags'
+        ).all()
+        return queryset
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
