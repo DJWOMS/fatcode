@@ -1,4 +1,6 @@
-from rest_framework import serializers
+from django.db.models import Q
+from rest_framework import serializers, status
+from rest_framework.exceptions import APIException
 
 from ..base.serializers import FilterCommentListSerializer
 from .models import Post, Comment, Team, TeamMember, Invitation, SocialLink
@@ -7,86 +9,87 @@ from ..base.service import delete_old_file
 
 
 class SocialLinkSerializer(serializers.ModelSerializer):
+    '''Вывод социальных сетей'''
+
     class Meta:
         model = SocialLink
-        exclude = ()
+        fields = ('name', 'link')
 
 
-class InvitationListSerializer(serializers.ModelSerializer):
-    """Invitation list serializer"""
-    user = GetUserSerializer()
-    team = serializers.ReadOnlyField(source='team.name')
-
-    class Meta:
-        model = Invitation
-        fields = ("id", "team", "user", "asking", "create_date")
+# class InvitationListSerializer(serializers.ModelSerializer):
+#     """Invitation list serializer"""
+#     user = GetUserSerializer()
+#     team = serializers.ReadOnlyField(source='team.name')
+#
+#     class Meta:
+#         model = Invitation
+#         fields = ("id", "team", "user", "asking", "create_date")
 
 
 class InvitationSerializer(serializers.ModelSerializer):
-    """Invitation detail serializer"""
+    """Сведения о подаче заявок"""
 
     class Meta:
         model = Invitation
-        fields = ("id", "team", "user", "create_date")
+        fields = ("id", "team", "user", "create_date", "asking", "accepted")
 
 
 class InvitationAskingSerializer(serializers.ModelSerializer):
-    """Invitation detail serializer"""
+    """Подача заявки пользователем"""
+
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
         model = Invitation
-        fields = ("id", "team", "create_date")
+        fields = ("id", "team", "create_date", "user")
+
+    def create(self, validated_data):
+        try:
+            # post = Post.objects.get(
+            #     Q(team__members__user=validated_data.get('user').id) & Q(id=validated_data.get('post').id))
+            user = Team.objects.get(Q(user=validated_data.get('user').id) & Q(id=validated_data.get('team').id))
+            print(user)
+            return APIException(detail='Не возможно стать учатником своей команды', code=status.HTTP_400_BAD_REQUEST)
+        except Team.DoesNotExist:
+            invitation = Invitation.objects.create(
+                team=validated_data.get('team', None),
+                user=validated_data.get('user', None),
+            )
+            return invitation
 
 
 class AcceptInvitationSerializer(serializers.ModelSerializer):
-    """Accepted invitation serializer"""
+    """Прием в команду"""
+
     class Meta:
         model = Invitation
-        fields = ("accepted",)
+        fields = ("accepted", )
+
+    def update(self, instanse, validated_data):
+        print(instanse)
+        print(validated_data)
+        return True
 
 
 class TeamMemberSerializer(serializers.ModelSerializer):
-    """TeamMember serializer"""
+    """Просмотр участников команды"""
     user = GetUserSerializer()
 
     class Meta:
         model = TeamMember
-        fields = ("team", "user",)
+        fields = ("user",)
 
-
-class TeamSerializer(serializers.ModelSerializer):
-    """Team detail serializer"""
-    user = GetUserSerializer(read_only=True)
+class TeamListSerializer(serializers.ModelSerializer):
+    """Просмотр всех команд как создатель"""
     members = TeamMemberSerializer(many=True, read_only=True)
-    is_send_invitation_asking = serializers.SerializerMethodField(read_only=True)
-    social_links = SocialLinkSerializer(many=True, read_only=True)
-
-    def get_is_send_invitation_asking(self, obj):
-        return Invitation.objects.filter(team=obj, user=self.context['request'].user, asking=True).exists()
-
+    social_links = SocialLinkSerializer(many=True)
     class Meta:
         model = Team
-        fields = (
-            "id",
-            "name",
-            "tagline",
-            "user",
-            "avatar",
-            "members",
-            "is_send_invitation_asking",
-            "social_links"
-        )
-
-
-class TeamCommentCreateSerializer(serializers.ModelSerializer):
-    """ Добавление комментариев к посту """
-    class Meta:
-        model = Comment
-        fields = ("post", "text", "parent")
+        fields = ("id", "name", "avatar", "tagline", "members", "social_links")
 
 
 class TeamCommentChildrenListSerializer(serializers.ModelSerializer):
-    """ Comment children list serializer"""
+    """ Комментарий к комментарию"""
     user = GetUserSerializer()
 
     class Meta:
@@ -103,18 +106,6 @@ class TeamCommentListSerializer(serializers.ModelSerializer):
         list_serializer_class = FilterCommentListSerializer
         model = Comment
         fields = ("id", "user", "text", "create_date", "children")
-
-
-class TeamPostSerializer(serializers.ModelSerializer):
-    """ Вывод и редактирование поста """
-    user = GetUserSerializer(read_only=True)
-    comments = TeamCommentListSerializer(many=True, read_only=True)
-    view_count = serializers.CharField(read_only=True)
-
-    class Meta:
-        model = Post
-        fields = ("id", "team", "user", "create_date", "text", "comments", "view_count")
-
 
 class TeamListPostSerializer(serializers.ModelSerializer):
     """ Список постов """
@@ -134,45 +125,222 @@ class TeamListPostSerializer(serializers.ModelSerializer):
             "comments",
             "comments_count"
         )
-
-
-class TeamAvatarSerializer(serializers.ModelSerializer):
-    """ Team avatar serializer """
-    class Meta:
-        model = Team
-        fields = ("avatar",)
-
-    def update(self, instance, validated_data):
-        if instance.avatar:
-            delete_old_file(instance.avatar.path)
-        return super().update(instance, validated_data)
-
-
-class TeamListSerializer(serializers.ModelSerializer):
-    """Team list serializer"""
+class CreatePost(serializers.ModelSerializer):
+    '''Добавление поста'''
     user = GetUserSerializer()
+
+    class Meta:
+        model = Post
+        fields = ("text", )
+
+
+class TeamRetrieveSerializer(serializers.ModelSerializer):
+    """Просмотр одной команд как создатель"""
     members = TeamMemberSerializer(many=True, read_only=True)
+    articles = TeamListPostSerializer(many=True)
+    social_links = SocialLinkSerializer(many=True)
 
     class Meta:
         model = Team
-        fields = ("id", "name", "user", "avatar", "tagline", "members")
+        fields = ("id", "name", "avatar", "tagline", "articles", "members", "social_links")
 
-
-class ByUserTeamMemberSerializer(serializers.ModelSerializer):
-    """TeamMember serializer"""
-
-    class Meta:
-        model = TeamMember
-        fields = ("team", "user",)
-
-
-class ByUserTeamListSerializer(serializers.ModelSerializer):
-    """By user Team list serializer"""
-    members = ByUserTeamMemberSerializer(many=True, read_only=True)
+class TeamSerializer(serializers.ModelSerializer):
+    """Просмотр всех команд"""
+    user = GetUserSerializer()
 
     class Meta:
         model = Team
-        fields = ("id", "name", "avatar", "tagline", "members")
+        fields = (
+            "name",
+            "tagline",
+            "user",
+            "avatar",
+        )
+
+
+class CreateTeamSerializer(serializers.ModelSerializer):
+    """Добавить команду"""
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = Team
+        fields = (
+            "name",
+            "tagline",
+            "user",
+            "avatar",
+        )
+
+
+# как сделать не обязательное поле social_links?
+# и что нужно вернуть в update?
+class UpdateTeamSerializer(serializers.ModelSerializer):
+    """Редактирование команды"""
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    social_links = SocialLinkSerializer()
+
+    class Meta:
+        model = Team
+        fields = (
+            "name",
+            "tagline",
+            "user",
+            "avatar",
+            "social_links"
+        )
+
+    def update(self, instanse, validated_data):
+        social_links_data = validated_data.get('social_links')
+        instanse.name = validated_data.get('name', None)
+        instanse.tagline = validated_data.get('tagline', None)
+        instanse.avatar = validated_data.get('avatar', None)
+        instanse.user = validated_data.get('user', None)
+        try:
+            social_link = SocialLink.objects.get(team=instanse)
+            social_link.team = instanse
+            social_link.name = social_links_data.get('name')
+            social_link.link = social_links_data.get('link')
+            return social_link
+        except SocialLink.DoesNotExist:
+            social_link = SocialLink.objects.create(team=instanse,
+                                      name=social_links_data.get('name'),
+                                      link=social_links_data.get('link'))
+            return social_link
+
+
+
+class DetailTeamSerializer(serializers.ModelSerializer):
+    """ Просмотр деталей одной команды"""
+    user = GetUserSerializer()
+    social_links = SocialLinkSerializer(many=True)
+
+    class Meta:
+        model = Team
+        fields = (
+            "name",
+            "tagline",
+            "user",
+            "avatar",
+            "social_links",
+        )
+
+
+
+class TeamCommentCreateSerializer(serializers.ModelSerializer):
+    """ Добавление комментариев к посту """
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    class Meta:
+        model = Comment
+        fields = ("text", "post", "user")
+
+    def create(self, validated_data):
+        try:
+            post = Post.objects.get(Q(team__members__user=validated_data.get('user').id) & Q(id=validated_data.get('post').id))
+        except Post.DoesNotExist:
+            return APIException(detail='Нет доступа для написания комментариев', code=status.HTTP_400_BAD_REQUEST)
+        comment = Comment.objects.create(
+            text=validated_data.get('text', None),
+            user=validated_data.get('user', None),
+            post=validated_data.get('post', None),
+        )
+        return comment
+
+class TeamPostSerializer(serializers.ModelSerializer):
+    """ Вывод и создание поста """
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    comments = TeamCommentListSerializer(many=True, read_only=True)
+    view_count = serializers.CharField(read_only=True)
+
+    class Meta:
+        model = Post
+        fields = ("id", "user", "create_date", "text", "comments", "view_count", "team")
+
+    def create(self, validated_data):
+        post = Post.objects.create(
+            text=validated_data.get('text', None),
+            user=validated_data.get('user', None),
+            team=validated_data.get('team', None),
+        )
+        return post
+
+
+
+
+# class TeamSerializerforMember(serializers.ModelSerializer):
+#     """ Team serializer for member """
+#
+#     class Meta:
+#         model = Team
+#         fields = "__all__"
+#
+#
+# class TeamAvatarSerializer(serializers.ModelSerializer):
+#     """ Team avatar serializer """
+#
+#     class Meta:
+#         model = Team
+#         fields = ("avatar",)
+#
+#     def update(self, instance, validated_data):
+#         if instance.avatar:
+#             delete_old_file(instance.avatar.path)
+#         return super().update(instance, validated_data)
+
+
+# class TeamListSerializer(serializers.ModelSerializer):
+#     """Просмотр всех команд как создатель"""
+#     members = TeamMemberSerializer(many=True, read_only=True)
+#     social_links = SocialLinkSerializer(many=True)
+#     class Meta:
+#         model = Team
+#         fields = ("id", "name", "avatar", "tagline", "members", "social_links")
+# #Почему не выводяться посты?
+# class TeamRetrieveSerializer(serializers.ModelSerializer):
+#     """Просмотр одной команд как создатель"""
+#     members = TeamMemberSerializer(many=True, read_only=True)
+#     # posts = TeamListPostSerializer(many=True)
+#     social_links = SocialLinkSerializer(many=True)
+#
+#     class Meta:
+#         model = Team
+#         fields = ("id", "name", "avatar", "tagline", "members", "social_links")
+
+#
+# class AllTeamSerializers(serializers.ModelSerializer):
+#     '''Команды'''
+#     user = GetUserSerializer()
+#
+#     class Meta:
+#         model = Team
+#         fields = '__all__'
+#
+#
+# class AllMembersTeamSerializers(serializers.ModelSerializer):
+#     '''Команды'''
+#     user = GetUserSerializer()
+#
+#     class Meta:
+#         model = Team
+#         fields = '__all__'
+#
+#
+# class ByUserTeamMemberSerializer(serializers.ModelSerializer):
+#     """TeamMember serializer"""
+#     team = AllTeamSerializers(read_only=True)
+#     members = TeamMemberSerializer(many=True, read_only=True)
+#
+#     class Meta:
+#         model = TeamMember
+#         fields = ("team", "members")
+#
+#
+# class ByUserTeamListSerializer(serializers.ModelSerializer):
+#     """By user Team list serializer"""
+#     members = ByUserTeamMemberSerializer(many=True, read_only=True)
+#
+#     class Meta:
+#         model = Team
+#         fields = ("id", "name", "avatar", "tagline", "members")
 
 
 class GetTeamSerializer(serializers.ModelSerializer):
@@ -181,3 +349,5 @@ class GetTeamSerializer(serializers.ModelSerializer):
     class Meta:
         model = Team
         fields = ("id", "name")
+
+
