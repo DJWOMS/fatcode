@@ -9,6 +9,7 @@ from src.base.validators import ImageValidator
 
 
 class Team(models.Model):
+    '''Модель команд'''
     name = models.CharField(max_length=50)
     tagline = models.CharField(max_length=150, null=True, blank=True)
     avatar = models.ImageField(
@@ -38,6 +39,7 @@ def team_member_create(sender, instance, created, **kwargs):
 
 
 class TeamMember(models.Model):
+    '''Модель промежуточная пользователь команда'''
     user = models.ForeignKey(FatUser, on_delete=models.CASCADE, related_name='team_members')
     team = models.ForeignKey(Team, related_name="members", on_delete=models.CASCADE)
     create_date = models.DateTimeField(auto_now_add=True)
@@ -48,10 +50,16 @@ class TeamMember(models.Model):
 
 class Invitation(models.Model):
     """ Модель заявок на вступление в команду"""
+    STATUS = (
+        ('1', 'В ожидании'),
+        ('2', 'Одобрено'),
+        ('3', 'Отклонено')
+    )
     team = models.ForeignKey(Team, related_name="invitations", on_delete=models.CASCADE)
     user = models.ForeignKey(FatUser, on_delete=models.CASCADE, related_name='invitations')
     accepted = models.BooleanField(default=False)
     asking = models.BooleanField(default=True)
+    order_status = models.CharField(max_length=100, choices=STATUS, default='1')
     create_date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -59,7 +67,7 @@ class Invitation(models.Model):
 
 
 class Post(models.Model):
-    """ Team`s post model"""
+    """ Модель постов"""
     text = models.TextField(max_length=1024)
     create_date = models.DateTimeField(auto_now_add=True)
     published = models.BooleanField(default=True)
@@ -76,7 +84,7 @@ class Post(models.Model):
 
 
 class Comment(models.Model):
-    """ Team`s comment model """
+    """  Модель комментариев """
     text = models.TextField(max_length=512)
     create_date = models.DateTimeField(auto_now_add=True)
     update_date = models.DateTimeField(auto_now=True)

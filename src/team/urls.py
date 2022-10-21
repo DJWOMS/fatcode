@@ -22,20 +22,18 @@ teams_owns_detail = views.OwnTeamListView.as_view({
 })
 
 teams_member = views.MemberTeamListView.as_view({
-    'get': 'list',
+    'get': 'list'
 })
 
 teams_member_detail = views.MemberTeamListView.as_view({
-    'get': 'retrieve',
-    'put': 'update',
-    'delete': 'destroy'
+    'get': 'retrieve'
 })
 
 add_post = views.PostView.as_view({
     'post': 'create'
 })
 
-posts = views.PostsView.as_view({
+posts = views.PostView.as_view({
     'get': 'list',
     'post': 'create'
 })
@@ -46,7 +44,14 @@ update_or_delete_post = views.PostView.as_view({
     'delete': 'destroy'
 })
 comments = views.CommentsView.as_view({
-    'get': 'list'
+    'get': 'list',
+    'post': 'create'
+})
+
+comment_detail = views.CommentsView.as_view({
+    'get': 'retrieve',
+    'put': 'update',
+    'delete': 'destroy'
 })
 
 invitation = views.InvitationView.as_view({
@@ -64,7 +69,8 @@ invitation_list = views.InvitationDetailView.as_view({
 })
 
 invitation_detail = views.InvitationDetailView.as_view({
-    'post': 'create',
+    'get': 'retrieve',
+    'put': 'update',
     'delete': 'destroy'
 })
 urlpatterns = format_suffix_patterns([
@@ -78,6 +84,7 @@ urlpatterns = format_suffix_patterns([
     path('posts/', posts, name='post'),
     path('posts/<int:pk>/', update_or_delete_post, name='update_or_delete_post'),
     path('comments/', comments, name='comments'),
+    path('comments/<int:pk>', comment_detail, name='comment_detail'),
     path('invitation/', invitation, name='invitation'),
     path('invitation/<int:pk>/', invitation_delete, name='invitation_delete'),
     path('invitation_list/', invitation_list, name='invitation_list'),
