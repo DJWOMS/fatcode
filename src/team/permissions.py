@@ -1,29 +1,46 @@
+from django.db.models import Q
 from rest_framework.permissions import BasePermission, IsAuthenticated
-
+from rest_framework import permissions
 from src.team.models import Team, TeamMember, Invitation
 
 
-class OwnerTeam(BasePermission):
-    def has_permission(self, request, view):
-        if view.request.data.get('team'):
-            return Team.objects.filter(
-                id=view.request.data.get('team'),
-                user=request.user
-            ).exists()
-
+class IsAuthorOrReadOnly(permissions.BasePermission):
+    '''Только для создателя или просмотр'''
     def has_object_permission(self, request, view, obj):
-        return bool(obj.team.user == request.user)
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return obj.user == request.user
+
+class OwnerTeam(permissions.BasePermission):
+    '''Только для автора'''
+    def has_object_permission(self, request, view, obj):
+        return obj.user == request.user
+
+# class OwnerTeam(permissions.BasePermission):
+#     '''Только для автора'''
+#     def has_permission(self, request, view):
+#         return bool(request.user)
+# class OwnerTeam(BasePermission):
+#     def has_permission(self, request, view):
+#         if view.request.data.get('team'):
+#             return Team.objects.filter(
+#                 id=view.request.data.get('team'),
+#                 user=request.user
+#             ).exists()
+#
+#     def has_object_permission(self, request, view, obj):
+#         return bool(obj.team.user == request.user)
 
 
-class IsAuthorOfTeam(BasePermission):
-    """ Is Author of team """
-
-    def has_permission(self, request, view):
-        if view.request.data.get('team'):
-            return Team.objects.filter(
-                id=view.request.data.get('team'),
-                user=request.user
-            ).exists()
+# class IsAuthorOfTeam(BasePermission):
+#     """ Is Author of team """
+#
+#     def has_permission(self, request, view):
+#         if view.request.data.get('team'):
+#             return Team.objects.filter(
+#                 id=view.request.data.get('team'),
+#                 user=request.user
+#             ).exists()
 
 
 def is_author_of_team_for_project(request):
@@ -31,26 +48,31 @@ def is_author_of_team_for_project(request):
     return Team.objects.filter(id=request.data['teams'], user=request.user)
 
 
-class IsAuthorOfTeamForDetail(BasePermission):
-    """ Is Author of team for team detail view """
+# class IsAuthorOfTeamForDetail(BasePermission):
+#     """ Is Author of team for team detail view """
+#
+#     def has_object_permission(self, request, view, obj):
+#         return Team.objects.filter(
+#             id=view.kwargs['team'],
+#             user=request.user,
+#             #members__id=view.kwargs['pk']
+#         ).exists() and not obj.user == request.user
 
-    def has_object_permission(self, request, view, obj):
-        return Team.objects.filter(
-            id=view.kwargs['team'],
-            user=request.user,
-            #members__id=view.kwargs['pk']
-        ).exists() and not obj.user == request.user
 
+# class IsNotAuthorOfTeamForSelfDelete(BasePermission):
+#     """ Is NOT Author of team for self delete from team """
+#
+#     def has_object_permission(self, request, view, obj):
+#         return not Team.objects.filter(
+#             id=view.kwargs['team'],
+#             user=request.user,
+#         ).exists() and obj.user == request.user
 
-class IsNotAuthorOfTeamForSelfDelete(BasePermission):
-    """ Is NOT Author of team for self delete from team """
-
-    def has_object_permission(self, request, view, obj):
-        return not Team.objects.filter(
-            id=view.kwargs['team'],
-            user=request.user,
-        ).exists() and obj.user == request.user
-
+class AuthorOrMember(BasePermission):
+    """ Для автора или члена команды """
+    def has_permission(self, request, view):
+        user = TeamMember.objects.filter(Q(user=request.user) | Q(team__user=request.user))
+        return user
 
 class IsAuthorOfTeamForInvitation(BasePermission):
     """ Is Author of team for team invitation """
@@ -62,20 +84,29 @@ class IsAuthorOfTeamForInvitation(BasePermission):
         ).exists() and not obj.user == request.user
 
 
+class PostAuthorOrMember(permissions.BasePermission):
+    '''Посты только для автора или для просмотра члена команды'''
+    def has_object_permission(self, request, view, obj):
+        print(request)
+        print(obj)
+
+        return obj.user == request.user
+
+
 class IsMemberOfTeam(BasePermission):
-    """ Is member of team """
+    """ Если член команды """
 
     def has_permission(self, request, view):
+        print(view.request.data)
+        print(view.request.data.get('team'))
         if view.request.data.get('team'):
             return TeamMember.objects.filter(
                 team_id=view.request.data.get('team'),
                 user=request.user
             ).exists()
         else:
-            return TeamMember.objects.filter(
-                team_id=view.kwargs['pk'],
-                user=request.user
-            ).exists()
+            return TeamMember.objects.filter(user=request.user)
+
 
 
 class IsMemberOfTeamForPost(BasePermission):
