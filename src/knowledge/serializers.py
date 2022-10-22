@@ -1,9 +1,12 @@
 from rest_framework import serializers
 
 from src.knowledge import models
+from ..profiles.serializers import GetUserSerializer
 
 
 class CategorySerializer(serializers.ModelSerializer):
+    """Категории"""
+
     class Meta:
         model = models.Category
         fields = ('id', 'name', 'parent')
@@ -11,6 +14,8 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class TagSerializer(serializers.ModelSerializer):
+    """Тэги"""
+
     class Meta:
         model = models.Tag
         fields = ('id', 'name')
@@ -18,31 +23,23 @@ class TagSerializer(serializers.ModelSerializer):
 
 
 class ListArticleSerializer(serializers.ModelSerializer):
+    """Список статей"""
+    author = GetUserSerializer()
+
     class Meta:
         model = models.Article
-        exclude = ['text', 'video_url']
-
-
-class CategoryArticleSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.Category
-        fields = ['id', 'name']
-
-
-class AuthorSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.FatUser
-        fields = ['id', 'username']
+        exclude = ('text', 'video_url')
 
 
 class DetailArticleSerializer(serializers.ModelSerializer):
-    author = AuthorSerializer()
-    category = CategoryArticleSerializer(many=True)
+    """Статья детально"""
+    author = GetUserSerializer()
+    category = CategorySerializer(many=True)
     tag = TagSerializer(many=True)
 
     class Meta:
         model = models.Article
-        fields = [
+        fields = (
             'id',
             'title',
             'text',
@@ -55,22 +52,20 @@ class DetailArticleSerializer(serializers.ModelSerializer):
             'category',
             'tag',
             'video_url'
-        ]
+        )
 
 
 class GlossaryLetterSerializer(serializers.ModelSerializer):
+    """Буква глоссария"""
+
     class Meta:
         model = models.Glossary
-        fields = [
-            "id",
-            "letter",
-        ]
+        fields = ("id", "letter")
 
 
 class GlossaryArticleSerializer(serializers.ModelSerializer):
+    """Статьи глоссария"""
+
     class Meta:
         model = models.Article
-        fields = [
-            "id",
-            "title",
-        ]
+        fields = ("id", "title")

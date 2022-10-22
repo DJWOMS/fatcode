@@ -1,7 +1,8 @@
 from rest_framework import serializers
 
 from . import models
-from ..profiles.serializers import UserSerializer
+
+from ..profiles.serializers import GetUserSerializer
 
 
 class SupportAnswerSerializer(serializers.ModelSerializer):
@@ -17,7 +18,7 @@ class ReportListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Report
-        fields = ("id", "text", "status")
+        fields = ("id", "category", "text", "status")
 
 
 class ReportCreateSerializer(serializers.ModelSerializer):
@@ -30,7 +31,7 @@ class ReportCreateSerializer(serializers.ModelSerializer):
 
 class ReportDetailSerializer(serializers.ModelSerializer):
     """Ошибка пользователя детально с ответом"""
-    user = UserSerializer()
+    user = GetUserSerializer()
     answers = SupportAnswerSerializer(many=True)
 
     class Meta:
