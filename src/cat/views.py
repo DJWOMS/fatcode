@@ -1,4 +1,4 @@
-from rest_framework.generics import ListAPIView, CreateAPIView
+from rest_framework.generics import ListAPIView, CreateAPIView, UpdateAPIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
@@ -41,3 +41,12 @@ class PhraseView(ListAPIView):
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, ]
     filterset_fields = ["name", ]
+
+
+class CatView(MixedSerializer, ModelViewSet):
+    queryset = models.Cat.objects.all()
+    serializer_classes_by_action = {
+        'list': serializers.CatSerializer,
+        'retrieve': serializers.CatSerializer,
+        'update': serializers.UpdateCatSerializer
+    }

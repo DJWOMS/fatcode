@@ -63,3 +63,8 @@ class CatService:
         self.cat.hungry = 100
         self.cat.save()
         return item.inventory
+
+    def give_name(self, name):
+        self.cat.name = name
+        self.cat.save()
+        return self.cat
