@@ -12,6 +12,3 @@ class ProjectPermission(BasePermission):
                 if get_my_repository(request.data['repository'], request.user):
                     return True
         return False
-
-
-
