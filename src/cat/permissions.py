@@ -1,4 +1,4 @@
-from rest_framework.permissions import BasePermissionMetaclass
+from rest_framework.permissions import BasePermissionMetaclass, BasePermission
 from . import models
 
 
@@ -15,5 +15,12 @@ class IsInventoryCatUser(metaclass=BasePermissionMetaclass):
         if request.user.is_superuser:
             return True
         if obj.cat.user == request.user:
+            return True
+        return False
+
+
+class IsCatAuthUser(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        if obj.user == request.user:
             return True
         return False
