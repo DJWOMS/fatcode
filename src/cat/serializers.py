@@ -92,3 +92,22 @@ class PhraseSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Phrase
         fields = ("id", "name", "text", "cat")
+
+
+class CatSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(
+        source="user.username", read_only=True)
+
+    class Meta:
+        model = models.Cat
+        fields = ("id", "avatar", "name", "user_id", "username")
+
+
+class UpdateCatSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Cat
+        fields = ('name',)
+
+    def update(self, instance, validated_data):
+        service = CatService(instance)
+        return service.give_name(validated_data['name'])
