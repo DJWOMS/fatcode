@@ -1,3 +1,4 @@
+from django.db.models import Q
 from rest_framework import generics, viewsets, permissions
 from django_filters import rest_framework as filters
 
@@ -6,7 +7,7 @@ from .permissions import ProjectPermission
 from ..base.classes import MixedSerializer, MixedPermissionSerializer
 
 from . import serializers, models
-from ..base.permissions import IsAuthor
+from ..base.permissions import IsUser
 
 
 class CategoryListView(generics.ListAPIView):
@@ -35,10 +36,7 @@ class ProjectsView(MixedSerializer, viewsets.ReadOnlyModelViewSet):
 
 
 class UserProjectsView(MixedPermissionSerializer, viewsets.ModelViewSet):
-    permission_classes = (IsAuthor,)
-    # TODO добавить проверку при создании, что команды это команды пользователя
-    # TODO добавить проверку репозитория
-
+    permission_classes = (IsUser,)
     permission_classes_by_action = {'create': (permissions.IsAuthenticated, ProjectPermission)}
     serializer_classes_by_action = {
         'create': serializers.ProjectSerializer,
@@ -53,7 +51,7 @@ class UserProjectsView(MixedPermissionSerializer, viewsets.ModelViewSet):
             models.Project.objects
             .select_related('user', 'category')
             .prefetch_related('toolkit', 'teams')
-            .filter(user=self.request.user, teams__members__user=self.request.user)
+            .filter(Q(user=self.request.user) | Q(teams__members__user=self.request.user)).distinct()
         )
 
     def perform_create(self, serializer):
