@@ -20,8 +20,47 @@ from src.team.serializers import (TeamSerializer,
                                   CreatePost,
                                   InvitationAskingSerializer,
                                   InvitationSerializer,
-                                  AcceptInvitationSerializer)
+                                  AcceptInvitationSerializer,
+                                  TeamMemberRetrieveSerializer,
+                                  SocialLinkSerializer,
+                                  CreateSocialLinkSerializer,
+                                  ListSocialLinkSerializer,
+                                  AcceptInvitationSerializerList,
+                                  UpdateSocialLinkSerializer)
 from src.team.permissions import IsAuthorOrReadOnly, IsMemberOfTeam, IsMemberOfTeam, OwnerTeam, AuthorOrMember
+
+
+class SocialLinkView(MixedSerializer, viewsets.ModelViewSet):
+    """Просмотр/добавление/редактирование/удаление социальной ссылке к команде"""
+    permission_classes_by_action = {
+        'list': (OwnerTeam, ),
+        'get': (OwnerTeam, ),
+        'update': (OwnerTeam, ),
+        'destroy': (OwnerTeam, )
+    }
+    serializer_classes_by_action = {
+        'list': ListSocialLinkSerializer,
+        'get': ListSocialLinkSerializer,
+        'create': CreateSocialLinkSerializer,
+        'update': UpdateSocialLinkSerializer,
+        'destroy': UpdateSocialLinkSerializer
+    }
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+    def perform_update(self, serializer):
+        serializer.save(user=self.request.user)
+    def perform_destroy(self, instance):
+        instance.delete()
+    def get_queryset(self):
+        teams = SocialLink.objects.filter(team__user=self.request.user)
+        return teams
+    def get_serializer_class(self):
+        if self.action == 'list' or 'retrieve':
+            return ListSocialLinkSerializer
+        elif self.action == 'create':
+            return CreateSocialLinkSerializer
+        elif self.action == 'update' or 'destroy':
+            return UpdateSocialLinkSerializer
 
 
 class OwnTeamListView(MixedPermissionSerializer, viewsets.ModelViewSet):
@@ -38,7 +77,8 @@ class OwnTeamListView(MixedPermissionSerializer, viewsets.ModelViewSet):
         'update': UpdateTeamSerializer,
         'destroy': UpdateTeamSerializer
     }
-
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
     def perform_update(self, serializer):
         serializer.save(user=self.request.user)
 
@@ -48,9 +88,14 @@ class OwnTeamListView(MixedPermissionSerializer, viewsets.ModelViewSet):
     def get_queryset(self):
         teams = Team.objects.filter(user=self.request.user)
         return teams
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return TeamListSerializer
+        elif self.action == 'retrieve':
+            return TeamRetrieveSerializer
+        elif self.action == 'update' or 'destroy':
+            return UpdateTeamSerializer
 
-
-# почему не дает вывести 1 команду с этим участником
 class MemberTeamListView(MixedPermission, viewsets.ModelViewSet):
     """Просморт команды где как участник"""
     permission_classes_by_action = {
@@ -61,23 +106,19 @@ class MemberTeamListView(MixedPermission, viewsets.ModelViewSet):
     #     'list': TeamListSerializer,
     #     'get': TeamRetrieveSerializer
     # }
-
     def get_queryset(self):
         if self.action == 'list':
             teams = Team.objects.filter(members__user=self.request.user)
+            # .exclude(user=self.request.user)
             return teams
         elif self.action == 'retrieve':
-            print(self.kwargs.get('pk'))
-            teams = Team.objects.filter(id=self.kwargs.get('pk'))
-            print(teams)
-            return teams
-
+            team = Team.objects.filter(id=self.kwargs.get('pk'),  teams__members_user=self.request.user)
+            return team
     def get_serializer_class(self):
         if self.action == 'list':
             return TeamListSerializer
         elif self.action == 'retrieve':
             return TeamRetrieveSerializer
-
 
 class TeamView(MixedPermission, viewsets.ModelViewSet):
     """  Посмотреть/создать команду (CRUD)"""
@@ -90,7 +131,6 @@ class TeamView(MixedPermission, viewsets.ModelViewSet):
         if self.action == 'list' or 'retrieve':
             permission_classes = [IsAuthenticatedOrReadOnly]
             return [permission() for permission in permission_classes]
-
     def get_serializer_class(self):
         if self.action == 'list':
             return TeamSerializer
@@ -98,7 +138,6 @@ class TeamView(MixedPermission, viewsets.ModelViewSet):
             return CreateTeamSerializer
         elif self.action == 'retrieve':
             return DetailTeamSerializer
-
 
 class PostView(MixedPermission, viewsets.ModelViewSet):
     """ Создание поста если автор или дали такое право """
@@ -111,31 +150,25 @@ class PostView(MixedPermission, viewsets.ModelViewSet):
         'update': (OwnerTeam, ),
         'destroy': (OwnerTeam, ),
     }
-
     def get_queryset(self):
         if self.action == 'list':
             return Post.objects.filter(user=self.request.user)
         elif self.action == 'retrieve' or 'update' or 'destroy':
             return Post.objects.filter(id=self.kwargs.get('pk'))
-
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         instance = post_view_count(instance)
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
-
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
-
     def perform_destroy(self, instance):
         instance.delete()
-
     def perform_update(self, instance):
         instance.save(user=self.request.user, id=self.kwargs.get('pk'))
 
-
 class CommentsView(MixedPermission, viewsets.ModelViewSet):
-    """ CRUD комментариев к записи """
+    """ CRUD комментариев к постам"""
     queryset = Comment.objects.all()
     serializer_class = serializers.TeamCommentCreateSerializer
     permission_classes_by_action = {
@@ -154,59 +187,49 @@ class CommentsView(MixedPermission, viewsets.ModelViewSet):
 
     def perform_destroy(self, instance):
         instance.delete()
-#
 
 class InvitationView(MixedPermission, viewsets.ModelViewSet):
     """ Создание/удаление заявки в команду"""
-    queryset = Invitation.objects.all()
     permission_classes_by_action = {
         'list': [IsAuthenticatedOrReadOnly],
         'retrieve': [IsAuthenticatedOrReadOnly],
         'create': [IsAuthenticatedOrReadOnly],
         'destroy': [IsAuthorOrReadOnly]
     }
-
     def get_queryset(self):
         invitation = Invitation.objects.filter(user=self.request.user)
         return invitation
-
     def get_serializer_class(self):
         if self.action == 'list':
             return InvitationSerializer
         elif self.action == 'create' or 'destroy':
             return InvitationAskingSerializer
-
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
-
     def perform_destroy(self, instance):
         instance.delete()
 
 #не доделано
 class InvitationDetailView(MixedPermission, viewsets.ModelViewSet):
     """ Принять/отклонить заявки в команду"""
-    queryset = Invitation.objects.all()
     permission_classes_by_action = {
         'list': [IsAuthenticatedOrReadOnly],
         'retrieve': [IsAuthenticatedOrReadOnly],
         'create': [IsAuthenticatedOrReadOnly],
         'destroy': [IsAuthenticatedOrReadOnly]
     }
-
     def get_queryset(self):
-        invitation = Invitation.objects.filter(user=self.request.user, team__invitations__user=self.request.user)
+        invitation = Invitation.objects.filter(team__user=self.request.user, order_status=1)
         return invitation
-
     def get_serializer_class(self):
-        if self.action == 'list' or 'retrive':
-            return InvitationSerializer
+        if self.action == 'list':
+            return AcceptInvitationSerializerList
+        elif self.action == 'retrieve':
+            return AcceptInvitationSerializerList
         elif self.action == 'update' or 'destroy':
             return AcceptInvitationSerializer
-
     def perform_update(self, serializer):
-        print('ok')
-        serializer.save(asking=False)
-
+        serializer.save(user=self.request.user)
     def perform_destroy(self, instance):
         instance.delete()
 

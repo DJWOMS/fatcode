@@ -107,7 +107,7 @@ class Comment(models.Model):
 class SocialLink(models.Model):
     '''Социальные ссылки команды'''
     name = models.CharField(max_length=25, blank=True, null=True)
-    link = models.URLField(max_length=25, blank=True, null=True)
+    link = models.URLField(max_length=50, blank=True, null=True)
     team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='social_links')
 
     def __str__(self):
