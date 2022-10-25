@@ -84,6 +84,24 @@ social_link_detail = views.SocialLinkView.as_view({
     'put': 'update',
     'delete': 'destroy'
 })
+
+show_posts = views.ShowPostsView.as_view({
+    'get': 'list'
+})
+
+show_post = views.ShowPostsView.as_view({
+    'get': 'retrieve'
+})
+
+show_comments = views.CommentsViewOwn.as_view({
+    'get': 'list'
+})
+
+show_comment = views.CommentsViewOwn.as_view({
+    'get': 'retrieve',
+    'delete': 'destroy'
+})
+
 urlpatterns = format_suffix_patterns([
     path('teams/', teams, name='teams'),
     path('teams/<int:pk>/', detail_teams, name='detail_teams'),
@@ -94,8 +112,12 @@ urlpatterns = format_suffix_patterns([
     path('teams_member/<int:pk>/', teams_member_detail, name='teams_member_detail'),
     path('posts/', posts, name='post'),
     path('posts/<int:pk>/', update_or_delete_post, name='update_or_delete_post'),
-    path('comments/', comments, name='comments'),
-    path('comments/<int:pk>', comment_detail, name='comment_detail'),
+    path('show_post/', show_posts, name='show_posts'),
+    path('show_post/<int:pk>/', show_post, name='show_post'),
+    path('show_comment/', comments, name='comments'),
+    path('show_comments/<int:pk>/', comment_detail, name='comment_detail'),
+    path('comment/', show_comments, name='show_comments'),
+    path('comment/<int:pk>/', show_comment, name='show_comment'),
     path('invitation/', invitation, name='invitation'),
     path('invitation/<int:pk>/', invitation_delete, name='invitation_delete'),
     path('invitation_list/', invitation_list, name='invitation_list'),

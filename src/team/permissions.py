@@ -11,10 +11,57 @@ class IsAuthorOrReadOnly(permissions.BasePermission):
             return True
         return obj.user == request.user
 
+
+class CommentOwnerTeam(permissions.BasePermission):
+    '''Только для автора изменение/удаление ссылки'''
+    def has_object_permission(self, request, view, obj):
+        print(obj)
+        return obj.post.user == request.user
+
+
+class SocialOwnerTeam(permissions.BasePermission):
+    '''Только для автора изменение/удаление ссылки'''
+    def has_object_permission(self, request, view, obj):
+        print(obj.team)
+        return obj.team.user == request.user
+
+
+class PostOwnerTeam(permissions.BasePermission):
+    '''Только для участников команды просмотр обьекта и'''
+    def has_object_permission(self, request, view, obj):
+        team = TeamMember.objects.get(team=obj.team, user=request.user)
+        return team.user == request.user
+
+
+class MemberTeam(permissions.BasePermission):
+    '''Только участников команды'''
+    def has_object_permission(self, request, view, obj):
+        team = TeamMember.objects.get(team=obj, user=request.user)
+        return team.user == request.user
+
+
+class MemberTeam(permissions.BasePermission):
+    '''Только участников команды'''
+    def has_object_permission(self, request, view, obj):
+        print(obj)
+        team = TeamMember.objects.get(team=obj, user=request.user)
+        return team.user == request.user
+
+
 class OwnerTeam(permissions.BasePermission):
     '''Только для автора'''
     def has_object_permission(self, request, view, obj):
+        print(obj)
         return obj.user == request.user
+
+
+class AuthorOrMember(BasePermission):
+    """ Для автора или члена команды """
+    def has_permission(self, request, view):
+        print('r', request)
+        user = TeamMember.objects.filter(Q(user=request.user) | Q(team__user=request.user))
+        print(user)
+        return user == request.user
 
 # class OwnerTeam(permissions.BasePermission):
 #     '''Только для автора'''
