@@ -92,7 +92,7 @@ class InvitationSerializer(serializers.ModelSerializer):
         model = Invitation
         fields = ("id", "team", "user", "create_date", "order_status")
 
-
+# как в try два запроса проверить?
 class InvitationAskingSerializer(serializers.ModelSerializer):
     """Подача заявки пользователем"""
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
@@ -102,20 +102,17 @@ class InvitationAskingSerializer(serializers.ModelSerializer):
         fields = ("id", "team", "create_date", "user")
 
     def create(self, validated_data):
+        member = TeamMember.objects.get(Q(user=validated_data.get('user'))& Q(team=validated_data.get('team')))
         try:
             user = Team.objects.get(Q(user=validated_data.get('user').id) & Q(id=validated_data.get('team').id))
+            member = TeamMember.objects.get(Q(user=validated_data.get('user')) & Q(team=validated_data.get('team')))
             return APIException(detail='Не возможно стать учатником своей команды', code=status.HTTP_400_BAD_REQUEST)
         except Team.DoesNotExist:
-            try:
-                member = TeamMember.objects.get(Q(user=validated_data.get('user')) & Q(team=validated_data.get('team')))
-                print(member)
-                return APIException(detail='Не возможно подать заявку несколько раз в одну команду', code=status.HTTP_400_BAD_REQUEST)
-            except TeamMember.DoesNotExist:
-                invitation = Invitation.objects.create(
-                    team=validated_data.get('team', None),
-                    user=validated_data.get('user', None),
-                )
-                return invitation
+            invitation = Invitation.objects.create(
+                team=validated_data.get('team', None),
+                user=validated_data.get('user', None),
+            )
+            return invitation
 
 
 class AcceptInvitationSerializerList(serializers.ModelSerializer):
@@ -167,7 +164,6 @@ class TeamSerializer(serializers.ModelSerializer):
     class Meta:
         model = Team
         fields = (
-            "id",
             "name",
             "tagline",
             "user",
@@ -206,7 +202,6 @@ class TeamCommentListSerializer(serializers.ModelSerializer):
     """ Список комментариев """
     user = GetUserSerializer()
     children = TeamCommentChildrenListSerializer(read_only=True, many=True)
-    post = PostsListForComments(read_only=True)
 
     class Meta:
         list_serializer_class = FilterCommentListSerializer
@@ -309,7 +304,6 @@ class DetailTeamSerializer(serializers.ModelSerializer):
         )
 
 
-# добавить в блок try или я автор этого поста
 class TeamCommentCreateSerializer(serializers.ModelSerializer):
     """ Добавление комментариев к посту """
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
@@ -339,13 +333,14 @@ class TeamCommentUpdateSerializer(serializers.ModelSerializer):
 
 
 class TeamPostSerializer(serializers.ModelSerializer):
-    """ Создание поста """
+    """ Вывод и создание поста """
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
-    team = TeamSocialLinkView()
+    comments = TeamCommentListSerializer(many=True, read_only=True)
+    view_count = serializers.CharField(read_only=True)
 
     class Meta:
         model = Post
-        fields = ("id", "user", "create_date", "text", "team")
+        fields = ("id", "user", "create_date", "text", "comments", "view_count", "team")
 
     def create(self, validated_data):
         try:
@@ -355,7 +350,7 @@ class TeamPostSerializer(serializers.ModelSerializer):
         post = Post.objects.create(
             text=validated_data.get('text', None),
             user=validated_data.get('user', None),
-            team=team,
+            team=validated_data.get('team', None),
         )
         return post
 

@@ -1,12 +1,12 @@
-from rest_framework.generics import ListAPIView, CreateAPIView
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.generics import ListAPIView, CreateAPIView, UpdateAPIView
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
 
 from . import models
 from . import serializers
-from .permissions import IsInventoryCatUser
-from ..base.classes import MixedSerializer
+from .permissions import IsInventoryCatUser, IsCatAuthUser
+from ..base.classes import MixedSerializer, MixedPermissionSerializer
 
 
 class ProductView(ListAPIView):
@@ -41,3 +41,22 @@ class PhraseView(ListAPIView):
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, ]
     filterset_fields = ["name", ]
+
+
+class CatView(MixedSerializer, ReadOnlyModelViewSet):
+    queryset = models.Cat.objects.all()
+    serializer_class = serializers.CatSerializer
+
+
+class CatUserView(ListAPIView):
+    serializer_class = serializers.CatSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return models.Cat.objects.filter(user=self.request.user)
+
+
+class UpdateCatUserView(UpdateAPIView):
+    queryset = models.Cat.objects.all()
+    serializer_class = serializers.CatSerializer
+    permission_classes = [IsAuthenticated, IsCatAuthUser]

@@ -108,8 +108,8 @@ urlpatterns = format_suffix_patterns([
     path('own_teams/', teams_owns, name='teams_owns'),
     path('own_teams/<int:pk>/', teams_owns_detail, name='teams_owns_detail'),
     path('own_teams/<int:pk>/add_post', add_post, name='add_post'),
-    path('teams_member/', teams_member, name='teams_member'),
-    path('teams_member/<int:pk>/', teams_member_detail, name='teams_member_detail'),
+    path('members/', teams_member, name='teams_member'),
+    path('members/<int:pk>/', teams_member_detail, name='teams_member_detail'),
     path('posts/', posts, name='post'),
     path('posts/<int:pk>/', update_or_delete_post, name='update_or_delete_post'),
     path('show_post/', show_posts, name='show_posts'),
@@ -124,4 +124,6 @@ urlpatterns = format_suffix_patterns([
     path('invitation_list/<int:pk>/', invitation_detail, name='invitation_detail'),
     path('social_link/', social_links, name='social_links'),
     path('social_link/<int:pk>/', social_link_detail, name='social_link_detail'),
+    path('<int:pk>/', detail_teams, name='detail_teams'),
+    path('', teams, name='teams'),
 ])
