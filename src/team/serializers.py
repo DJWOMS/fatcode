@@ -7,6 +7,7 @@ from .models import Post, Comment, Team, TeamMember, Invitation, SocialLink
 from ..profiles.serializers import GetUserSerializer
 from ..base.service import delete_old_file
 
+
 class TeamSocialLinkView(serializers.ModelSerializer):
     """Вывод команды при добавлении социальной ссылки"""
 
@@ -27,7 +28,6 @@ class ListSocialLinkSerializer(serializers.ModelSerializer):
 
 class UpdateSocialLinkSerializer(serializers.ModelSerializer):
     """Редактирование/удаление социальных сетей"""
-
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
@@ -37,20 +37,22 @@ class UpdateSocialLinkSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         try:
             team = Team.objects.get(
-                Q(user=validated_data.get('user').id) & Q(name=instance.team))
+                Q(user=validated_data.get('user').id) & Q(name=instance.team)
+            )
             instance.name = validated_data.get('name', None)
             instance.link = validated_data.get('link', None)
             instance.team = team
             instance.save()
             return instance
         except Team.DoesNotExist:
-            return APIException(detail='Добавить ссылку возможно только к своей команде',
-                                code=status.HTTP_400_BAD_REQUEST)
+            return APIException(
+                detail='Добавить ссылку возможно только к своей команде',
+                code=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class CreateSocialLinkSerializer(serializers.ModelSerializer):
     """Добавление социальных сетей"""
-
     team = TeamSocialLinkView()
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
@@ -61,12 +63,20 @@ class CreateSocialLinkSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         try:
             team = Team.objects.get(
-                Q(user=validated_data.get('user').id) & Q(name=validated_data.get('team').get('name')))
+                Q(user=validated_data.get('user').id) &
+                Q(name=validated_data.get('team').get('name'))
+            )
         except Team.DoesNotExist:
-            return APIException(detail='Добавить ссылку возможно только к своей команде', code=status.HTTP_400_BAD_REQUEST)
+            return APIException(
+                detail='Добавить ссылку возможно только к своей команде',
+                code=status.HTTP_400_BAD_REQUEST
+            )
         try:
             social_link = SocialLink.objects.get(team__name=validated_data.get('team').get('name'))
-            return APIException(detail='Добавить ссылку к команде только одну', code=status.HTTP_400_BAD_REQUEST)
+            return APIException(
+                detail='Добавить ссылку к команде только одну',
+                code=status.HTTP_400_BAD_REQUEST
+            )
         except SocialLink.DoesNotExist:
             social_link = SocialLink.objects.create(
                 name=validated_data.get('name', None),
@@ -102,12 +112,19 @@ class InvitationAskingSerializer(serializers.ModelSerializer):
         fields = ("id", "team", "create_date", "user")
 
     def create(self, validated_data):
-        member = TeamMember.objects.get(Q(user=validated_data.get('user'))& Q(team=validated_data.get('team')))
-        try:
-            user = Team.objects.get(Q(user=validated_data.get('user').id) & Q(id=validated_data.get('team').id))
-            member = TeamMember.objects.get(Q(user=validated_data.get('user')) & Q(team=validated_data.get('team')))
-            return APIException(detail='Не возможно стать учатником своей команды', code=status.HTTP_400_BAD_REQUEST)
-        except Team.DoesNotExist:
+        user = Team.objects.filter(
+            Q(user=validated_data.get('user').id) & Q(id=validated_data.get('team').id)
+        ).exists()
+        member = TeamMember.objects.filter(
+            Q(user=validated_data.get('user')) & Q(team=validated_data.get('team'))
+        ).exists()
+
+        if user or member:
+            return APIException(
+                detail='Не возможно стать участником своей команды',
+                code=status.HTTP_400_BAD_REQUEST
+            )
+        else:
             invitation = Invitation.objects.create(
                 team=validated_data.get('team', None),
                 user=validated_data.get('user', None),
@@ -135,14 +152,14 @@ class AcceptInvitationSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         try:
-            member = TeamMember.objects.get(Q(user=instance.user) & Q(team=instance.team))
-            return APIException(detail='Участником одной команды можно стать один раз', code=status.HTTP_400_BAD_REQUEST)
+            TeamMember.objects.get(Q(user=instance.user) & Q(team=instance.team))
+            return APIException(
+                detail='Участником одной команды можно стать один раз',
+                code=status.HTTP_400_BAD_REQUEST
+            )
         except TeamMember.DoesNotExist:
             if instance.order_status == 'Approved':
-                member = TeamMember.objects.create(
-                    user=instance.user,
-                    team=instance.team
-                )
+                TeamMember.objects.create(user=instance.user, team=instance.team)
         instance.order_status = validated_data.get('order_status', None)
         instance.save()
         return instance
@@ -163,12 +180,7 @@ class TeamSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Team
-        fields = (
-            "name",
-            "tagline",
-            "user",
-            "avatar",
-        )
+        fields = ("name", "tagline", "user", "avatar")
 
 
 class TeamListSerializer(serializers.ModelSerializer):
@@ -222,7 +234,7 @@ class TeamListPostSerializer(serializers.ModelSerializer):
 
 
 class CreatePost(serializers.ModelSerializer):
-    '''Добавление поста'''
+    """Добавление поста"""
     user = GetUserSerializer()
 
     class Meta:
@@ -259,26 +271,17 @@ class CreateTeamSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Team
-        fields = (
-            "name",
-            "tagline",
-            "user",
-            "avatar",
-        )
+        fields = ("name", "tagline", "user", "avatar")
 
-
+# TODO два одинаковых сериализатора
 class UpdateTeamSerializer(serializers.ModelSerializer):
     """Редактирование команды"""
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
         model = Team
-        fields = (
-            "name",
-            "tagline",
-            "user",
-            "avatar",
-        )
+        fields = ("name", "tagline", "user", "avatar")
+
 
 class DetailTeamSerializer(serializers.ModelSerializer):
     """ Просмотр деталей одной команды"""
@@ -287,27 +290,27 @@ class DetailTeamSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Team
-        fields = (
-            "name",
-            "tagline",
-            "user",
-            "avatar",
-            "social_links",
-        )
+        fields = ("name", "tagline", "user", "avatar", "social_links")
 
 
 class TeamCommentCreateSerializer(serializers.ModelSerializer):
     """ Добавление комментариев к посту """
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
     class Meta:
         model = Comment
         fields = ("text", "post", "user")
 
     def create(self, validated_data):
         try:
-            post = Post.objects.get(Q(team__members__user=validated_data.get('user').id) & Q(id=validated_data.get('post').id))
+            post = Post.objects.get(
+                Q(team__members__user=validated_data.get('user').id) &
+                Q(id=validated_data.get('post').id)
+            )
         except Post.DoesNotExist:
-            return APIException(detail='Нет доступа для написания комментариев', code=status.HTTP_400_BAD_REQUEST)
+            return APIException(
+                detail='Нет доступа для написания комментариев', code=status.HTTP_400_BAD_REQUEST
+            )
         comment = Comment.objects.create(
             text=validated_data.get('text', None),
             user=validated_data.get('user', None),
