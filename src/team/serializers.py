@@ -209,12 +209,11 @@ class CommentChildrenSerializer(serializers.Serializer):
 class CommentListSerializer(serializers.ModelSerializer):
     """ Список комментариев """
     user = GetUserSerializer()
-    children = CommentChildrenSerializer(many=True)
 
     class Meta:
         list_serializer_class = FilterCommentListSerializer
         model = Comment
-        fields = ("id", "user", "text", "create_date", "children")
+        fields = ("id", "user", "text", "create_date", "comments_count")
 
 
 class PostSerializer(serializers.ModelSerializer):
@@ -243,17 +242,6 @@ class CreatePost(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = ("text", )
-
-
-class TeamRetrieveSerializer(serializers.ModelSerializer):
-    """Просмотр одной команд как создатель"""
-    members = TeamMemberSerializer(many=True, read_only=True)
-    articles = PostSerializer(many=True)
-    social_links = SocialLinkSerializer(many=True)
-
-    class Meta:
-        model = Team
-        fields = ("id", "name", "avatar", "tagline", "articles", "members", "social_links")
 
 
 class CreateTeamSerializer(serializers.ModelSerializer):
@@ -335,12 +323,12 @@ class CommentCreateSerializer(serializers.ModelSerializer):
             )
         if validated_data.get('parent') is not None:
             try:
-                comment = Comment.objects.get(text=validated_data.get('parent'))
-            except Comment.DoesNotExist:
+                post = Post.objects.get(id=validated_data.get('parent').post.id)
+            except Post.DoesNotExist:
                 raise APIException(
                     detail='Нет доступа для написания комментариев', code=status.HTTP_400_BAD_REQUEST
                 )
-            if comment.post.id != validated_data.get('post_id'):
+            if post.id != validated_data.get('post_id'):
                 raise APIException(
                     detail='Нет доступа для написания комментариев', code=status.HTTP_400_BAD_REQUEST
                 )

@@ -29,15 +29,6 @@ class Team(models.Model):
         return self.name
 
 
-@receiver(post_save, sender=Team)
-def team_member_create(sender, instance, created, **kwargs):
-    """Create TeamMember after creating new Team (add author of Team to TeamMember)"""
-    if created:
-        TeamMember.objects.create(user=instance.user, team_id=instance.pk)
-
-
-
-
 class TeamMember(models.Model):
     '''Модель промежуточная пользователь команда'''
     user = models.ForeignKey(FatUser, on_delete=models.CASCADE, related_name='team_members')
@@ -99,7 +90,10 @@ class Comment(models.Model):
     )
 
     def __str__(self):
-        return f'{self.text}'
+        return f'{self.id}'
+
+    def comments_count(self):
+        return self.children.all().count()
 
 
 class SocialLink(models.Model):
@@ -110,3 +104,10 @@ class SocialLink(models.Model):
 
     def __str__(self):
         return self.name
+
+
+@receiver(post_save, sender=Team)
+def team_member_create(sender, instance, created, **kwargs):
+    """Create TeamMember after creating new Team (add author of Team to TeamMember)"""
+    if created:
+        TeamMember.objects.create(user=instance.user, team_id=instance.pk)
