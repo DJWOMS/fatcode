@@ -9,31 +9,23 @@ teams = views.TeamView.as_view({
 
 detail_teams = views.TeamView.as_view({
     'get': 'retrieve',
-})
-
-teams_owns = views.OwnTeamListView.as_view({
-    'get': 'list',
-})
-
-teams_owns_detail = views.OwnTeamListView.as_view({
-    'get': 'retrieve',
     'put': 'update',
     'delete': 'destroy'
 })
 
-teams_member = views.MemberTeamListView.as_view({
-    'get': 'list'
+my_team = views.OwnTeamListView.as_view({
+    'get': 'list',
 })
 
-teams_member_detail = views.MemberTeamListView.as_view({
-    'get': 'retrieve'
+team_member = views.MemberTeamListView.as_view({
+    'get': 'list'
 })
 
 add_post = views.PostView.as_view({
     'post': 'create'
 })
 
-posts = views.PostView.as_view({
+post = views.PostView.as_view({
     'get': 'list',
     'post': 'create'
 })
@@ -43,7 +35,7 @@ update_or_delete_post = views.PostView.as_view({
     'put': 'update',
     'delete': 'destroy'
 })
-comments = views.CommentsView.as_view({
+comment = views.CommentsView.as_view({
     'get': 'list',
     'post': 'create'
 })
@@ -70,8 +62,7 @@ invitation_list = views.InvitationDetailView.as_view({
 
 invitation_detail = views.InvitationDetailView.as_view({
     'get': 'retrieve',
-    'put': 'update',
-    'delete': 'destroy'
+    'put': 'update'
 })
 
 social_links = views.SocialLinkView.as_view({
@@ -85,45 +76,30 @@ social_link_detail = views.SocialLinkView.as_view({
     'delete': 'destroy'
 })
 
-show_posts = views.ShowPostsView.as_view({
-    'get': 'list'
+member = views.MemberList.as_view({
+    'get': 'list',
 })
 
-show_post = views.ShowPostsView.as_view({
-    'get': 'retrieve'
-})
-
-show_comments = views.CommentsViewOwn.as_view({
-    'get': 'list'
-})
-
-show_comment = views.CommentsViewOwn.as_view({
+member_detail = views.MemberList.as_view({
     'get': 'retrieve',
     'delete': 'destroy'
 })
 
 urlpatterns = format_suffix_patterns([
-    path('teams/', teams, name='teams'),
-    path('teams/<int:pk>/', detail_teams, name='detail_teams'),
-    path('own_teams/', teams_owns, name='teams_owns'),
-    path('own_teams/<int:pk>/', teams_owns_detail, name='teams_owns_detail'),
-    path('own_teams/<int:pk>/add_post', add_post, name='add_post'),
-    path('members/', teams_member, name='teams_member'),
-    path('members/<int:pk>/', teams_member_detail, name='teams_member_detail'),
-    path('posts/', posts, name='post'),
-    path('posts/<int:pk>/', update_or_delete_post, name='update_or_delete_post'),
-    path('show_post/', show_posts, name='show_posts'),
-    path('show_post/<int:pk>/', show_post, name='show_post'),
-    path('show_comment/', comments, name='comments'),
-    path('show_comments/<int:pk>/', comment_detail, name='comment_detail'),
-    path('comment/', show_comments, name='show_comments'),
-    path('comment/<int:pk>/', show_comment, name='show_comment'),
+    path('my_team/', my_team, name='my_team'),
+    path('team_member/', team_member, name='team_member'),
     path('invitation/', invitation, name='invitation'),
     path('invitation/<int:pk>/', invitation_delete, name='invitation_delete'),
     path('invitation_list/', invitation_list, name='invitation_list'),
     path('invitation_list/<int:pk>/', invitation_detail, name='invitation_detail'),
-    path('social_link/', social_links, name='social_links'),
-    path('social_link/<int:pk>/', social_link_detail, name='social_link_detail'),
-    path('<int:pk>/', detail_teams, name='detail_teams'),
-    path('', teams, name='teams'),
+    path('team/<int:pk>/social_link/', social_links, name='social_links'),
+    path('team/<int:pk>/social_link/<int:social_pk>/', social_link_detail, name='social_link_detail'),
+    path('team/<int:pk>/member/', member, name='member'),
+    path('team/<int:pk>/member/<int:member_pk>/', member_detail, name='member_detail'),
+    path('team/<int:pk>/post/', post, name='post'),
+    path('team/<int:pk>/post/<int:post_pk>/', update_or_delete_post, name='update_or_delete_post'),
+    path('team/<int:pk>/post/<int:post_pk>/comment/', comment, name='comment'),
+    path('team/<int:pk>/post/<int:post_pk>/comment/<int:comment_pk>', comment_detail, name='comment_detail'),
+    path('team/<int:pk>/', detail_teams, name='detail_teams'),
+    path('team/', teams, name='teams'),
 ])
