@@ -43,7 +43,7 @@ class PhraseView(ListAPIView):
     filterset_fields = ["name", ]
 
 
-class CatView(MixedSerializer, ReadOnlyModelViewSet):
+class CatView(ReadOnlyModelViewSet):
     queryset = models.Cat.objects.all()
     serializer_class = serializers.CatSerializer
 
