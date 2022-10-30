@@ -146,6 +146,11 @@ SWAGGER_SETTINGS = {
     }
 }
 
+TELEGRAM = {
+    'bot_token': '5596339937:AAF56FuNEoWQLQMNA3ms-aUiPCJ2pk95_i8',
+    'channel_name': 'fatcode техподдержка',
+}
+
 CORS_ALLOWED_ORIGINS = os.environ.get("CORS_ALLOWED_HOSTS", "http://127.0.0.1:8000").split(" ")
 
 CELERY_BROKER_URL = 'redis://redis:6379/0'
