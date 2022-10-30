@@ -147,8 +147,9 @@ SWAGGER_SETTINGS = {
 }
 
 TELEGRAM = {
-    'bot_token': '5596339937:AAF56FuNEoWQLQMNA3ms-aUiPCJ2pk95_i8',
+    'bot_token': os.environ.get('BOT_TOKEN'),
     'channel_name': 'fatcode tech',
+    'channel_id': os.environ.get('CHANNEL_ID')
 }
 
 CORS_ALLOWED_ORIGINS = os.environ.get("CORS_ALLOWED_HOSTS", "http://127.0.0.1:8000").split(" ")
