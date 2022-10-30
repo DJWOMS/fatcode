@@ -9,5 +9,6 @@ urlpatterns = [
     path("<int:pk>/", views.QuestionView.as_view(
         {"get": "retrieve", "put": "update", "delete": "destroy"}
     )),
+    path("answer/<int:pk>/accept", views.UpdateAnswerAccept.as_view({"patch": "update"})),
     path("", views.QuestionView.as_view({"get": "list", "post": "create"})),
 ]

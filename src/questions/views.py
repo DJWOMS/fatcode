@@ -67,3 +67,9 @@ class CreateAnswerReview(ModelViewSet):
     serializer_class = serializers.AnswerReviewSerializer
     permission_classes = (IsAuthenticated,)
     queryset = AnswerReview.objects.all()
+
+
+class UpdateAnswerAccept(ModelViewSet):
+    serializer_class = serializers.UpdateAcceptAnswerSerializer
+    permission_classes = (IsAuthenticated,)
+    queryset = Answer.objects.all()

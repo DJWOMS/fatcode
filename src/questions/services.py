@@ -38,11 +38,15 @@ class QuestionService:
 
 class AnswerService:
 
-    def __init__(self, answer):
+    def __init__(self, answer: models.Answer):
         self.answer = answer
 
     def update_rating(self):
         self.rating += self.review.objects.filter(answer=self, grade=True).count()
         self.rating -= self.review.objects.filter(answer=self, grade=False).count()
         return super().save()
+
+    def update_accept(self):
+        self.answer.accepted = not self.answer.accepted
+        return self.answer
 
