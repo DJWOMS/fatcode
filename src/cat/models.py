@@ -73,7 +73,7 @@ class Product(models.Model):
 
 
 class Item(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='item_product')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='item')
     quantity = models.IntegerField()
     inventory = models.ForeignKey(Inventory, on_delete=models.CASCADE, related_name='item')
 
