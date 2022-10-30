@@ -29,6 +29,7 @@ INSTALLED_APPS = [
 
     'django_celery_beat',
     'src.profiles',
+    'src.data',
     'src.courses',
     'src.cat',
     'src.questions',
@@ -118,6 +119,8 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication'
     ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 100
 }
 
 DJOSER = {

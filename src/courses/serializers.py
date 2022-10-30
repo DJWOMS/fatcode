@@ -165,3 +165,7 @@ class HelpUserSerializer(serializers.ModelSerializer):
         return models.HelpUser.objects.create(mentor=mentor, student=student, **validated_data)
 
 
+class UserCourseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.UserCourseThrough
+        fields = '__all__'
