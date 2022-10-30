@@ -78,3 +78,11 @@ class AnswerReview(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     grade = models.BooleanField()
     answer = models.ForeignKey(Answer, on_delete=models.CASCADE, related_name='review')
+
+
+class QuestionFollowers(models.Model):
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    follower = models.ManyToManyField(settings.AUTH_USER_MODEL)
+
+    def __str__(self):
+        return f'{self.follower} followed to the question {self.question}'
