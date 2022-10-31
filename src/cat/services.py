@@ -1,5 +1,6 @@
 from .models import Cat, Product, Item, Hint
 from .settings import CatSettings
+
 from src.profiles.services import CoinService
 
 
@@ -17,7 +18,7 @@ class CatService:
         self.cat.die = True
         return self.cat.save()
 
-    def _increase_xp(self,  xp):
+    def _increase_xp(self, xp):
         self.cat.xp += xp
         if self.cat.xp >= self.cat.next_level_xp:
             self._level_up()
