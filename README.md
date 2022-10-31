@@ -45,3 +45,6 @@
 #### Войти в контейнер
 
     docker exec -it fatcode bash
+### Создать пользователя
+
+    docker-compose run web python manage.py createsuperuser
