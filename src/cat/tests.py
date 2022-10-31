@@ -35,6 +35,7 @@ class CatTestCase(APITestCase):
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.status_code, 200)
 
+    # TODO разобраться как получиь объект кота, сейчас в ответе возвращается 404 статус запроса
     def test_cat_user_update(self):
         data = {
             "name": "барсик"
