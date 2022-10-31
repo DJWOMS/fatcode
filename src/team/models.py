@@ -51,14 +51,12 @@ class TeamMember(models.Model):
 class Invitation(models.Model):
     """ Модель заявок на вступление в команду"""
     STATUS = (
-        ('1', 'В ожидании'),
-        ('2', 'Одобрено'),
-        ('3', 'Отклонено')
+        ('Waiting', 'В ожидании'),
+        ('Approved', 'Одобрено'),
+        ('Rejected', 'Отклонено')
     )
     team = models.ForeignKey(Team, related_name="invitations", on_delete=models.CASCADE)
     user = models.ForeignKey(FatUser, on_delete=models.CASCADE, related_name='invitations')
-    accepted = models.BooleanField(default=False)
-    asking = models.BooleanField(default=True)
     order_status = models.CharField(max_length=100, choices=STATUS, default='1')
     create_date = models.DateTimeField(auto_now_add=True)
 
@@ -107,7 +105,7 @@ class Comment(models.Model):
 class SocialLink(models.Model):
     '''Социальные ссылки команды'''
     name = models.CharField(max_length=25, blank=True, null=True)
-    link = models.URLField(max_length=25, blank=True, null=True)
+    link = models.URLField(max_length=50, blank=True, null=True)
     team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='social_links')
 
     def __str__(self):

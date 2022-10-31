@@ -1,7 +1,6 @@
 from github import Github
 from . import utils
 
-
 github = Github()
 
 
@@ -28,8 +27,3 @@ def get_project_stats(project):
     repository = get_repository(project.repository)
     utils.repository_stats(project, repository)
     return project
-
-#
-# def save_avatar(file_name: str, file: UploadFile):
-#     with open(file_name, "wb") as buffer:
-#         shutil.copyfileobj(file.file, buffer)
