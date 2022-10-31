@@ -44,7 +44,7 @@ class PhraseView(ListAPIView):
 
 
 class CatView(ReadOnlyModelViewSet):
-    queryset = models.Cat.objects.all()
+    queryset = models.Cat.objects.select_related('user').all()
     serializer_class = serializers.CatSerializer
 
 
