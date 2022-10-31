@@ -301,7 +301,7 @@ class DetailTeamSerializer(serializers.ModelSerializer):
             "social_links",
         )
 
-
+#TODO посмотреть метод create как лучше организовать
 class CommentCreateSerializer(serializers.ModelSerializer):
     """ Добавление комментариев к посту """
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())

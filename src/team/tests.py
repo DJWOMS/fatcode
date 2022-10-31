@@ -220,9 +220,9 @@ class TeamTest(APITestCase):
     # def test_invitation_list_invalid(self):
     #     response = self.client.get(reverse('invitation_list'))
     #     self.assertEqual(response.status_code, 401)
-
+##TODO на url два патерна
     def test_post_list(self):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
-        response = self.client.get(reverse('post'), kwargs={'pk': self.team1.id})
+        response = self.client.get(reverse('post_t'), kwargs={'pk': self.team1.id})
         print(response)
 
