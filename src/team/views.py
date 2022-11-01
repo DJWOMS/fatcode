@@ -83,7 +83,7 @@ class SocialLinkView(MixedPermissionSerializer, viewsets.ModelViewSet):
 class OwnTeamListView(MixedPermissionSerializer, viewsets.ModelViewSet):
     """Просморт команды где как создатель"""
     permission_classes_by_action = {
-        'list': (IsAuthenticatedOrReadOnly, )
+        'list': (IsAuthenticated, )
     }
     serializer_classes_by_action = {
         'list': serializers.TeamListSerializer
@@ -96,7 +96,7 @@ class OwnTeamListView(MixedPermissionSerializer, viewsets.ModelViewSet):
 class MemberTeamListView(MixedPermissionSerializer, viewsets.ModelViewSet):
     """Просморт команд где как участник"""
     permission_classes_by_action = {
-        'list': (IsAuthenticatedOrReadOnly, ),
+        'list': (IsAuthenticated, ),
     }
     serializer_classes_by_action = {
         'list': serializers.TeamListSerializer,
@@ -204,9 +204,9 @@ class CommentsView(MixedPermissionSerializer, viewsets.ModelViewSet):
 class InvitationView(MixedPermissionSerializer, viewsets.ModelViewSet):
     """CD заявки в команду"""
     permission_classes_by_action = {
-        'list': (IsAuthenticatedOrReadOnly, ),
+        'list': (IsAuthenticated, ),
         'retrieve': (IsUser, ),
-        'create': (IsAuthenticatedOrReadOnly, ),
+        'create': (IsAuthenticated, ),
         'destroy': (IsUser, )
     }
     serializer_classes_by_action = {
@@ -229,7 +229,7 @@ class InvitationView(MixedPermissionSerializer, viewsets.ModelViewSet):
 class InvitationDetailView(MixedPermissionSerializer, viewsets.ModelViewSet):
     """ Принять/отклонить заявки в команду"""
     permission_classes_by_action = {
-        'list': (IsAuthenticatedOrReadOnly,),
+        'list': (IsAuthenticated,),
         'retrieve': (permissions.IsAuthorTeamForInvitation, ),
         'update': (permissions.IsAuthorTeamForInvitation, ),
     }

@@ -1,9 +1,33 @@
+from django.shortcuts import render
 from rest_framework.generics import get_object_or_404
+import requests
 
 from src.profiles import models, serializers
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework import permissions, parsers
+from src.profiles.services import github_get_user
 
+def title(request):
+    return render(request, 'profiles/title.html')
+
+def done(request):
+    code = request.GET.get('code')
+    nik, url, email = github_get_user(code)
+    try:
+        account = models.Account.objects.get(nickname_git=nik)
+    except models.Account.DoesNotExist:
+        user = models.FatUser.objects.create(
+            username=nik,
+            email='test3@mail.ru',
+            password='12345'
+        )
+        models.Account.objects.create(
+            user=user,
+            nickname_git=nik,
+            url=url,
+            email=email
+        )
+    return render(request, 'profiles/done.html')
 
 class UserView(ModelViewSet):
     """Internal user display"""
@@ -33,6 +57,9 @@ class SocialView(ReadOnlyModelViewSet):
     """List or one entry social display"""
     queryset = models.Social.objects.all()
     serializer_class = serializers.ListSocialSerializer
+
+    def get_queryset(self):
+        return models.Social.objects.all()
 
 
 class UserAvatar(ModelViewSet):
