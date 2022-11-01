@@ -82,7 +82,7 @@ class AnswerReview(models.Model):
 
 class QuestionFollowers(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    follower = models.ManyToManyField(settings.AUTH_USER_MODEL)
+    follower = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
     def __str__(self):
         return f'{self.follower} followed to the question {self.question}'
