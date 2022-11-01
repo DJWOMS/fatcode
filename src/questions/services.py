@@ -3,7 +3,7 @@ from . import models
 
 class QuestionService:
 
-    def __init__(self, question):
+    def __init__(self, question: models.Question):
         self.question = question
 
     def answers_count(self):
