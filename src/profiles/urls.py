@@ -16,7 +16,9 @@ urlpatterns = [
         {'put': 'update', 'post': 'create'}
     ), name='user-avatar'),
     path('title/', views.title, name='title'),
-    path('done/', views.done, name='done')
+    path('done/', views.DoneAddView.as_view(), name='done'),
+    path('done_auth/', views.DoneAuthView.as_view(), name='done_auth'),
+    path('add_email/', views.AddEmail.as_view(), name='add_email')
 ]
 
 router = DefaultRouter()

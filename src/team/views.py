@@ -35,15 +35,15 @@ class TeamView(MixedPermissionSerializer, viewsets.ModelViewSet):
     def perform_update(self, serializer):
         serializer.save(user=self.request.user)
 
-    def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
-        if instance.user == self.request.user:
-            self.perform_destroy(instance)
-        else:
-            raise APIException(
-                detail='Нет доступа к данному запросу',
-                code=status.HTTP_400_BAD_REQUEST
-            )
+    # def destroy(self, request, *args, **kwargs):
+    #     instance = self.get_object()
+    #     if instance.user == self.request.user:
+    #         self.perform_destroy(instance)
+    #     else:
+    #         raise APIException(
+    #             detail='Нет доступа к данному запросу',
+    #             code=status.HTTP_400_BAD_REQUEST
+    #         )
 
     def perform_destroy(self, instance):
         instance.delete()
@@ -110,8 +110,8 @@ class MemberList(MixedPermissionSerializer, viewsets.ModelViewSet):
     """ Просмотр участников команды"""
     permission_classes_by_action = {
         'list': (permissions.IsMemberTeam, ),
-        'retrieve': (permissions.IsAuthorTeamOrRead, ),
-        'destroy': (permissions.IsAuthorTeamOrRead, )
+        'retrieve': (permissions.IsMemberTeam, ),
+        'destroy': (permissions.IsAuthorTeam, )
     }
     serializer_classes_by_action = {
         'list': serializers.MemberSerializer,
@@ -144,7 +144,7 @@ class PostView(MixedPermissionSerializer, viewsets.ModelViewSet):
     permission_classes_by_action = {
         'list': (permissions.IsMemberTeam, ),
         'retrieve': (permissions.IsMemberTeam, ),
-        'create': (permissions.IsAuthorTeamOrRead, ),
+        'create': (permissions.IsAuthorTeam, ),
         'update': (IsUser, ),
         'destroy': (IsUser, ),
     }

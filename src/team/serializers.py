@@ -2,6 +2,7 @@ from django.db.models import Q
 from rest_framework import serializers, status
 from rest_framework.exceptions import APIException
 
+from ..base.exceptions import CustomException
 from ..base.serializers import FilterCommentListSerializer
 from .models import Post, Comment, Team, TeamMember, Invitation, SocialLink
 from ..profiles.serializers import GetUserSerializer
@@ -110,12 +111,8 @@ class InvitationAskingSerializer(serializers.ModelSerializer):
         member = TeamMember.objects.filter(
             Q(user=validated_data.get('user')) & Q(team=validated_data.get('team'))
         ).exists()
-
         if user or member:
-            raise APIException(
-                detail='Не возможно стать участником',
-                code=status.HTTP_400_BAD_REQUEST
-            )
+            raise CustomException()
         else:
             invitation = Invitation.objects.create(
                 team=validated_data.get('team', None),
