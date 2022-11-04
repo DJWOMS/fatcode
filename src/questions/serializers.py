@@ -2,7 +2,7 @@ from rest_framework import serializers
 from . import models
 from .validators import QuestionValidator
 from ..profiles.serializers import GetUserSerializer
-from .services import QuestionService
+from .services import QuestionService, AnswerService
 
 
 class TagsSerializer(serializers.ModelSerializer):
@@ -145,3 +145,14 @@ class UpdateAnswerSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Answer
         fields = ("text",)
+
+
+class UpdateAcceptAnswerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Answer
+        fields = ("accepted",)
+
+    def update(self, instance, validated_data):
+        AnswerService(instance).update_accept()
+        instance = super(UpdateAcceptAnswerSerializer, self).update(instance, validated_data)
+        return instance
