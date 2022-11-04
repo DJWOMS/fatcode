@@ -26,7 +26,8 @@ class CatTestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_cat_detail(self):
-        response = self.client.get(reverse('cat_detail', kwargs={"pk": 1}))
+        cat = self.user.cat.first().id
+        response = self.client.get(reverse('cat_detail', kwargs={"pk": cat}))
         self.assertEqual(response.status_code, 200)
 
     def test_cat_user_get(self):

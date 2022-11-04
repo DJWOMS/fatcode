@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from .models import Question, Answer, QuestionReview, AnswerReview, QuestionFollowers
 from src.profiles.models import FatUser, Social, FatUserSocial
 from ..base.permissions import IsAuthor
-from ..base.classes import MixedPermissionSerializer
+from ..base.classes import MixedPermissionSerializer, MixedSerializer
 from django.db.models import Prefetch
 
 # TODO оптимизировать все запросы в БД
@@ -77,10 +77,13 @@ class UpdateAnswerAccept(ModelViewSet):
     queryset = Answer.objects.all()
 
 
-class QuestionFollower(CreateAPIView):
-    serializer_class = serializers.FollowerQuestionSerializer
+class QuestionFollower(MixedSerializer, ModelViewSet):
+    queryset = QuestionFollowers.objects.all()
     permission_classes = (IsAuthenticated,)
+    serializer_classes_by_action = {
+        "create": serializers.FollowerQuestionSerializer,
+        "destroy": serializers.FollowerQuestionSerializer,
+    }
 
-    def get_queryset(self):
-        follow = QuestionFollowers.objects.get(id=self.kwargs["pk"])
-        return follow
+    def perform_create(self, serializer):
+        serializer.save(follower=self.request.user)

@@ -11,4 +11,5 @@ urlpatterns = [
     )),
     path("answer/<int:pk>/accept", views.UpdateAnswerAccept.as_view({"patch": "update"})),
     path("", views.QuestionView.as_view({"get": "list", "post": "create"})),
+    path("<int:pk>/follow/", views.QuestionFollower.as_view({"post": "create", "delete": "destroy"}))
 ]
