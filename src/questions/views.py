@@ -2,7 +2,7 @@ from . import serializers
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .models import Question, Answer, QuestionReview, AnswerReview, Tag
-from src.profiles.models import FatUser
+
 from ..base.permissions import IsAuthor
 from ..base.classes import MixedPermissionSerializer
 from django.db.models import Prefetch
