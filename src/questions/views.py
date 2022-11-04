@@ -10,7 +10,6 @@ from django.db.models import Prefetch
 # TODO оптимизировать все запросы в БД
 
 
-
 class QuestionView(MixedPermissionSerializer, ModelViewSet):
     serializer_classes_by_action = {
         "list": serializers.ListQuestionSerializer,
