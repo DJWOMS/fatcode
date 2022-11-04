@@ -1,8 +1,10 @@
+from rest_framework.generics import CreateAPIView
+
 from . import serializers
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from .models import Question, Answer, QuestionReview, AnswerReview, Tag
-from src.profiles.models import FatUser
+from .models import Question, Answer, QuestionReview, AnswerReview, QuestionFollowers
+from src.profiles.models import FatUser, Social, FatUserSocial
 from ..base.permissions import IsAuthor
 from ..base.classes import MixedPermissionSerializer
 from django.db.models import Prefetch
@@ -73,3 +75,12 @@ class UpdateAnswerAccept(ModelViewSet):
     serializer_class = serializers.UpdateAcceptAnswerSerializer
     permission_classes = (IsAuthenticated,)
     queryset = Answer.objects.all()
+
+
+class QuestionFollower(CreateAPIView):
+    serializer_class = serializers.FollowerQuestionSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def get_queryset(self):
+        follow = QuestionFollowers.objects.get(id=self.kwargs["pk"])
+        return follow
