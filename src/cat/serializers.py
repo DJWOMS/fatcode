@@ -126,5 +126,4 @@ class UpdateCatSerializer(serializers.ModelSerializer):
         fields = ('name',)
 
     def update(self, instance, validated_data):
-        service = CatService(instance)
-        return service.give_name(validated_data['name'])
+        return CatService(instance).give_name(validated_data['name'])
