@@ -1,10 +1,10 @@
+from rest_framework.generics import CreateAPIView
 from . import serializers
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .models import Question, Answer, QuestionReview, AnswerReview, Tag
-
 from ..base.permissions import IsAuthor
-from ..base.classes import MixedPermissionSerializer
+from ..base.classes import MixedPermissionSerializer, MixedSerializer
 from django.db.models import Prefetch
 
 # TODO оптимизировать все запросы в БД
@@ -73,3 +73,15 @@ class UpdateAnswerAccept(ModelViewSet):
     serializer_class = serializers.UpdateAcceptAnswerSerializer
     permission_classes = (IsAuthenticated,)
     queryset = Answer.objects.all()
+
+
+class QuestionFollower(MixedSerializer, ModelViewSet):
+    queryset = QuestionFollowers.objects.all()
+    permission_classes = (IsAuthenticated,)
+    serializer_classes_by_action = {
+        "create": serializers.FollowerQuestionSerializer,
+        "destroy": serializers.FollowerQuestionSerializer,
+    }
+
+    def perform_create(self, serializer):
+        serializer.save(follower=self.request.user)
