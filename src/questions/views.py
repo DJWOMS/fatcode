@@ -1,10 +1,8 @@
 from rest_framework.generics import CreateAPIView
-
 from . import serializers
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from .models import Question, Answer, QuestionReview, AnswerReview, QuestionFollowers
-from src.profiles.models import FatUser, Social, FatUserSocial
+from .models import Question, Answer, QuestionReview, AnswerReview, Tag
 from ..base.permissions import IsAuthor
 from ..base.classes import MixedPermissionSerializer, MixedSerializer
 from django.db.models import Prefetch
