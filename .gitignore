@@ -5,7 +5,6 @@ idea
 *.egg-info/
 .installed.cfg
 *.egg
-.env.dev
 **/migrations/**
 !**/migrations
 !**/migrations/__init__.py
