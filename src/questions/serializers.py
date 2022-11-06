@@ -156,3 +156,11 @@ class UpdateAcceptAnswerSerializer(serializers.ModelSerializer):
         AnswerService(instance).update_accept()
         instance = super(UpdateAcceptAnswerSerializer, self).update(instance, validated_data)
         return instance
+
+
+class FollowerQuestionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.QuestionFollowers
+        fields = ('question',)
+
+
