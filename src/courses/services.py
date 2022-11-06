@@ -20,3 +20,7 @@ class Service:
         except requests.exceptions.ConnectionError:
             raise serializers.ValidationError('server not response')
         return request
+
+
+class GithubService:
+    pass
