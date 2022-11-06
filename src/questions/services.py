@@ -33,7 +33,7 @@ class QuestionService:
         return self.question.answers.all()
 
     def correct_answers_count(self):
-        return self.question.answers.objects.filter(accepted=True)
+        return self.question.answers.filter(accepted=True)
 
 
 class AnswerService:

@@ -57,7 +57,6 @@ class QuestionApiViewTestCase(APITestCase):
             'text': 'text2'
         }
         url = reverse("question", kwargs={"pk": self.question.id})
-        print("AAAAA", self.question.id)
         response = self.client.patch(url, data)
         self.question = Question.objects.get(id=self.question.id)
         self.assertEqual(response.status_code, status.HTTP_200_OK)

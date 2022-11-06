@@ -1,13 +1,11 @@
 from django.db.models import Prefetch
-from . import serializers
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from .models import Question, Answer, QuestionReview, AnswerReview, Tag
+
 from ..base.permissions import IsAuthor
 from ..base.classes import MixedPermissionSerializer, MixedSerializer
-from django.db.models import Prefetch
-
-# TODO оптимизировать все запросы в БД
+from .models import Question, Answer, QuestionReview, AnswerReview, Tag, QuestionFollowers
+from . import serializers
 
 
 class QuestionView(MixedPermissionSerializer, ModelViewSet):
@@ -76,7 +74,6 @@ class UpdateAnswerAccept(ModelViewSet):
 
 
 class QuestionFollower(MixedSerializer, ModelViewSet):
-    queryset = QuestionFollowers.objects.all()
     permission_classes = (IsAuthenticated,)
     serializer_classes_by_action = {
         "create": serializers.FollowerQuestionSerializer,
@@ -85,8 +82,7 @@ class QuestionFollower(MixedSerializer, ModelViewSet):
     }
 
     def get_queryset(self):
-        queryset = QuestionFollowers.objects.filter(follower=self.request.user)
-        return queryset
+        return QuestionFollowers.objects.filter(follower=self.request.user)
 
     def perform_create(self, serializer):
         serializer.save(follower=self.request.user)
