@@ -1,11 +1,13 @@
 from django.db.models import Prefetch
+from . import serializers
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from .models import Question, Answer, QuestionReview, AnswerReview, Tag, QuestionFollowers
+from .models import Question, Answer, QuestionReview, AnswerReview, Tag
 from ..base.permissions import IsAuthor
 from ..base.classes import MixedPermissionSerializer, MixedSerializer
+from django.db.models import Prefetch
 
-from . import serializers
+# TODO оптимизировать все запросы в БД
 
 
 class QuestionView(MixedPermissionSerializer, ModelViewSet):
@@ -79,7 +81,12 @@ class QuestionFollower(MixedSerializer, ModelViewSet):
     serializer_classes_by_action = {
         "create": serializers.FollowerQuestionSerializer,
         "destroy": serializers.FollowerQuestionSerializer,
+        "list": serializers.FollowerQuestionSerializer,
     }
+
+    def get_queryset(self):
+        queryset = QuestionFollowers.objects.filter(follower=self.request.user)
+        return queryset
 
     def perform_create(self, serializer):
         serializer.save(follower=self.request.user)

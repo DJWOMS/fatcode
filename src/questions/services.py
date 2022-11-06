@@ -42,8 +42,8 @@ class AnswerService:
         self.answer = answer
 
     def update_rating(self):
-        self.rating += self.review.objects.filter(answer=self, grade=True).count()
-        self.rating -= self.review.objects.filter(answer=self, grade=False).count()
+        self.answer.rating += self.answer.review.objects.filter(answer=self, grade=True).count()
+        self.answer.rating -= self.answer.review.objects.filter(answer=self, grade=False).count()
         return super().save()
 
     def update_accept(self):
