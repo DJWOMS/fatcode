@@ -1,8 +1,10 @@
 from rest_framework import serializers
+
 from . import models
-from src.profiles.models import FatUser
 from .validators import StudentWorkValidator
 from .services import Service
+
+from src.profiles.models import FatUser
 
 
 class CodeQuestionSerializer(serializers.ModelSerializer):
@@ -44,22 +46,8 @@ class UserSerializer(serializers.ModelSerializer):
         ref_name = 'userCourse'
 
 
-class LessonSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.Lesson
-        fields = (
-            'lesson_type',
-            'name',
-            'viewed',
-            'video_url',
-            'published',
-            'slug',
-            'description',
-            'hint'
-        )
-
-
-class DetailLessonSerializer(serializers.ModelSerializer):
+class LessonDetailSerializer(serializers.ModelSerializer):
+    """Урок"""
     code = CodeQuestionSerializer(many=True)
     quiz = QuizSerializer(many=True)
     work = serializers.SerializerMethodField()
@@ -67,6 +55,7 @@ class DetailLessonSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Lesson
         fields = (
+            'id',
             'lesson_type',
             'name',
             'viewed',
@@ -86,37 +75,36 @@ class DetailLessonSerializer(serializers.ModelSerializer):
         return serialize_work.data
 
 
-class ListCourseSerializer(serializers.ModelSerializer):
-    author = UserSerializer()
-    tags = TagSerializer(many=True)
-    category = CategorySerializer()
+class LessonListSerializer(serializers.ModelSerializer):
+    """Список уроков"""
 
     class Meta:
-        model = models.Course
+        model = models.Lesson
         fields = (
-            'author',
-            'tags',
-            'category',
-            'name',
-            'description',
-            'published',
-            'updated',
-            'slug',
             'id',
-            'view_count'
+            'lesson_type',
+            'name',
+            'viewed',
+            'video_url',
+            'published',
+            'slug',
+            'description',
+            'hint'
         )
 
 
-class DetailCourseSerializer(serializers.ModelSerializer):
+class CourseSerializer(serializers.ModelSerializer):
+    """Курс"""
     mentor = UserSerializer()
     author = UserSerializer()
     tags = TagSerializer(many=True)
     category = CategorySerializer()
-    lessons = LessonSerializer(many=True)
+    lessons = LessonListSerializer(many=True)
 
     class Meta:
         model = models.Course
         fields = (
+            'id',
             'name',
             'description',
             'slug',
@@ -128,6 +116,28 @@ class DetailCourseSerializer(serializers.ModelSerializer):
             'tags',
             'category',
             'lessons',
+        )
+
+
+class ListCourseSerializer(serializers.ModelSerializer):
+    """Список курсов"""
+    author = UserSerializer()
+    tags = TagSerializer(many=True)
+    category = CategorySerializer()
+
+    class Meta:
+        model = models.Course
+        fields = (
+            'id',
+            'author',
+            'tags',
+            'category',
+            'name',
+            'description',
+            'published',
+            'updated',
+            'slug',
+            'view_count'
         )
 
 
@@ -163,5 +173,3 @@ class HelpUserSerializer(serializers.ModelSerializer):
         mentor = validated_data['lesson'].course.mentor
         student = self.context['request'].user
         return models.HelpUser.objects.create(mentor=mentor, student=student, **validated_data)
-
-
