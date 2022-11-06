@@ -3,9 +3,6 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy as _
 
-from django.dispatch import receiver
-from django.db.models.signals import post_save
-
 from src.base.validators import ImageValidator
 from src.courses.models import Course
 
@@ -34,7 +31,6 @@ class Social(models.Model):
 class FatUser(AbstractUser):
     """User model override"""
 
-    first_login = models.DateTimeField(null=True, blank=True)
     avatar = models.ImageField(
         upload_to=user_directory_path,
         null=True,
