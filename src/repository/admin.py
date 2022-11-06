@@ -20,4 +20,3 @@ class ProjectAdmin(admin.ModelAdmin):
     list_display = ['name', 'user', 'category', 'id']
     list_filter = ['name', 'user', 'category', 'toolkit__name']
     search_fields = ['name', 'id']
-

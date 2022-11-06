@@ -31,7 +31,6 @@ class Social(models.Model):
 class FatUser(AbstractUser):
     """User model override"""
 
-    first_login = models.DateTimeField(null=True, blank=True)
     avatar = models.ImageField(
         upload_to=user_directory_path,
         null=True,
@@ -58,3 +57,14 @@ class FatUserSocial(models.Model):
         related_name='user_social'
     )
     user_url = models.CharField(max_length=500, default='')
+
+
+class Account(models.Model):
+    user = models.ForeignKey(FatUser, on_delete=models.CASCADE, related_name='user_account')
+    nickname_git = models.CharField(max_length=100)
+    email = models.EmailField(max_length=150, unique=True, blank=True)
+    url = models.URLField(max_length=100, blank=True)
+
+    def __str__(self):
+        return self.nickname_git
+

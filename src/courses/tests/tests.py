@@ -8,6 +8,7 @@ from src.courses.models import Lesson, Course, Category
 from src.profiles.models import FatUser
 
 
+# TODO Добавить тесты
 class TestCoursesAPI(APITestCase):
 
     def setUp(self):
@@ -41,37 +42,31 @@ class TestCoursesAPI(APITestCase):
         )
 
     def test_get_courses_list(self):
-        url = reverse("course-list")
-        response = self.client.get(url)
+        response = self.client.get(reverse("courses"))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
 
     def test_get_course_detail(self):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.user_test1_token.key)
-        url = reverse("course-detail", kwargs={"id": self.course.id})
-        response = self.client.get(url)
+        response = self.client.get(reverse("course", kwargs={"pk": self.course.pk}))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.json().get("name"), "Django blog")
 
     def test_get_course_detail_not_auth(self):
-        url = reverse("course-detail", kwargs={"id": self.course.id})
-        response = self.client.get(url)
+        response = self.client.get(reverse("course", kwargs={"pk": self.course.pk}))
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_get_course_detail_invalid(self):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.user_test1_token.key)
-        url = reverse("course-detail", kwargs={"id": 25})
-        response = self.client.get(url)
+        response = self.client.get(reverse("course", kwargs={"pk": 25}))
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_get_lesson_detail(self):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.user_test1_token.key)
-        url = reverse("lesson-detail", kwargs={"id": self.lesson.id})
-        response = self.client.get(url)
+        response = self.client.get(reverse("lesson", kwargs={"pk": self.lesson.pk}))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.json().get("lesson_type"), "python")
 
     def test_get_lesson_not_auth(self):
-        url = reverse("lesson-detail", kwargs={"id": self.lesson.id})
-        response = self.client.get(url)
+        response = self.client.get(reverse("lesson", kwargs={"pk": self.lesson.pk}))
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)

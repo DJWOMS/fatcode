@@ -1,47 +1,102 @@
 from django.urls import path
 from . import views
+from rest_framework.urlpatterns import format_suffix_patterns
 
-urlpatterns = [
-    path('invitation/', views.InvitationCreateView.as_view()),
-    path('invitation/answer/list/', views.InvitationAskingListView.as_view()),
-    path('invitation/answer/', views.InvitationAskingView.as_view({'post': 'create'})),
-    path('invitation/answer/<int:pk>/', views.AcceptInvitationAskingView.as_view(
-        {'put': 'update', 'delete': 'destroy'}
-    )),
+teams = views.TeamView.as_view({
+    'get': 'list',
+    'post': 'create'
+})
 
-    path('<int:pk>/member/', views.TeamMemberListView.as_view()),
-    path('member/<int:pk>/', views.TeamMemberView.as_view(
-        {'get': 'retrieve'}
-    )),
-    path('member/<int:team>/retire/', views.TeamMemberSelfDeleteView.as_view(
-        {'delete': 'destroy'}
-    )),
+detail_teams = views.TeamView.as_view({
+    'get': 'retrieve',
+    'put': 'update',
+    'delete': 'destroy'
+})
 
-    path('member/<int:pk>/<int:team>/', views.TeamMemberView.as_view(
-        {'delete': 'destroy'}
-    )),
+my_team = views.OwnTeamListView.as_view({
+    'get': 'list',
+})
 
-    path('<int:pk>/post/', views.PostListView.as_view()),
-    path('post/', views.PostView.as_view({'post': 'create'})),
-    path('post/<int:pk>/', views.PostView.as_view(
-        {'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}
-    )),
+team_member = views.MemberTeamListView.as_view({
+    'get': 'list'
+})
 
-    path('comment/', views.CommentsView.as_view({'post': 'create'})),
-    path('comment/<int:pk>/', views.CommentsView.as_view({'put': 'update', 'delete': 'destroy'})),
 
-    path('list/', views.TeamListView.as_view()),
-    # path('by_user/<int:pk>/', views.TeamListByUserView.as_view(), name='team_list_by_user'),
-    path('by_user/', views.TeamListByUserView.as_view()),
+post = views.PostView.as_view({
+    'get': 'list',
+    'post': 'create'
+})
 
-    path('social_link/', views.SocialLinkView.as_view({'post': 'create'})),
-    path('social_link/<int:pk>/', views.SocialLinkView.as_view(
-        {'put': 'update', 'delete': 'destroy'}
-    )),
+update_or_delete_post = views.PostView.as_view({
+    'get': 'retrieve',
+    'put': 'update',
+    'delete': 'destroy'
+})
+comment = views.CommentsView.as_view({
+    'get': 'list',
+    'post': 'create'
+})
 
-    path('<int:pk>/avatar/', views.TeamAvatarView.as_view({'put': 'update'})),
-    path('<int:pk>/', views.TeamView.as_view(
-        {'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}
-    )),
-    path('', views.TeamView.as_view({'post': 'create'}))
-]
+comment_detail = views.CommentsView.as_view({
+    'get': 'retrieve',
+    'put': 'update',
+    'delete': 'destroy'
+})
+
+invitation = views.InvitationView.as_view({
+    'get': 'list',
+    'post': 'create'
+})
+
+invitation_delete = views.InvitationView.as_view({
+    'get': 'retrieve',
+    'delete': 'destroy'
+})
+
+invitation_list = views.InvitationDetailView.as_view({
+    'get': 'list'
+})
+
+invitation_detail = views.InvitationDetailView.as_view({
+    'get': 'retrieve',
+    'put': 'update'
+})
+
+social_links = views.SocialLinkView.as_view({
+    'get': 'list',
+    'post': 'create'
+})
+
+social_link_detail = views.SocialLinkView.as_view({
+    'get': 'retrieve',
+    'put': 'update',
+    'delete': 'destroy'
+})
+
+member = views.MemberList.as_view({
+    'get': 'list',
+})
+
+member_detail = views.MemberList.as_view({
+    'get': 'retrieve',
+    'delete': 'destroy'
+})
+
+urlpatterns = format_suffix_patterns([
+    path('my_team/', my_team, name='my_team'),
+    path('team_member/', team_member, name='team_member'),
+    path('invitation/', invitation, name='invitation'),
+    path('invitation/<int:pk>/', invitation_delete, name='invitation_delete'),
+    path('invitation_list/', invitation_list, name='invitation_list'),
+    path('invitation_list/<int:pk>/', invitation_detail, name='invitation_detail'),
+    path('<int:pk>/social_link/', social_links, name='social_links'),
+    path('<int:pk>/social_link/<int:social_pk>/', social_link_detail, name='social_link_detail'),
+    path('<int:pk>/member/', member, name='member'),
+    path('<int:pk>/member/<int:member_pk>/', member_detail, name='member_detail'),
+    path('<int:pk>/post/', post, name='post'),
+    path('<int:pk>/post/<int:post_pk>/', update_or_delete_post, name='update_or_delete_post'),
+    path('<int:pk>/post/<int:post_pk>/comment/', comment, name='comment'),
+    path('<int:pk>/post/<int:post_pk>/comment/<int:comment_pk>', comment_detail, name='comment_detail'),
+    path('<int:pk>/', detail_teams, name='detail_teams'),
+    path('', teams, name='teams'),
+])

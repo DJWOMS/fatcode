@@ -117,16 +117,6 @@ class UserPublicSerializer(serializers.ModelSerializer):
         )
 
 
-@receiver(post_save, sender=Token)
-def check_first_login(instance: Token, *args, **kwargs):
-    """Registration of the first user authorization"""
-
-    user = instance.user
-    if user.first_login is None:
-        user.first_login = datetime.now()
-        user.save()
-
-
 class GetUserSerializer(serializers.ModelSerializer):
     """Serialization for other serializers"""
 

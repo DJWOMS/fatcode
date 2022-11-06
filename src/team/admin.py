@@ -11,7 +11,7 @@ class TeamAdmin(admin.ModelAdmin):
 
 @admin.register(Invitation)
 class InvitationAdmin(admin.ModelAdmin):
-    list_display = ("user", "team", "accepted", "asking", "id")
+    list_display = ("user", "team", "id")
     search_fields = ("user__username", "team__name")
 
 

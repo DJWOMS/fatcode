@@ -31,5 +31,3 @@ class ProjectFilter(FilterSet):
             "user",
             "teams"
         )
-
-
