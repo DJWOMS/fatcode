@@ -34,7 +34,7 @@ class QuestionApiViewTestCase(APITestCase):
         )
 
     def test_get_question_list(self):
-        response = self.client.get(reverse("question-list"))
+        response = self.client.get(reverse("questions"))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_create_answer(self):
@@ -46,7 +46,7 @@ class QuestionApiViewTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_get_detail_question(self):
-        url = reverse("question", kwargs={"id": self.question.id})
+        url = reverse("question", kwargs={"pk": self.question.id})
         response = self.client.get(url)
         serialize = serializers.RetrieveQuestionSerializer(self.question)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -56,7 +56,8 @@ class QuestionApiViewTestCase(APITestCase):
         data = {
             'text': 'text2'
         }
-        url = reverse("question", kwargs={"id": self.question.id})
+        url = reverse("question", kwargs={"pk": self.question.id})
+        print("AAAAA", self.question.id)
         response = self.client.patch(url, data)
         self.question = Question.objects.get(id=self.question.id)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -67,19 +68,19 @@ class QuestionApiViewTestCase(APITestCase):
             'text': 'updated_text'
         }
         answer = self.create_answerObject()
-        url = reverse("answer", kwargs={"id": answer.id})
+        url = reverse("answer", kwargs={"pk": answer.id})
         response = self.client.patch(url, data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_delete_answer(self):
         answer = self.create_answerObject()
-        url = reverse("answer", kwargs={"id": answer.id})
+        url = reverse("answer", kwargs={"pk": answer.id})
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Answer.objects.exists(), False)
 
     def test_delete_question(self):
-        url = reverse("question", kwargs={"id": self.question.id})
+        url = reverse("question", kwargs={"pk": self.question.id})
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Question.objects.exists(), False)
@@ -128,6 +129,6 @@ class QuestionApiViewTestCase(APITestCase):
             text='123',
             author=user
         )
-        url = reverse("answer", kwargs={"id": answer.id})
+        url = reverse("answer", kwargs={"pk": answer.id})
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)

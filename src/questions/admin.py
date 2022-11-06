@@ -12,6 +12,5 @@ class AnswerAdmin(admin.ModelAdmin):
     list_display = ('id', 'text')
 
 
-admin.site.register(Question)
 admin.site.register(Tag)
 admin.site.register(QuestionFollowers)

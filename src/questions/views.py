@@ -1,13 +1,11 @@
-from rest_framework.generics import CreateAPIView
-from . import serializers
+from django.db.models import Prefetch
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from .models import Question, Answer, QuestionReview, AnswerReview, Tag
+from .models import Question, Answer, QuestionReview, AnswerReview, Tag, QuestionFollowers
 from ..base.permissions import IsAuthor
 from ..base.classes import MixedPermissionSerializer, MixedSerializer
-from django.db.models import Prefetch
 
-# TODO оптимизировать все запросы в БД
+from . import serializers
 
 
 class QuestionView(MixedPermissionSerializer, ModelViewSet):
