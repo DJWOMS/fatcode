@@ -104,11 +104,6 @@ class QuestionReviewSerializer(serializers.ModelSerializer):
         QuestionValidator().check_review(data)
         return data
 
-    def create(self, validated_data):
-        review = self.Meta.model.objects.create(**validated_data)
-        service = QuestionService(review).update_rating()
-        return review
-
 
 class AnswerReviewSerializer(serializers.ModelSerializer):
     class Meta:
