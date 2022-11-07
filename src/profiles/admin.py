@@ -30,7 +30,7 @@ class FatUserAdmin(UserAdmin):
                 ),
             },
         ),
-        (_("Important dates"), {"fields": ("last_login", "date_joined", "first_login")}),
+        (_("Important dates"), {"fields": ("last_login", "date_joined")}),
         # (_("socials"), {"fields": ("socials", )}),
     )
 
@@ -40,6 +40,7 @@ class FatUserAdmin(UserAdmin):
 class AccountAdmin(admin.ModelAdmin):
     list_display = ("user", "nickname_git", "email", "url")
     search_fields = ("user", "nickname_git", "email", "url")
+
 
 admin.site.register(models.FatUser, FatUserAdmin)
 admin.site.register(models.Social)
