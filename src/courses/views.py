@@ -29,7 +29,6 @@ class CourseView(classes.MixedPermissionSerializer, ModelViewSet):
     }
 
     def get_queryset(self):
-        print(git_service.user.create_repo('test', private=True))
         return (
             models.Course.objects
             .select_related('author', 'category', 'mentor')
