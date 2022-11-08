@@ -53,10 +53,10 @@ class SocialLinkView(MixedPermissionSerializer, viewsets.ModelViewSet):
     """CRUD социальной ссылке к команде"""
     permission_classes_by_action = {
         'list': (IsAuthenticatedOrReadOnly, ),
-        'create': (permissions.IsAuthorTeamOrRead, ),
+        'create': (permissions.IsAuthorTeam, ),
         'retrieve': (permissions.IsAuthorTeamOrRead, ),
-        'update': (permissions.IsAuthorTeamOrRead, ),
-        'destroy': (permissions.IsAuthorTeamOrRead, ),
+        'update': (permissions.IsAuthorTeam, ),
+        'destroy': (permissions.IsAuthorTeam, ),
     }
     serializer_classes_by_action = {
         'list': serializers.ListSocialLinkSerializer,

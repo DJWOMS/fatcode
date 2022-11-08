@@ -35,21 +35,21 @@ class UpdateSocialLinkSerializer(serializers.ModelSerializer):
         model = SocialLink
         fields = ('name', 'link', 'user')
 
-    def update(self, instance, validated_data):
-        try:
-            team = Team.objects.get(
-                Q(user=validated_data.get('user').id) & Q(name=instance.team)
-            )
-            instance.name = validated_data.get('name', None)
-            instance.link = validated_data.get('link', None)
-            instance.team = team
-            instance.save()
-            return instance
-        except Team.DoesNotExist:
-            return APIException(
-                detail='Добавить ссылку возможно только к своей команде',
-                code=status.HTTP_400_BAD_REQUEST
-            )
+    # def update(self, instance, validated_data):
+    #     try:
+    #         team = Team.objects.get(
+    #             Q(user=validated_data.get('user').id) & Q(name=instance.team)
+    #         )
+    #         instance.name = validated_data.get('name', None)
+    #         instance.link = validated_data.get('link', None)
+    #         instance.team = team
+    #         instance.save()
+    #         return instance
+    #     except Team.DoesNotExist:
+    #         return APIException(
+    #             detail='Добавить ссылку возможно только к своей команде',
+    #             code=status.HTTP_400_BAD_REQUEST
+    #         )
 
 
 class CreateSocialLinkSerializer(serializers.ModelSerializer):

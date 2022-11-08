@@ -134,20 +134,9 @@ class GetUserSerializer(serializers.ModelSerializer):
         fields = ("id", "username", "avatar")
 
 
-class CreateEmailSerializer(serializers.ModelSerializer):
-    """Для добавления email"""
-
-    class Meta:
-        model = FatUser
-        fields = ("email", )
-
-    def create(self, validated_data):
-        user = FatUser.create(
-            email=validated_data.get('email', None),
-        )
-        return user
-
-
 class GitHubLoginSerializer(serializers.Serializer):
     code = serializers.CharField(max_length=25)
     email = serializers.EmailField(max_length=150)
+
+class GitHubAddSerializer(serializers.Serializer):
+    code = serializers.CharField(max_length=25)

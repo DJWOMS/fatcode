@@ -16,9 +16,8 @@ urlpatterns = [
         {'put': 'update', 'post': 'create'}
     ), name='user-avatar'),
     path('title/', views.title, name='title'),
-    path('done/', views.DoneAddView.as_view(), name='done'),
-    path('done_auth/', views.DoneAuthView.as_view(), name='done_auth'),
-    path('add_email/', views.AddEmail.as_view(), name='add_email')
+    path('add_git_hub/', views.AddGitHub.as_view(), name='add_git_hub'),
+    path('git_hub_auth/', views.GitGubAuthView.as_view(), name='git_hub_auth')
 ]
 
 router = DefaultRouter()

@@ -1,19 +1,11 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from rest_framework.generics import get_object_or_404
-import requests
-from rest_framework import generics, viewsets, status
-from rest_framework.views import APIView
+from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework import permissions, parsers
 
-from src.profiles import models, serializers
-from src.profiles.services import (github_get_user_add,
-                                   github_get_user_auth,
-                                   github_auth,
-                                   create_password,
-                                   add_account)
-
+from src.profiles import models, serializers, services
 
 
 def title(request):
@@ -24,103 +16,48 @@ def title(request):
         return render(request, 'profiles/title_auth.html')
 
 
-class DoneAuthView(generics.GenericAPIView):
+class GitGubAuthView(generics.GenericAPIView):
     """Авторизация через Гитхаб"""
     serializer_class = serializers.GitHubLoginSerializer
 
     def post(self, request):
         ser = serializers.GitHubLoginSerializer(data=request.data)
         if ser.is_valid():
-            nik, url, email = github_get_user_auth(ser.data.get("code"))
-            print(nik, url, email)
-        return Response(status.HTTP_200_OK)
+            nik, url, git_id = services.github_get_user_auth(ser.data.get("code"))
+            try:
+                account = models.Account.objects.get(git_id=git_id)
+                user_id, internal_token = services.github_auth(account.user.id)
+                return Response(status.HTTP_200_OK)
+            except models.Account.DoesNotExist:
+                try:
+                    user = models.FatUser.objects.get(email=ser.data.get("email"))
+                    return Response('Пользователь с таким email уже существует', status.HTTP_403_FORBIDDEN)
+                except models.FatUser.DoesNotExist:
+                    user = services.create_user(nik, ser.data.get("email"))
+                    password = services.create_password()
+                    user.set_password(password)
+                    user.save()
+                    services.create_account(user, git_id, url, nik)
+                    email = ser.data.get("email")
+                    services.send_password_to_mail(email, password)
+                    user_id, internal_token = services.github_auth(user.id)
+                    return Response('Пароль отправлен на Вашу электронную почту', status.HTTP_200_OK)
 
-    def get(self, request):
-        code = request.GET.get('code')
-        print(code)
-        nik, url, email = github_get_user_auth(code)
-        print(nik, url, email)
-        if email is not None:
-            pass
-        else:
-            pass
-            # return redirect('add_email')
-        # try:
-        #     account = models.Account.objects.get(user=request.user)
-        #     return Response(status.HTTP_403_FORBIDDEN)
-        # except models.Account.DoesNotExist:
-        #     if email is not None:
-        #         add_account(request.user, nik, url, email)
-        #     else:
-        #         add_account(request.user, nik, url, request.user.email)
-        #         return Response(status.HTTP_200_OK)
-        return Response(status.HTTP_200_OK)
 
-#доьбавить вторую проверку на id и user
-class DoneAddView(APIView):
+class AddGitHub(generics.GenericAPIView):
     """Добавление git к существующему пользователю"""
-
-    def get(self, request):
-        code = request.GET.get('code')
-        nik, url, email = github_get_user_add(code)
-        if models.Account.objects.filter(user=request.user).exists():
-            return Response('Аккаунт уже существует', status.HTTP_403_FORBIDDEN)
-        if email is not None:
-            add_account(request.user, nik, url, email)
-        else:
-            add_account(request.user, nik, url, request.user.email)
-        return Response(status.HTTP_200_OK)
-
-
-class AddEmail(APIView):
-    '''Добавление электронной почты'''
+    serializer_class = serializers.GitHubAddSerializer
 
     def post(self, request):
-        serializer = serializers.CreateEmailSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(user=request.user)
-            return Response(status=200)
-        else:
-            return Response(status=400)
-
-# def done(request):
-#     """Добавление"""
-#     code = request.GET.get('code')
-#     print(code)
-#     print(request.user)
-#     nik, url, email = github_get_user(code)
-#     if request.user.is_authenticated:
-#         print('auth')
-#         try:
-#             account = models.Account.objects.get(email=email, user=request.user)
-#             print('ok')
-#         except models.Account.DoesNotExist:
-#             models.Account.objects.create(
-#                 user=request.user,
-#                 nickname_git=nik,
-#                 url=url,
-#                 email=email
-#             )
-#             print('create')
-#         return render(request, 'profiles/done.html')
-#     # else:
-#     #     print('no auth')
-#     #     try:
-#     #         user = models.FatUser.objects.get(email=email)
-#     #         account = models.Account.objects.get(email=email)
-#     #         user_id, token = github_auth(user.id)
-#     #         return render(request, 'profiles/done.html')
-#     #     except models.Account.DoesNotExist:
-#     #         print('no ex')
-#     #         user = models.FatUser.objects.create(
-#     #             username=nik,
-#     #             email=email,
-#     #             password=create_password()
-#     #         )
-#     #         user_id, token = github_auth(user.id)
-#     return render(request, 'profiles/done.html')
-
-
+        ser = serializers.GitHubAddSerializer(data=request.data)
+        if ser.is_valid():
+            nik, url, git_id = services.github_get_user_add(ser.data.get("code"))
+            if models.Account.objects.filter(user=request.user, git_id=git_id).exists():
+                return Response('Аккаунт уже существует', status.HTTP_403_FORBIDDEN)
+            if models.Account.objects.filter(git_id=git_id).exists():
+                return Response('Аккаунт уже привязан', status.HTTP_403_FORBIDDEN)
+            services.create_account(request.user, git_id, url, nik)
+        return Response(status.HTTP_200_OK)
 
 
 class UserView(ModelViewSet):

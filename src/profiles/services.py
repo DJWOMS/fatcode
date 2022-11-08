@@ -4,7 +4,7 @@ from kombu.exceptions import HttpError
 from src.profiles.models import FatUser, Account
 from src.profiles.tokenizator import create_token
 from django.contrib.auth.base_user import BaseUserManager
-
+from django.core.mail import send_mail
 
 CLINENT_ID = '11eac0936dc86e03a233'
 CLIENT_SECRET = '8b7793d919a4d9541c9856309c949cd5bc512b2c'
@@ -81,8 +81,8 @@ def github_get_user_add(code: str):
     if user is not None:
         nik = user.get('login')
         url = user.get('html_url')
-        email = user.get('email', None)
-        return nik, url, email
+        git_id = user.get('id')
+        return nik, url, git_id
     else:
         raise HttpError(403, "Bad code")
 
@@ -91,8 +91,8 @@ def github_get_user_auth(code: str):
     if user is not None:
         nik = user.get('login')
         url = user.get('html_url')
-        email = user.get('email', None)
-        return nik, url, email
+        git_id = user.get('id', None)
+        return nik, url, git_id
     else:
         raise HttpError(403, "Bad code")
 
@@ -100,14 +100,21 @@ def github_auth(user_id) -> tuple:
     internal_token = create_token(user_id)
     return user_id, internal_token
 
-def add_account(user, nik, url, email):
-    return Account.objects.create(
-        user=user,
-        nickname_git=nik,
-        url=url,
-        email=email
-    )
-
 def create_password():
     password = BaseUserManager().make_random_password()
     return password
+
+def send_password_to_mail(email, password):
+    print(email)
+    print(password)
+
+def create_account(user, git_id, url, nik):
+    return Account.objects.create(
+                        user=user,
+                        git_id=git_id,
+                        url=url,
+                        nickname_git=nik
+                    )
+
+def create_user(nik, email):
+    return FatUser.objects.create(username=nik, email=email)
