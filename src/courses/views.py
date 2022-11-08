@@ -7,6 +7,7 @@ from . import serializers, models
 from .filters import CourseFilter
 
 from ..base import classes
+from .services import git_service
 
 
 class CourseView(classes.MixedPermissionSerializer, ModelViewSet):
@@ -28,6 +29,7 @@ class CourseView(classes.MixedPermissionSerializer, ModelViewSet):
     }
 
     def get_queryset(self):
+        print(git_service.user.create_repo('test', private=True))
         return (
             models.Course.objects
             .select_related('author', 'category', 'mentor')

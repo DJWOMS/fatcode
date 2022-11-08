@@ -1,7 +1,9 @@
 amqp==5.1.1
+APScheduler==3.6.3
 asgiref==3.5.2
 autopep8==1.7.0
 billiard==3.6.4.0
+cachetools==4.2.2
 celery==5.2.7
 certifi==2022.6.15
 cffi==1.15.1
@@ -15,6 +17,7 @@ coreapi==2.3.3
 coreschema==0.0.4
 cryptography==37.0.4
 defusedxml==0.7.1
+Deprecated==1.2.13
 Django==4.0.6
 django-celery-beat==2.3.0
 django-ckeditor==6.4.2
@@ -43,12 +46,16 @@ prompt-toolkit==3.0.31
 psycopg2==2.9.3
 pycodestyle==2.9.1
 pycparser==2.21
+PyGithub==1.57
 PyJWT==2.4.0
+PyNaCl==1.5.0
 pyparsing==3.0.9
 python-crontab==2.6.0
 python-dateutil==2.8.2
+python-telegram-bot==13.14
 python3-openid==3.2.0
 pytz==2022.1
+pytz-deprecation-shim==0.1.0.post0
 redis==3.5.3
 requests==2.28.1
 requests-oauthlib==1.3.1
@@ -59,9 +66,11 @@ social-auth-app-django==4.0.0
 social-auth-core==4.3.0
 sqlparse==0.4.2
 toml==0.10.2
+tornado==6.1
 tzdata==2022.1
+tzlocal==4.2
 uritemplate==4.1.1
 urllib3==1.26.10
 vine==5.0.0
 wcwidth==0.2.5
-python-telegram-bot==13.14
+wrapt==1.14.1

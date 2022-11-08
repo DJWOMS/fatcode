@@ -154,8 +154,11 @@ TELEGRAM = {
     'channel_id': os.environ.get('CHANNEL_ID')
 }
 
+FATCODEADMIN_GIT_TOKEN = os.environ.get('FATCODEADMIN_GIT_TOKEN', '123456789')
+
 CORS_ALLOWED_ORIGINS = os.environ.get("CORS_ALLOWED_HOSTS", "http://127.0.0.1:8000").split(" ")
 
 CELERY_BROKER_URL = 'redis://redis:6379/0'
 CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+

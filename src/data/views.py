@@ -13,26 +13,11 @@ from django.db.models import Sum, Count, Q
 from rest_framework.pagination import LimitOffsetPagination
 
 
-class UserPaginationInfo(LimitOffsetPagination):
-    page_size = 10
-    page_size_query_param = 'page_size'
-    max_page_size = 100
-
-    def get_paginated_response(self, data):
-        info = FatUser.objects.all().aggregate(
-            Sum('coins'),
-            Sum('experience'),
-            started_courses_count=Count('courses', filter=Q(courses__progress=0)),
-            finished_courses_count=Count('courses', filter=Q(courses__progress=100))
-        )
-        return Response({'user_info': info, 'results': data})
-
-
 class UserView(ListAPIView):
     queryset = FatUser.objects.annotate(Count('courses')).all()
     permission_classes = [IsAdminUser]
-    pagination_class = UserPaginationInfo
-    filter_backends = (DjangoFilterBackend, )
+    # pagination_class = UserPaginationInfo
+    # filter_backends = (DjangoFilterBackend, )
     filterset_class = UsersFilter
     serializer_class = DashboardUserSerializer
 
