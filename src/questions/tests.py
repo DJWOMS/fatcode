@@ -33,6 +33,19 @@ class QuestionApiViewTestCase(APITestCase):
             text='text',
         )
 
+    def test_create_question(self):
+        data = {
+            "title": "boobs",
+            "text": "big boobs",
+            "tags": [
+                {
+                    "boob"
+                }
+            ]
+        }
+        response = self.client.post(reverse("questions"), data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
     def test_get_question_list(self):
         response = self.client.get(reverse("questions"))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -54,10 +67,16 @@ class QuestionApiViewTestCase(APITestCase):
 
     def test_update_question(self):
         data = {
-            'text': 'text2'
+            "title": "title2",
+            "text": "text2",
+            "tags": [
+                {
+                  "name": "name2"
+                }
+            ]
         }
         url = reverse("question", kwargs={"pk": self.question.id})
-        response = self.client.patch(url, data)
+        response = self.client.patch(url, data, format='json')
         self.question = Question.objects.get(id=self.question.id)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(self.question.text, data['text'])
