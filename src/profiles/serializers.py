@@ -11,6 +11,7 @@ from rest_framework.authtoken.models import Token
 from src.courses.serializers import ListCourseSerializer
 from src.profiles.models import FatUser, Social, FatUserSocial
 from src.base.validators import ImageValidator
+from django.db.models import Sum, Count, Q
 
 
 class UserUpdateSerializer(UserSerializer):
@@ -116,18 +117,18 @@ class UserPublicSerializer(serializers.ModelSerializer):
         )
 
 
-@receiver(post_save, sender=Token)
-def check_first_login(instance: Token, *args, **kwargs):
-    """Registration of the first user authorization"""
-
-    user = instance.user
-    if user.first_login is None:
-        user.first_login = datetime.now()
-        user.save()
-
-
 class GetUserSerializer(serializers.ModelSerializer):
     """Serialization for other serializers"""
+
+    class Meta:
+        model = FatUser
+        fields = ("id", "username", "avatar", "first_login")
+
+
+class DashboardUserSerializer(serializers.ModelSerializer):
+    """Serializer for dashboard"""
+    started_courses_count = serializers.SerializerMethodField()
+    finished_courses_count = serializers.SerializerMethodField()
 
     class Meta:
         model = FatUser
@@ -140,3 +141,18 @@ class GitHubLoginSerializer(serializers.Serializer):
 
 class GitHubAddSerializer(serializers.Serializer):
     code = serializers.CharField(max_length=25)
+        fields = (
+            'coins',
+            'experience',
+            'first_login',
+            'username',
+            'id',
+            'started_courses_count',
+            'finished_courses_count'
+        )
+
+    def get_started_courses_count(self, instance):
+        return instance.courses.filter(progress=0).count()
+
+    def get_finished_courses_count(self, instance):
+        return instance.courses.filter(progress=100).count()

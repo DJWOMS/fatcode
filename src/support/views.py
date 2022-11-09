@@ -5,12 +5,12 @@ from . import serializers
 from .models import Report
 
 from ..base.classes import MixedSerializer
-from ..base.permissions import IsAuthor
+from ..base.permissions import IsUser
 
 
 class ReportView(MixedSerializer, ModelViewSet):
     parser_classes = (parsers.MultiPartParser,)
-    permission_classes = (IsAuthor,)
+    permission_classes = (IsUser,)
     serializer_classes_by_action = {
         'list': serializers.ReportListSerializer,
         'retrieve': serializers.ReportDetailSerializer,
