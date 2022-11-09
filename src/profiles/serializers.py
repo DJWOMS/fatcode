@@ -162,6 +162,7 @@ class GitHubLoginSerializer(serializers.Serializer):
     code = serializers.CharField(max_length=25)
     email = serializers.EmailField(max_length=150)
 
+
 class GitHubAddSerializer(serializers.Serializer):
     code = serializers.CharField(max_length=25)
 
