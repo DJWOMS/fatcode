@@ -7,6 +7,7 @@ from . import serializers, models
 from .filters import CourseFilter
 
 from ..base import classes
+from .services import git_service
 
 
 class CourseView(classes.MixedPermissionSerializer, ModelViewSet):
