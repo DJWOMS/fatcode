@@ -5,7 +5,7 @@ class StudentWorkValidator:
 
     def __call__(self, data):
         lesson_type = data['lesson'].lesson_type
-        if 'quiz_answer' in data and not 'quiz' in lesson_type :
+        if 'quiz_answer' in data and not 'quiz' in lesson_type:
             raise serializers.ValidationError({'error': 'Урок не содержит quiz'})
         elif not data.keys() & {'code_answer', 'quiz_answer'}:
             raise serializers.ValidationError({'error': f'Ответ должен содержать {lesson_type}'})

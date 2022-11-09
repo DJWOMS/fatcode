@@ -1,11 +1,9 @@
-from django.db.models import Q
-from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework import permissions
-from src.team.models import Team, TeamMember, Invitation, Post
+from src.team.models import Team, TeamMember
 
 
 class IsAuthor(permissions.BasePermission):
-    """Только для автора обьекта"""
+    """Только для автора объекта"""
     def has_object_permission(self, request, view, obj):
         return obj.user == request.user
 

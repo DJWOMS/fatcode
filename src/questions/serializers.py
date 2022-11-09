@@ -1,8 +1,9 @@
 from rest_framework import serializers
-from . import models
-from .validators import QuestionValidator
 from ..profiles.serializers import GetUserSerializer
+
+from . import models
 from .services import QuestionService, AnswerService
+from .validators import QuestionValidator
 
 
 class TagsSerializer(serializers.ModelSerializer):
@@ -37,8 +38,7 @@ class AnswerSerializer(serializers.ModelSerializer):
         )
 
     def get_children_count(self, instance):
-        children = instance.children.count()
-        return children
+        return instance.children.count()
 
 
 class CreateQuestionSerializer(serializers.ModelSerializer):
@@ -86,12 +86,10 @@ class ListQuestionSerializer(serializers.ModelSerializer):
         )
 
     def get_correct_answers(self, instance):
-        service = QuestionService(instance)
-        return service.correct_answers_count()
+        return QuestionService(instance).correct_answers_count()
 
     def get_answer_count(self, instance):
-        service = QuestionService(instance)
-        return service.answers_count()
+        return QuestionService(instance).answers_count()
 
 
 class QuestionReviewSerializer(serializers.ModelSerializer):
@@ -149,8 +147,7 @@ class UpdateAcceptAnswerSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         AnswerService(instance).update_accept()
-        instance = super(UpdateAcceptAnswerSerializer, self).update(instance, validated_data)
-        return instance
+        return super(UpdateAcceptAnswerSerializer, self).update(instance, validated_data)
 
 
 class FollowerQuestionSerializer(serializers.ModelSerializer):

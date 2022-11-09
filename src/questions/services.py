@@ -36,6 +36,7 @@ class AnswerService:
         self.answer = answer
 
     def update_rating(self):
+        # TODO что здесь происходит?
         self.answer.rating += self.answer.review.objects.filter(answer=self, grade=True).count()
         self.answer.rating -= self.answer.review.objects.filter(answer=self, grade=False).count()
         return super().save()

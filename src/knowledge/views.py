@@ -2,12 +2,10 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
 from rest_framework.generics import ListAPIView
 from rest_framework.viewsets import ModelViewSet
+from ..base.classes import MixedSerializer
 
 from . import models, serializers
 from .filters import ArticleFilter
-from .services import ListArticleViewPagination
-
-from ..base.classes import MixedSerializer
 
 
 class CategoryView(ModelViewSet):

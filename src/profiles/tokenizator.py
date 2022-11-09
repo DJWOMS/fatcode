@@ -6,6 +6,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24
 access_token_jwt_subject = "access"
 SECRET_KEY = "Sdasdad3w#RmF34ef43%E5&*6DV%$5DSvBF*fY9V(y*&VNFdfBU(t8DnfDS"
 
+# TODO зачем нам этот файл? Мы не используем эти токены.
 def create_token(user_id: int) -> dict:
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     return {

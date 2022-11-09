@@ -6,7 +6,6 @@ from ckeditor_uploader.widgets import CKEditorUploadingWidget
 
 class ArticleAdminForm(forms.ModelForm):
     """Form for connecting ckeditor to Article model"""
-
     text = forms.CharField(widget=CKEditorUploadingWidget())
 
     class Meta:
@@ -14,6 +13,7 @@ class ArticleAdminForm(forms.ModelForm):
         fields = '__all__'
 
 
+@admin.register(Article)
 class ArticleAdmin(admin.ModelAdmin):
     form = ArticleAdminForm
     list_display = ('title', 'author', 'published', 'date_creation')
@@ -21,6 +21,7 @@ class ArticleAdmin(admin.ModelAdmin):
     filter_horizontal = ('glossary',)
 
 
+@admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ('name', 'parent')
 
@@ -31,6 +32,4 @@ class GlossaryAdmin(admin.ModelAdmin):
     pass
 
 
-admin.site.register(Article, ArticleAdmin)
-admin.site.register(Category, CategoryAdmin)
 admin.site.register(Tag)

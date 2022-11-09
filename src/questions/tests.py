@@ -4,8 +4,9 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 from rest_framework.authtoken.models import Token
 
-from .models import Question, QuestionReview, Answer
 from src.profiles.models import FatUser
+
+from .models import Question, QuestionReview, Answer
 from . import serializers
 
 
@@ -113,7 +114,7 @@ class QuestionApiViewTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_repeat_question_review(self):
-        review = QuestionReview.objects.create(
+        QuestionReview.objects.create(
             question=self.question,
             user=self.user,
             grade=False

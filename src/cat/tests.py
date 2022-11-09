@@ -5,12 +5,11 @@ from rest_framework.authtoken.models import Token
 
 
 def create_user(email, name):
-    user = FatUser.objects.create_user(
+    return FatUser.objects.create_user(
         username=name,
         password='password',
         email=email
     )
-    return user
 
 
 class CatTestCase(APITestCase):

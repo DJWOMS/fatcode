@@ -14,7 +14,6 @@ def user_directory_path(instance: 'FatUser', filename: str) -> str:
 
 class Social(models.Model):
     """Social networks"""
-
     title = models.CharField(max_length=200)
     logo = models.ImageField(
         upload_to='social/logo',
@@ -30,7 +29,6 @@ class Social(models.Model):
 
 class FatUser(AbstractUser):
     """User model override"""
-
     avatar = models.ImageField(
         upload_to=user_directory_path,
         null=True,
@@ -49,7 +47,6 @@ class FatUser(AbstractUser):
 
 class FatUserSocial(models.Model):
     """Intermediate table for the ManyToMany FatUser and Social relationship"""
-
     social = models.ForeignKey(Social, on_delete=models.CASCADE)
     user = models.ForeignKey(
         FatUser,

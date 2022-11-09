@@ -105,6 +105,7 @@ class StudentWork(models.Model):
         return self.quiz_answer.right
 
     def create_testfile(self):
+        # TODO Да уж, жестко так путь хардклрить
         path_file = f'/app/media/files/test/python/{self.lesson.course.name}.py'
         with open(self.lesson.test.path, 'r') as lesson_test, open(path_file, 'w') as test:
             test.write(f'{self.code_answer} \n')

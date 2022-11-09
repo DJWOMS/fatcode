@@ -3,11 +3,10 @@ from rest_framework.generics import CreateAPIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 
+from ..base import classes
+
 from . import serializers, models
 from .filters import CourseFilter
-
-from ..base import classes
-from .services import git_service
 
 
 class CourseView(classes.MixedPermissionSerializer, ModelViewSet):

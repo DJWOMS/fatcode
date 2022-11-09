@@ -46,7 +46,13 @@ class Answer(models.Model):
         related_name='answer'
     )
     text = models.TextField()
-    parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='children')
+    parent = models.ForeignKey(
+        'self',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='children'
+    )
     date = models.DateTimeField(auto_now_add=True)
     image = models.ImageField(
         upload_to="question/screens/",

@@ -2,9 +2,10 @@ from django.db.models import Prefetch
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated, AllowAny
 
-from .permissions import IsNotFollower
 from ..base.permissions import IsAuthor
 from ..base.classes import MixedPermissionSerializer
+
+from .permissions import IsNotFollower
 from .models import Question, Answer, QuestionReview, AnswerReview, Tag, QuestionFollowers
 from . import serializers
 

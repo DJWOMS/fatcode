@@ -2,12 +2,10 @@ from djoser.serializers import UserSerializer
 from djoser.conf import settings
 
 from rest_framework import serializers
-from rest_framework.authtoken.models import Token
 
 from src.courses.serializers import ListCourseSerializer
 from src.profiles.models import FatUser, Social, FatUserSocial, Account
 from src.base.validators import ImageValidator
-from django.db.models import Sum, Count, Q
 
 
 class UserUpdateSerializer(UserSerializer):
@@ -45,10 +43,7 @@ class UserAvatarSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = FatUser
-        fields = [
-            "id",
-            "avatar"
-        ]
+        fields = ("id", "avatar")
 
 
 class AccountSerializer(serializers.ModelSerializer):
@@ -57,6 +52,7 @@ class AccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
         fields = ("url", )
+
 
 #TODO не выводяться аккаунты гита
 class UserSerializer(serializers.ModelSerializer):
@@ -102,7 +98,6 @@ class UserSerializer(serializers.ModelSerializer):
 
 class UserPublicSerializer(serializers.ModelSerializer):
     """Serialization for public user display"""
-
     avatar = serializers.ImageField(read_only=True)
     user_social = UserSocialSerializer(many=True)
     socials = ListSocialSerializer(many=True)

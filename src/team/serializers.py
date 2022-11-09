@@ -95,6 +95,7 @@ class InvitationAskingSerializer(serializers.ModelSerializer):
         member = TeamMember.objects.filter(
             Q(user=validated_data.get('user')) & Q(team=validated_data.get('team'))
         ).exists()
+
         if user or member:
             raise CustomException()
         else:
@@ -162,13 +163,7 @@ class TeamSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Team
-        fields = (
-            "id",
-            "name",
-            "tagline",
-            "user",
-            "avatar",
-        )
+        fields = ("id", "name", "tagline", "user", "avatar")
 
 
 class TeamListSerializer(serializers.ModelSerializer):
@@ -181,14 +176,14 @@ class TeamListSerializer(serializers.ModelSerializer):
 
 
 class CommentChildrenSerializer(serializers.Serializer):
-    """ Комментарий к комментарию"""
+    """Комментарий к комментарию"""
     def to_representation(self, value):
         serializer = CommentListSerializer(value, context=self.context)
         return serializer.data
 
 
 class CommentListSerializer(serializers.ModelSerializer):
-    """ Список комментариев """
+    """Список комментариев"""
     user = GetUserSerializer()
 
     class Meta:
@@ -198,7 +193,7 @@ class CommentListSerializer(serializers.ModelSerializer):
 
 
 class PostSerializer(serializers.ModelSerializer):
-    """ Список постов команды """
+    """Список постов команды"""
     user = GetUserSerializer()
     comments = CommentListSerializer(many=True, read_only=True)
     view_count = serializers.CharField(read_only=True)
@@ -217,7 +212,7 @@ class PostSerializer(serializers.ModelSerializer):
 
 
 class CreatePost(serializers.ModelSerializer):
-    '''Добавление поста'''
+    """Добавление поста"""
     user = GetUserSerializer()
 
     class Meta:
@@ -231,12 +226,7 @@ class CreateTeamSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Team
-        fields = (
-            "name",
-            "tagline",
-            "user",
-            "avatar",
-        )
+        fields = ("name", "tagline", "user", "avatar")
 
 
 class UpdateTeamSerializer(serializers.ModelSerializer):
@@ -245,32 +235,21 @@ class UpdateTeamSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Team
-        fields = (
-            "name",
-            "tagline",
-            "user",
-            "avatar",
-        )
+        fields = ("name", "tagline", "user", "avatar")
 
 
 class DetailTeamSerializer(serializers.ModelSerializer):
-    """ Просмотр деталей одной команды"""
+    """Просмотр деталей одной команды"""
     user = GetUserSerializer()
     social_links = SocialLinkSerializer(many=True)
 
     class Meta:
         model = Team
-        fields = (
-            "name",
-            "tagline",
-            "user",
-            "avatar",
-            "social_links",
-        )
+        fields = ("name", "tagline", "user", "avatar", "social_links")
 
 
 class CommentCreateSerializer(serializers.ModelSerializer):
-    """ Добавление комментариев к посту """
+    """Добавление комментариев к посту"""
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
@@ -304,7 +283,7 @@ class CommentCreateSerializer(serializers.ModelSerializer):
                 user=validated_data.get('user', None),
                 post=post,
                 parent=validated_data.get('parent', None)
-                )
+            )
             return comment
         else:
             comment = Comment.objects.create(
@@ -317,7 +296,7 @@ class CommentCreateSerializer(serializers.ModelSerializer):
 
 
 class TeamCommentUpdateSerializer(serializers.ModelSerializer):
-    """ Редактирование/удаление комментариев к посту """
+    """Редактирование/удаление комментариев к посту"""
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
@@ -326,7 +305,7 @@ class TeamCommentUpdateSerializer(serializers.ModelSerializer):
 
 
 class PostUpdateSerializer(serializers.ModelSerializer):
-    """ CUD поста """
+    """CUD поста"""
 
     class Meta:
         model = Post
@@ -334,15 +313,17 @@ class PostUpdateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         try:
-            team = Team.objects.get(Q(user=validated_data.get('user')) & Q(id=validated_data.get('team_id')))
-        except:
+            team = Team.objects.get(
+                Q(user=validated_data.get('user')) & Q(id=validated_data.get('team_id'))
+            )
+        except Team.DoesNotExist:
             raise APIException(
                 detail='Нет доступа для создания поста', code=status.HTTP_400_BAD_REQUEST
             )
         post = Post.objects.create(
             text=validated_data.get('text', None),
             user=validated_data.get('user', None),
-            team=team,
+            team=team
         )
         return post
 

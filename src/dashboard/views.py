@@ -1,7 +1,7 @@
 from rest_framework import permissions, viewsets, exceptions, status
+from ..base.classes import MixedPermissionSerializer, MixedPermission, MixedSerializer
 
 from . import models, serializers
-from ..base.classes import MixedPermissionSerializer, MixedPermission, MixedSerializer
 from .permissions import IsAuthorProject, IsMemberProject, IsAuthorBoard, IsMemberBoard
 
 

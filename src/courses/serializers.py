@@ -1,10 +1,10 @@
 from rest_framework import serializers
 
+from ..profiles.serializers import GetUserSerializer
+
 from . import models
 from .validators import StudentWorkValidator
 from .services import Service
-
-from src.profiles.models import FatUser
 
 
 class CodeQuestionSerializer(serializers.ModelSerializer):
@@ -32,18 +32,6 @@ class CategorySerializer(serializers.ModelSerializer):
         model = models.Category
         fields = ('name', 'parent')
         ref_name = 'courses_category'
-
-
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = FatUser
-        fields = (
-            'socials',
-            'first_name',
-            'last_name',
-            'avatar',
-        )
-        ref_name = 'userCourse'
 
 
 class LessonDetailSerializer(serializers.ModelSerializer):
@@ -95,8 +83,8 @@ class LessonListSerializer(serializers.ModelSerializer):
 
 class CourseSerializer(serializers.ModelSerializer):
     """Курс"""
-    mentor = UserSerializer()
-    author = UserSerializer()
+    mentor = GetUserSerializer()
+    author = GetUserSerializer()
     tags = TagSerializer(many=True)
     category = CategorySerializer()
     lessons = LessonListSerializer(many=True)
@@ -121,7 +109,7 @@ class CourseSerializer(serializers.ModelSerializer):
 
 class ListCourseSerializer(serializers.ModelSerializer):
     """Список курсов"""
-    author = UserSerializer()
+    author = GetUserSerializer()
     tags = TagSerializer(many=True)
     category = CategorySerializer()
 

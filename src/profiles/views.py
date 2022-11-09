@@ -6,7 +6,6 @@ from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework import permissions, parsers
 
 from src.profiles import models, serializers, services
-from src.base.permissions import IsUser
 
 
 def title(request):
@@ -34,7 +33,7 @@ class GitGubAuthView(generics.GenericAPIView):
 
 
 class GitGubRegisterView(generics.GenericAPIView):
-    """Регис рация через GitHub"""
+    """Регистрация через GitHub"""
     serializer_class = serializers.GitHubLoginSerializer
 
     def post(self, request):
@@ -95,7 +94,6 @@ class UserView(ModelViewSet):
 
 class UserPublicView(ModelViewSet):
     """Public user display"""
-
     queryset = models.FatUser.objects.all()
     serializer_class = serializers.UserPublicSerializer
     permission_classes = [permissions.AllowAny]
@@ -120,6 +118,7 @@ class UserAvatar(ModelViewSet):
     def get_queryset(self):
         return models.FatUser.objects.filter(id=self.request.user.id)
 
+    # TODO для чего переопределили этот метод?
     def get_object(self):
         queryset = self.filter_queryset(self.get_queryset())
         obj = get_object_or_404(queryset)

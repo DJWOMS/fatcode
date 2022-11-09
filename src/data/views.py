@@ -1,16 +1,19 @@
+from django.db.models import Count
 from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAdminUser
-from src.profiles.models import FatUser
 from django_filters.rest_framework import DjangoFilterBackend
+
+from src.profiles.models import FatUser
 from src.profiles.serializers import DashboardUserSerializer
+
 from src.courses.serializers import HelpUserSerializer
-from .filters import UsersFilter, HelpUserFilter
 from src.courses.models import HelpUser
+
+from .filters import UsersFilter, HelpUserFilter
+
 from src.team.models import Team
 from src.repository.models import Project
-from django.db.models import Sum, Count, Q
-from rest_framework.pagination import LimitOffsetPagination
 
 
 class UserView(ListAPIView):
