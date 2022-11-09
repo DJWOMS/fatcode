@@ -4,13 +4,8 @@ from kombu.exceptions import HttpError
 from src.profiles.models import FatUser, Account
 from src.profiles.tokenizator import create_token
 from django.contrib.auth.base_user import BaseUserManager
-from django.core.mail import send_mail
+from django.conf import settings
 
-CLINENT_ID = '11eac0936dc86e03a233'
-CLIENT_SECRET = '8b7793d919a4d9541c9856309c949cd5bc512b2c'
-
-CLINENT_ID_FOR_AUTH = 'da8b2e32d27020f8c5b4'
-CLIENT_SECRET_FOR_AUTH = '3b973329bbe53574b50d1f41d418b0381b98130f'
 
 def add_experience(user_id: int, exp: int):
     new_exp = FatUser.objects.filter(id=user_id).update(expirience=F('experience') + exp)
@@ -38,8 +33,8 @@ def check_token_add(code):
     url_token = 'https://github.com/login/oauth/access_token'
     data = {
         "code": code,
-        "client_id": CLINENT_ID,
-        "client_secret": CLIENT_SECRET,
+        "client_id": settings.CLINENT_ID,
+        "client_secret": settings.CLIENT_SECRET,
     }
     check = requests.post(url_token, data=data)
     token = check.text.split("&")[0].split("=")[1]
@@ -49,8 +44,8 @@ def check_token(code):
     url_token = 'https://github.com/login/oauth/access_token'
     data = {
         "code": code,
-        "client_id": CLINENT_ID_FOR_AUTH,
-        "client_secret": CLIENT_SECRET_FOR_AUTH,
+        "client_id": settings.CLINENT_ID_FOR_AUTH,
+        "client_secret": settings.CLIENT_SECRET_FOR_AUTH,
     }
     check = requests.post(url_token, data=data)
     token = check.text.split("&")[0].split("=")[1]
