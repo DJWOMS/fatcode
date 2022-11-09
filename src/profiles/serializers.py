@@ -1,9 +1,5 @@
-from datetime import datetime
-
 from djoser.serializers import UserSerializer
 from djoser.conf import settings
-from django.dispatch import receiver
-from django.db.models.signals import post_save
 
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token
@@ -131,7 +127,7 @@ class GetUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = FatUser
-        fields = ("id", "username", "avatar", "first_login")
+        fields = ("id", "username", "avatar")
 
 
 class DashboardUserSerializer(serializers.ModelSerializer):
@@ -144,7 +140,6 @@ class DashboardUserSerializer(serializers.ModelSerializer):
         fields = (
                 'coins',
                 'experience',
-                'first_login',
                 'username',
                 'id',
                 'started_courses_count',
