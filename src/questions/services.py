@@ -3,7 +3,7 @@ from . import models
 
 class QuestionService:
 
-    def __init__(self, question):
+    def __init__(self, question: models.Question):
         self.question = question
 
     def answers_count(self):
@@ -33,16 +33,20 @@ class QuestionService:
         return self.question.answers.all()
 
     def correct_answers_count(self):
-        return self.question.answers.objects.filter(accepted=True)
+        return self.question.answers.filter(accepted=True)
 
 
 class AnswerService:
 
-    def __init__(self, answer):
+    def __init__(self, answer: models.Answer):
         self.answer = answer
 
     def update_rating(self):
-        self.rating += self.review.objects.filter(answer=self, grade=True).count()
-        self.rating -= self.review.objects.filter(answer=self, grade=False).count()
+        self.answer.rating += self.answer.review.objects.filter(answer=self, grade=True).count()
+        self.answer.rating -= self.answer.review.objects.filter(answer=self, grade=False).count()
         return super().save()
+
+    def update_accept(self):
+        self.answer.accepted = not self.answer.accepted
+        return self.answer
 

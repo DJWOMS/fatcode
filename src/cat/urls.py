@@ -6,8 +6,8 @@ urlpatterns = [
     path('get_hint/', views.HintView.as_view()),
     path('inventory/<int:id>/', views.InventoryView.as_view({"post": "create", "get": "list", 'patch': 'update'})),
     path('phrases/', views.PhraseView.as_view()),
-    path('cats/', views.CatView.as_view({"get": "list"})),
-    path('cats/<int:pk>/', views.CatView.as_view({"get": "retrieve"})),
-    path('your_cat/', views.CatUserView.as_view()),
-    path('your_cat/<int:pk>', views.UpdateCatUserView.as_view()),
+    path('', views.CatView.as_view({"get": "list"}), name="cat_list"),
+    path('<int:pk>/', views.CatView.as_view({"get": "retrieve"}), name="cat_detail"),
+    path('your/', views.CatUserView.as_view(), name="user_cat"),
+    path('your/<int:pk>', views.UpdateCatUserView.as_view(), name="cat_update"),
 ]

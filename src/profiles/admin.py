@@ -17,7 +17,7 @@ class FatUserAdmin(UserAdmin):
     fieldsets = (
         (None, {"fields": ("username", "password")}),
         (_("Personal info"), {"fields": ("avatar", "first_name", "last_name",
-                                         "middle_name", "email")}),
+                                         "middle_name", "email", "coins")}),
         (
             _("Permissions"),
             {

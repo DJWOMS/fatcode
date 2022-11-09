@@ -30,9 +30,8 @@ class ArticleView(MixedSerializer, ModelViewSet):
     serializer_classes_by_action = {
         'list': serializers.ListArticleSerializer,
         'retrieve': serializers.DetailArticleSerializer,
-
     }
-    pagination_class = ListArticleViewPagination
+    # pagination_class = ListArticleViewPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_class = ArticleFilter
     search_fields = ['title']

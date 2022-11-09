@@ -1,7 +1,10 @@
 import os
 import requests
 import json
+
 from rest_framework import serializers
+from github import Github
+from django.conf import settings
 
 
 class Service:
@@ -20,3 +23,16 @@ class Service:
         except requests.exceptions.ConnectionError:
             raise serializers.ValidationError('server not response')
         return request
+
+
+class GitService(object):
+    def __init__(self):
+        git = Github(settings.FATCODEADMIN_GIT_TOKEN)
+        self._user = git.get_user()
+        self.git = git
+
+    def create_repo(self, name):
+        self._user.create_repo(name, private=True)
+
+
+git_service = GitService()

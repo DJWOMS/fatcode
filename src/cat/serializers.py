@@ -1,21 +1,27 @@
 from rest_framework import serializers
+
 from . import models
 from .services import CatService
 
 
 class ShopProductSerializer(serializers.ModelSerializer):
+    """Продукт магазина"""
+
     class Meta:
         model = models.Product
-        fields = '__all__'
+        fields = ('name', 'price', 'category', 'genus', 'image', 'json')
 
 
 class InventoryProductSerializer(serializers.ModelSerializer):
+    """Продукт в инвентаре"""
+
     class Meta:
         model = models.Product
         fields = ('name', 'image', 'genus', 'category')
 
 
 class InventoryItemSerializer(serializers.ModelSerializer):
+    """Продукт инвентаря"""
     product = InventoryProductSerializer()
 
     class Meta:
@@ -24,15 +30,17 @@ class InventoryItemSerializer(serializers.ModelSerializer):
 
 
 class CatInventorySerializer(serializers.ModelSerializer):
+    """Инвентарь кота"""
     item = InventoryItemSerializer(many=True)
 
     class Meta:
         model = models.Inventory
-        fields = ('id', 'item',)
+        fields = ('id', 'item')
         read_only_fields = ('cat',)
 
 
 class PublicCatSerializer(serializers.ModelSerializer):
+    """Кот публично"""
     inventory = CatInventorySerializer()
 
     class Meta:
@@ -41,13 +49,15 @@ class PublicCatSerializer(serializers.ModelSerializer):
 
 
 class CreateItemSerializer(serializers.ModelSerializer):
+    """Создание предмета в инвентаре"""
+
     class Meta:
         model = models.Item
         fields = ('quantity', 'product')
 
     def create(self, validated_data):
         url_params = self.context.get('request').parser_context.get('kwargs')
-        inventory = models.Inventory.objects.get(id=url_params['id'])
+        inventory = models.Inventory.objects.get(id=url_params['pk'])
         service = CatService(inventory.cat)
         try:
             item = service.buy_item(validated_data['product'], abs(validated_data['quantity']))
@@ -57,6 +67,7 @@ class CreateItemSerializer(serializers.ModelSerializer):
 
 
 class HintSerializer(serializers.ModelSerializer):
+    """Подсказка"""
     hint = serializers.SerializerMethodField()
 
     class Meta:
@@ -79,6 +90,8 @@ class HintSerializer(serializers.ModelSerializer):
 
 
 class UpdateInventoryItemSerializer(serializers.ModelSerializer):
+    """Обновление инвентаря"""
+
     class Meta:
         model = models.Inventory
         fields = ('item',)
@@ -89,14 +102,16 @@ class UpdateInventoryItemSerializer(serializers.ModelSerializer):
 
 
 class PhraseSerializer(serializers.ModelSerializer):
+    """Фраза кота"""
+
     class Meta:
         model = models.Phrase
         fields = ("id", "name", "text", "cat")
 
 
 class CatSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(
-        source="user.username", read_only=True)
+    """Кот"""
+    username = serializers.CharField(source="user.username", read_only=True)
 
     class Meta:
         model = models.Cat
@@ -104,10 +119,11 @@ class CatSerializer(serializers.ModelSerializer):
 
 
 class UpdateCatSerializer(serializers.ModelSerializer):
+    """Обновление имени кота"""
+
     class Meta:
         model = models.Cat
         fields = ('name',)
 
     def update(self, instance, validated_data):
-        service = CatService(instance)
-        return service.give_name(validated_data['name'])
+        return CatService(instance).give_name(validated_data['name'])
