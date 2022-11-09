@@ -18,6 +18,22 @@ def title(request):
 
 class GitGubAuthView(generics.GenericAPIView):
     """Авторизация через Гитхаб"""
+    serializer_class = serializers.GitHubAddSerializer
+
+    def post(self, request):
+        ser = serializers.GitHubAddSerializer(data=request.data)
+        if ser.is_valid():
+            nik, url, git_id = services.github_get_user_auth(ser.data.get("code"))
+            try:
+                account = models.Account.objects.get(git_id=git_id)
+                user_id, internal_token = services.github_auth(account.user.id)
+                return Response(status.HTTP_200_OK)
+            except models.Account.DoesNotExist:
+                return Response('Пользователя не существует. Требуется регистрация', status.HTTP_403_FORBIDDEN)
+
+
+class GitGubRegisterView(generics.GenericAPIView):
+    """Регис рация через GitHub"""
     serializer_class = serializers.GitHubLoginSerializer
 
     def post(self, request):

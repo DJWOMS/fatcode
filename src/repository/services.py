@@ -1,15 +1,28 @@
 from github import Github
 from . import utils
+import requests
 
 github = Github()
 
 
 def get_my_repository(repository, user):
-    github_account = user.accounts.get(provider='GitHub')
-    if github_account.account_url == repository[:repository.rfind('/')]:
-        return github.get_repo(
-            f"{github_account.account_name}/{repository.split('/')[-1]}"
-        )
+    """Поиск репозитория пользователя"""
+    username = user.user_account.nickname_git
+    user_repos = get_user_repos(username)
+    cur_repo = repository.split('/')[-1]
+    if cur_repo in user_repos:
+        return True
+
+
+def get_user_repos(username):
+    """Поиск всех репозиториев пользователя"""
+    user_info = requests.get(f'https://api.github.com/users/{username}/repos')
+    repos = user_info.json()
+    user_repos = []
+    for repo in repos:
+        r = repo.get('name')
+        user_repos.append(r)
+    return user_repos
 
 
 def get_repository(repository):
