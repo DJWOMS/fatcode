@@ -10,6 +10,6 @@ app.autodiscover_tasks()
 app.conf.beat_schedule = {
     'everyday-task': {
       'task': 'src.team.tasks.check_invintations',
-      'schedule': crontab(hour=13, minute=7)
+      'schedule': crontab(hour=12, minute=7)
     }
 }

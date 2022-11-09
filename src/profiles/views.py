@@ -6,6 +6,7 @@ from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework import permissions, parsers
 
 from src.profiles import models, serializers, services
+from src.base.permissions import IsUser
 
 
 def title(request):
