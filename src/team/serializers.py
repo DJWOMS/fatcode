@@ -2,6 +2,7 @@ from django.db.models import Q
 from rest_framework import serializers, status
 from rest_framework.exceptions import APIException
 
+from ..base.exceptions import CustomException
 from ..base.serializers import FilterCommentListSerializer
 from .models import Post, Comment, Team, TeamMember, Invitation, SocialLink
 from ..profiles.serializers import GetUserSerializer
@@ -33,22 +34,6 @@ class UpdateSocialLinkSerializer(serializers.ModelSerializer):
     class Meta:
         model = SocialLink
         fields = ('name', 'link', 'user')
-
-    def update(self, instance, validated_data):
-        try:
-            team = Team.objects.get(
-                Q(user=validated_data.get('user').id) & Q(name=instance.team)
-            )
-            instance.name = validated_data.get('name', None)
-            instance.link = validated_data.get('link', None)
-            instance.team = team
-            instance.save()
-            return instance
-        except Team.DoesNotExist:
-            return APIException(
-                detail='Добавить ссылку возможно только к своей команде',
-                code=status.HTTP_400_BAD_REQUEST
-            )
 
 
 class CreateSocialLinkSerializer(serializers.ModelSerializer):
@@ -110,12 +95,8 @@ class InvitationAskingSerializer(serializers.ModelSerializer):
         member = TeamMember.objects.filter(
             Q(user=validated_data.get('user')) & Q(team=validated_data.get('team'))
         ).exists()
-
         if user or member:
-            raise APIException(
-                detail='Не возможно стать участником',
-                code=status.HTTP_400_BAD_REQUEST
-            )
+            raise CustomException()
         else:
             invitation = Invitation.objects.create(
                 team=validated_data.get('team', None),
@@ -271,20 +252,6 @@ class UpdateTeamSerializer(serializers.ModelSerializer):
             "avatar",
         )
 
-    def update(self, instance, validated_data):
-        try:
-            Team.objects.get(Q(user=validated_data.get('user')) & Q(name=instance.name))
-        except Team.DoesNotExist:
-            raise APIException(
-                detail='Нет доступа к данному запросу',
-                code=status.HTTP_400_BAD_REQUEST
-            )
-        instance.name = validated_data.get('name', None)
-        instance.tagline = validated_data.get('tagline', None)
-        instance.avatar = validated_data.get('avatar', None)
-        instance.save()
-        return instance
-
 
 class DetailTeamSerializer(serializers.ModelSerializer):
     """ Просмотр деталей одной команды"""
@@ -301,7 +268,7 @@ class DetailTeamSerializer(serializers.ModelSerializer):
             "social_links",
         )
 
-#TODO посмотреть метод create как лучше организовать
+
 class CommentCreateSerializer(serializers.ModelSerializer):
     """ Добавление комментариев к посту """
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
@@ -357,18 +324,6 @@ class TeamCommentUpdateSerializer(serializers.ModelSerializer):
         model = Comment
         fields = ("text", "user", "id")
 
-    def update(self, instance, validated_data):
-        try:
-            Comment.objects.get(Q(user=validated_data.get('user')) & Q(id=validated_data.get('id')))
-        except Comment.DoesNotExist:
-            raise APIException(
-                detail='Нет доступа к данному запросу',
-                code=status.HTTP_400_BAD_REQUEST
-            )
-        instance.text = validated_data.get('text', None)
-        instance.save()
-        return instance
-
 
 class PostUpdateSerializer(serializers.ModelSerializer):
     """ CUD поста """
@@ -390,39 +345,6 @@ class PostUpdateSerializer(serializers.ModelSerializer):
             team=team,
         )
         return post
-
-    def update(self, instance, validated_data):
-        try:
-            Post.objects.get(Q(user=validated_data.get('user')) & Q(id=validated_data.get('id')))
-        except Post.DoesNotExist:
-            raise APIException(
-                detail='Нет доступа к данному запросу',
-                code=status.HTTP_400_BAD_REQUEST
-            )
-        instance.text = validated_data.get('text', None)
-        instance.save()
-        return instance
-
-
-class TeamUpdateSerializer(serializers.ModelSerializer):
-    """ Редактирование поста """
-    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
-
-    class Meta:
-        model = Post
-        fields = ("id", "user", "create_date", "text")
-
-    def update(self, instance, validated_data):
-        try:
-            member = Team.objects.get(Q(user=instance.user) & Q(name=instance.team))
-        except TeamMember.DoesNotExist:
-            return APIException(
-                detail='Участником одной команды можно стать один раз',
-                code=status.HTTP_400_BAD_REQUEST
-            )
-        instance.text = validated_data.get('text', None)
-        instance.save()
-        return instance
 
 
 class MemberSerializer(serializers.ModelSerializer):
