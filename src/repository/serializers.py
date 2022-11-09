@@ -43,9 +43,7 @@ class ProjectSerializer(serializers.ModelSerializer):
         )
 
     def create(self, validated_data):
-        print(validated_data)
         repository = validated_data.get('repository', None)
-        print(validated_data.get('teams'))
         nik = services.get_nik(validated_data.get('user'))
         if nik:
             repo = services.get_my_repository(repository, nik)

@@ -141,7 +141,21 @@ class DashboardUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = FatUser
-        fields = ("id", "username", "avatar")
+        fields = (
+                'coins',
+                'experience',
+                'first_login',
+                'username',
+                'id',
+                'started_courses_count',
+                'finished_courses_count'
+            )
+
+        def get_started_courses_count(self, instance):
+            return instance.courses.filter(progress=0).count()
+
+        def get_finished_courses_count(self, instance):
+            return instance.courses.filter(progress=100).count()
 
 
 class GitHubLoginSerializer(serializers.Serializer):
@@ -150,18 +164,4 @@ class GitHubLoginSerializer(serializers.Serializer):
 
 class GitHubAddSerializer(serializers.Serializer):
     code = serializers.CharField(max_length=25)
-        fields = (
-            'coins',
-            'experience',
-            'first_login',
-            'username',
-            'id',
-            'started_courses_count',
-            'finished_courses_count'
-        )
 
-    def get_started_courses_count(self, instance):
-        return instance.courses.filter(progress=0).count()
-
-    def get_finished_courses_count(self, instance):
-        return instance.courses.filter(progress=100).count()
