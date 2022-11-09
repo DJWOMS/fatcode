@@ -71,7 +71,7 @@ class CreateAnswerReview(ModelViewSet):
 class UpdateAnswerAccept(ModelViewSet):
     serializer_class = serializers.UpdateAcceptAnswerSerializer
     permission_classes = (IsAuthenticated,)
-    queryset = Answer.objects.all()
+    queryset = Answer.objects.select_related('author', 'question', 'parent').all()
 
 
 class QuestionFollower(MixedPermissionSerializer, ModelViewSet):
