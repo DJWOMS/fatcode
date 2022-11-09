@@ -34,7 +34,6 @@ class Social(models.Model):
 class FatUser(AbstractUser):
     """User model override"""
 
-    first_login = models.DateTimeField(null=True, blank=True)
     avatar = models.ImageField(
         upload_to=user_directory_path,
         null=True,

@@ -30,7 +30,7 @@ class FatUserAdmin(UserAdmin):
                 ),
             },
         ),
-        (_("Important dates"), {"fields": ("last_login", "date_joined", "first_login")}),
+        (_("Important dates"), {"fields": ("last_login", "date_joined")}),
         # (_("socials"), {"fields": ("socials", )}),
     )
 

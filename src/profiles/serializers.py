@@ -9,7 +9,7 @@ from rest_framework import serializers
 from rest_framework.authtoken.models import Token
 
 from src.courses.serializers import ListCourseSerializer
-from src.profiles.models import FatUser, Social, FatUserSocial
+from src.profiles.models import FatUser, Social, FatUserSocial, Account
 from src.base.validators import ImageValidator
 
 
@@ -54,6 +54,14 @@ class UserAvatarSerializer(serializers.ModelSerializer):
         ]
 
 
+class AccountSerializer(serializers.ModelSerializer):
+    """Serialization for user's git_hub account"""
+
+    class Meta:
+        model = Account
+        fields = ("url", )
+
+#TODO не выводяться аккаунты гита
 class UserSerializer(serializers.ModelSerializer):
     """Serialization for user's internal display"""
     email = serializers.EmailField(read_only=True)
@@ -61,6 +69,7 @@ class UserSerializer(serializers.ModelSerializer):
     user_social = UserSocialSerializer(many=True)
     socials = ListSocialSerializer(many=True)
     courses = ListCourseSerializer(many=True)
+    user_account = AccountSerializer(read_only=True)
 
     class Meta:
         model = FatUser
@@ -71,7 +80,7 @@ class UserSerializer(serializers.ModelSerializer):
             "is_staff",
             "is_superuser",
             "groups",
-            "user_permissions",
+            "user_permissions"
         )
         ref_name = "Fat user"
 
@@ -114,16 +123,6 @@ class UserPublicSerializer(serializers.ModelSerializer):
             "groups",
             "user_permissions",
         )
-
-
-@receiver(post_save, sender=Token)
-def check_first_login(instance: Token, *args, **kwargs):
-    """Registration of the first user authorization"""
-
-    user = instance.user
-    if user.first_login is None:
-        user.first_login = datetime.now()
-        user.save()
 
 
 class GetUserSerializer(serializers.ModelSerializer):
