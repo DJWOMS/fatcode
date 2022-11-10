@@ -131,7 +131,15 @@ class GetUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = FatUser
-        fields = ("id", "username", "avatar", "first_login")
+        fields = ("id", "username", "avatar")
+
+
+class GetUserForProjectSerializer(serializers.ModelSerializer):
+    """Serialization for other serializers"""
+
+    class Meta:
+        model = FatUser
+        fields = ("id", "username")
 
 
 class DashboardUserSerializer(serializers.ModelSerializer):
@@ -144,7 +152,6 @@ class DashboardUserSerializer(serializers.ModelSerializer):
         fields = (
                 'coins',
                 'experience',
-                'first_login',
                 'username',
                 'id',
                 'started_courses_count',
