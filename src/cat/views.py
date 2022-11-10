@@ -1,12 +1,12 @@
-from django_filters.rest_framework import DjangoFilterBackend, filters
+from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Prefetch
-from rest_framework.generics import ListAPIView, CreateAPIView, UpdateAPIView
+from rest_framework.generics import ListAPIView, CreateAPIView
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework.permissions import IsAuthenticated
 
 from . import models
 from . import serializers
-from .permissions import IsInventoryCatUser, IsCatAuthUser
+from .permissions import IsInventoryCatUser
 
 from ..base.classes import MixedSerializer
 
