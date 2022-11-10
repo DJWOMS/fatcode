@@ -115,15 +115,4 @@ class CatSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Cat
-        fields = ("id", "avatar", "name", "user_id", "username")
-
-
-class UpdateCatSerializer(serializers.ModelSerializer):
-    """Обновление имени кота"""
-
-    class Meta:
-        model = models.Cat
-        fields = ('name',)
-
-    def update(self, instance, validated_data):
-        return CatService(instance).give_name(validated_data['name'])
+        fields = ("id", "avatar", "name", "user_id", "username", "xp", "level")
