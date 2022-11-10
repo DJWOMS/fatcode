@@ -1,4 +1,4 @@
-from django_filters.rest_framework import DjangoFilterBackend
+from django_filters.rest_framework import DjangoFilterBackend, filters
 from django.db.models import Prefetch
 from rest_framework.generics import ListAPIView, CreateAPIView, UpdateAPIView
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
@@ -53,17 +53,21 @@ class PhraseView(ListAPIView):
 class CatView(ReadOnlyModelViewSet):
     queryset = models.Cat.objects.select_related('user').all()
     serializer_class = serializers.CatSerializer
+    permission_classes = [IsAuthenticated]
 
 
-class CatUserView(ListAPIView):
-    serializer_class = serializers.CatSerializer
+class CatUserView(MixedSerializer, ModelViewSet):
+    serializer_classes_by_action = {
+        'list': serializers.CatSerializer,
+        'update': serializers.CatSerializer
+    }
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return models.Cat.objects.filter(user=self.request.user).select_related('user').all()
+        return models.Cat.objects.filter(user=self.request.user).select_related('user')
 
 
-class UpdateCatUserView(UpdateAPIView):
-    queryset = models.Cat.objects.select_related('user').all()
+class TopCatView(ListAPIView):
+    queryset = models.Cat.objects.order_by('-xp', '-level').select_related('user').all()[:100]
     serializer_class = serializers.CatSerializer
-    permission_classes = [IsAuthenticated, IsCatAuthUser]
+    permission_classes = [IsAuthenticated]
