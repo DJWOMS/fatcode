@@ -1,6 +1,13 @@
-from rest_framework.permissions import BasePermission
+from rest_framework.permissions import BasePermission, IsAuthenticated
 
 from . import models
+
+
+class IsFollower(IsAuthenticated):
+    """ Is Author of obj """
+
+    def has_object_permission(self, request, view, obj):
+        return obj.follower == request.user
 
 
 class IsNotFollower(BasePermission):

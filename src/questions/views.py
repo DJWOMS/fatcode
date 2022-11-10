@@ -2,7 +2,7 @@ from django.db.models import Prefetch
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated, AllowAny
 
-from .permissions import IsNotFollower
+from .permissions import IsNotFollower, IsFollower
 from ..base.permissions import IsAuthor
 from ..base.classes import MixedPermissionSerializer
 from .models import Question, Answer, QuestionReview, AnswerReview, Tag, QuestionFollowers
@@ -75,18 +75,17 @@ class UpdateAnswerAccept(ModelViewSet):
 
 
 class QuestionFollower(MixedPermissionSerializer, ModelViewSet):
-    permission_classes = (IsAuthenticated,)
-    permission_classes_by_action = {
-        "create": (IsNotFollower,)
-    }
+    queryset = QuestionFollowers.objects.all()
     serializer_classes_by_action = {
         "create": serializers.FollowerQuestionSerializer,
         "destroy": serializers.FollowerQuestionSerializer,
         "list": serializers.FollowerQuestionSerializer,
     }
-
-    def get_queryset(self):
-        return QuestionFollowers.objects.filter(follower=self.request.user)
+    permission_classes = (IsAuthenticated,)
+    permission_classes_by_action = {
+        "create": (IsNotFollower, ),
+        "destroy": (IsFollower, )
+    }
 
     def perform_create(self, serializer):
         serializer.save(follower=self.request.user)
