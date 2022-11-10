@@ -56,15 +56,12 @@ class CatView(ReadOnlyModelViewSet):
     permission_classes = [IsAuthenticated]
 
 
-class CatUserView(MixedSerializer, ModelViewSet):
-    serializer_classes_by_action = {
-        'list': serializers.CatSerializer,
-        'update': serializers.CatSerializer
-    }
+class CatUserView(ModelViewSet):
+    serializer_class = serializers.CatSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return models.Cat.objects.filter(user=self.request.user).select_related('user')
+        return models.Cat.objects.filter(user=self.request.user).select_related('user').all()
 
 
 class TopCatView(ListAPIView):
