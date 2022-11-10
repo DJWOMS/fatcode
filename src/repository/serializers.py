@@ -1,10 +1,12 @@
-from rest_framework import serializers
+from django.db.models import Q
+from rest_framework import serializers, status
+from rest_framework.exceptions import APIException
 
-from . import models
+from . import models, services
 
 from ..profiles.serializers import GetUserSerializer
 from ..team.serializers import GetTeamSerializer
-
+from ..team.models import Team
 
 class CategorySerializer(serializers.ModelSerializer):
     """Категории"""
@@ -24,6 +26,7 @@ class ToolkitSerializer(serializers.ModelSerializer):
 
 class ProjectSerializer(serializers.ModelSerializer):
     """Проект"""
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
         model = models.Project
@@ -35,8 +38,53 @@ class ProjectSerializer(serializers.ModelSerializer):
             'toolkit',
             'category',
             'teams',
-            'repository'
+            'repository',
+            'user'
         )
+
+    def create(self, validated_data):
+        repository = validated_data.get('repository', None)
+        nik = services.get_nik(validated_data.get('user'))
+        if nik:
+            repo = services.get_my_repository(repository, nik)
+            if repo:
+                try:
+                    for team in validated_data.get('teams'):
+                        team = Team.objects.get(
+                            Q(user=validated_data.get('user').id) &
+                            Q(id=team.id)
+                        )
+                except Team.DoesNotExist:
+                    raise APIException(
+                        detail='Создать возможно только для своей команды',
+                        code=status.HTTP_400_BAD_REQUEST
+                    )
+            else:
+                raise APIException(
+                    detail='Добавить репозиторий возможно только для своего аккаунта',
+                    code=status.HTTP_400_BAD_REQUEST
+                )
+            stars_count = services.get_stars_count(nik, repo)
+            forks_count = services.get_forks_count(nik, repo)
+            commits_count = services.get_commits_count(nik, repo)
+            last_commit = services.get_last_commit(nik, repo)
+        else:
+            raise APIException(
+                detail='Добавить репозиторий возможно только для аккаунтов привязанных к github',
+                code=status.HTTP_400_BAD_REQUEST
+            )
+
+        # projects = models.Project.objects.create(
+        #         name=validated_data.get('name', None),
+        #         description=validated_data.get('description', None),
+        #         user=validated_data.get('user', None),
+        #         category=validated_data.get('category', None),
+        #         toolkit=validated_data.get('toolkit', None),
+        #         teams=validated_data.get('teams', None),
+        #         avatar=validated_data.get('avatar', None),
+        #         repository=validated_data.get('repository', None)
+        #     )
+        # return projects
 
 
 class ProjectListSerializer(serializers.ModelSerializer):

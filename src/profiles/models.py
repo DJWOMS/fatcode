@@ -62,7 +62,7 @@ class FatUserSocial(models.Model):
 class Account(models.Model):
     user = models.ForeignKey(FatUser, on_delete=models.CASCADE, related_name='user_account')
     nickname_git = models.CharField(max_length=100)
-    email = models.EmailField(max_length=150, unique=True, blank=True)
+    git_id = models.CharField(max_length=150, unique=True, blank=True)
     url = models.URLField(max_length=100, blank=True)
 
     def __str__(self):

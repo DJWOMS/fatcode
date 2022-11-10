@@ -24,6 +24,14 @@ class IsAuthorTeamOrRead(permissions.BasePermission):
         return Team.objects.filter(user=request.user, id=view.kwargs.get('pk')).exists()
 
 
+class IsAuthorTeam(permissions.BasePermission):
+    """Только для автора команды"""
+    def has_permission(self, request, view):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return Team.objects.filter(user=request.user, id=view.kwargs.get('pk')).exists()
+
+
 class IsMemberTeam(permissions.BasePermission):
     """Только для автора или участника"""
 

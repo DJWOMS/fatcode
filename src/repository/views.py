@@ -16,6 +16,7 @@ class CategoryListView(generics.ListAPIView):
 
 
 class ToolkitListView(generics.ListAPIView):
+# class ToolkitListView(viewsets.ModelViewSet):
     queryset = models.Toolkit.objects.all()
     serializer_class = serializers.ToolkitSerializer
 
@@ -37,7 +38,7 @@ class ProjectsView(MixedSerializer, viewsets.ReadOnlyModelViewSet):
 
 class UserProjectsView(MixedPermissionSerializer, viewsets.ModelViewSet):
     permission_classes = (IsUser,)
-    permission_classes_by_action = {'create': (permissions.IsAuthenticated, ProjectPermission)}
+    permission_classes_by_action = {'create': (permissions.IsAuthenticated, )}
     serializer_classes_by_action = {
         'create': serializers.ProjectSerializer,
         'list': serializers.ProjectListSerializer,
@@ -56,4 +57,7 @@ class UserProjectsView(MixedPermissionSerializer, viewsets.ModelViewSet):
         )
 
     def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    def perform_update(self, serializer):
         serializer.save(user=self.request.user)

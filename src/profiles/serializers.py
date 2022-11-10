@@ -9,8 +9,9 @@ from rest_framework import serializers
 from rest_framework.authtoken.models import Token
 
 from src.courses.serializers import ListCourseSerializer
-from src.profiles.models import FatUser, Social, FatUserSocial
+from src.profiles.models import FatUser, Social, FatUserSocial, Account
 from src.base.validators import ImageValidator
+from django.db.models import Sum, Count, Q
 
 
 class UserUpdateSerializer(UserSerializer):
@@ -54,6 +55,14 @@ class UserAvatarSerializer(serializers.ModelSerializer):
         ]
 
 
+class AccountSerializer(serializers.ModelSerializer):
+    """Serialization for user's git_hub account"""
+
+    class Meta:
+        model = Account
+        fields = ("url", )
+
+#TODO не выводяться аккаунты гита
 class UserSerializer(serializers.ModelSerializer):
     """Serialization for user's internal display"""
     email = serializers.EmailField(read_only=True)
@@ -61,6 +70,7 @@ class UserSerializer(serializers.ModelSerializer):
     user_social = UserSocialSerializer(many=True)
     socials = ListSocialSerializer(many=True)
     courses = ListCourseSerializer(many=True)
+    user_account = AccountSerializer(read_only=True)
 
     class Meta:
         model = FatUser
@@ -71,7 +81,7 @@ class UserSerializer(serializers.ModelSerializer):
             "is_staff",
             "is_superuser",
             "groups",
-            "user_permissions",
+            "user_permissions"
         )
         ref_name = "Fat user"
 
@@ -121,4 +131,37 @@ class GetUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = FatUser
-        fields = ("id", "username", "avatar")
+        fields = ("id", "username", "avatar", "first_login")
+
+
+class DashboardUserSerializer(serializers.ModelSerializer):
+    """Serializer for dashboard"""
+    started_courses_count = serializers.SerializerMethodField()
+    finished_courses_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = FatUser
+        fields = (
+                'coins',
+                'experience',
+                'first_login',
+                'username',
+                'id',
+                'started_courses_count',
+                'finished_courses_count'
+            )
+
+        def get_started_courses_count(self, instance):
+            return instance.courses.filter(progress=0).count()
+
+        def get_finished_courses_count(self, instance):
+            return instance.courses.filter(progress=100).count()
+
+
+class GitHubLoginSerializer(serializers.Serializer):
+    code = serializers.CharField(max_length=25)
+    email = serializers.EmailField(max_length=150)
+
+class GitHubAddSerializer(serializers.Serializer):
+    code = serializers.CharField(max_length=25)
+

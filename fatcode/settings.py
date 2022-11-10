@@ -29,6 +29,7 @@ INSTALLED_APPS = [
 
     'django_celery_beat',
     'src.profiles',
+    'src.data',
     'src.courses',
     'src.cat',
     'src.questions',
@@ -120,6 +121,8 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 10
 }
 
 DJOSER = {
@@ -145,8 +148,22 @@ SWAGGER_SETTINGS = {
     }
 }
 
+TELEGRAM = {
+    'bot_token': os.environ.get('BOT_TOKEN'),
+    'channel_name': 'fatcode tech',
+    'channel_id': os.environ.get('CHANNEL_ID')
+}
+
+FATCODEADMIN_GIT_TOKEN = os.environ.get('FATCODEADMIN_GIT_TOKEN', '123456789')
+
 CORS_ALLOWED_ORIGINS = os.environ.get("CORS_ALLOWED_HOSTS", "http://127.0.0.1:8000").split(" ")
 
 CELERY_BROKER_URL = 'redis://redis:6379/0'
 CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+
+CLINENT_ID = '11eac0936dc86e03a233'
+CLIENT_SECRET = '8b7793d919a4d9541c9856309c949cd5bc512b2c'
+
+CLINENT_ID_FOR_AUTH = 'da8b2e32d27020f8c5b4'
+CLIENT_SECRET_FOR_AUTH = '3b973329bbe53574b50d1f41d418b0381b98130f'
