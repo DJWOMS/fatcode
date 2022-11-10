@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from ..profiles.serializers import GetUserSerializer
+from src.profiles.serializers import GetUserSerializer
 
 from . import models
 from .validators import StudentWorkValidator

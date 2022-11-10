@@ -3,7 +3,6 @@ from djoser.conf import settings
 
 from rest_framework import serializers
 
-from src.courses.serializers import ListCourseSerializer
 from src.profiles.models import FatUser, Social, FatUserSocial, Account
 from src.base.validators import ImageValidator
 
@@ -61,7 +60,6 @@ class UserSerializer(serializers.ModelSerializer):
     avatar = serializers.ImageField(validators=[ImageValidator((100, 100), 1048576)])
     user_social = UserSocialSerializer(many=True)
     socials = ListSocialSerializer(many=True)
-    courses = ListCourseSerializer(many=True)
     user_account = AccountSerializer(read_only=True)
 
     class Meta:
@@ -101,7 +99,6 @@ class UserPublicSerializer(serializers.ModelSerializer):
     avatar = serializers.ImageField(read_only=True)
     user_social = UserSocialSerializer(many=True)
     socials = ListSocialSerializer(many=True)
-    courses = ListCourseSerializer(many=True)
 
     class Meta:
         model = FatUser
