@@ -75,7 +75,6 @@ class UpdateAnswerAccept(ModelViewSet):
 
 
 class QuestionFollower(MixedPermissionSerializer, ModelViewSet):
-    queryset = QuestionFollowers.objects.all()
     serializer_classes_by_action = {
         "create": serializers.FollowerQuestionSerializer,
         "destroy": serializers.FollowerQuestionSerializer,
@@ -84,8 +83,10 @@ class QuestionFollower(MixedPermissionSerializer, ModelViewSet):
     permission_classes = (IsAuthenticated,)
     permission_classes_by_action = {
         "create": (IsNotFollower, ),
-        "destroy": (IsFollower, )
     }
+
+    def get_queryset(self):
+        return QuestionFollowers.objects.filter(follower=self.request.user)
 
     def perform_create(self, serializer):
         serializer.save(follower=self.request.user)
