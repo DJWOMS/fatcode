@@ -45,80 +45,34 @@ class ProjectSerializer(serializers.ModelSerializer):
         )
 
     def create(self, validated_data):
-        repository = validated_data.get('repository', None)
-        nik = services.get_nik(validated_data.get('user'))
-        if nik:
-            repo = services.get_my_repository(repository, nik)
-            if repo:
-                try:
-                    for team in validated_data.get('teams'):
-                        team = Team.objects.get(
-                            Q(user=validated_data.get('user').id) &
-                            Q(id=team.id)
-                        )
-                except Team.DoesNotExist:
-                    raise APIException(
-                        detail='Создать возможно только для своей команды',
-                        code=status.HTTP_400_BAD_REQUEST
-                    )
-            else:
-                raise APIException(
-                    detail='Добавить репозиторий возможно только для своего аккаунта',
-                    code=status.HTTP_400_BAD_REQUEST
-                )
-            stars_count = services.get_stars_count(nik, repo)
-            forks_count = services.get_forks_count(nik, repo)
-            commits_count = services.get_commits_count(nik, repo)
-            last_commit = services.get_last_commit(nik, repo)
+        repository = validated_data.pop('repository', None)
+        teams = validated_data.pop('teams')
+        toolkit = validated_data.pop('toolkit', None)
+        user = validated_data.pop('user')
+        if nik := services.get_nik(user):
+            repo_info = services.check_team(repository, nik, teams, user)
         else:
             raise APIException(
                 detail='Добавить репозиторий возможно только для аккаунтов привязанных к github',
                 code=status.HTTP_400_BAD_REQUEST
             )
-
         projects = models.Project.objects.create(
-                name=validated_data.get('name', None),
-                description=validated_data.get('description', None),
-                user=validated_data.get('user', None),
-                category=validated_data.get('category', None),
-                avatar=validated_data.get('avatar', None),
-                repository=validated_data.get('repository', None),
-                star=stars_count,
-                fork=forks_count,
-                commit=commits_count,
-                last_commit=last_commit
+                star=repo_info.stars_count,
+                fork=repo_info.forks_count,
+                commit=repo_info.commits_count,
+                last_commit=repo_info.last_commit,
+                **validated_data
             )
-        for team in validated_data.get('teams', None):
+        for team in teams:
             projects.teams.add(team)
-        for toolkit in validated_data.get('toolkit', None):
+        for toolkit in toolkit:
             projects.toolkit.add(toolkit)
         return projects
 
     def update(self, instance, validated_data):
         repository = validated_data.get('repository', None)
         nik = services.get_nik(validated_data.get('user'))
-        repo = services.get_my_repository(repository, nik)
-        if repo:
-            try:
-                for team in validated_data.get('teams'):
-                    team = Team.objects.get(
-                        Q(user=validated_data.get('user').id) &
-                        Q(id=team.id)
-                    )
-            except Team.DoesNotExist:
-                raise APIException(
-                    detail='Создать возможно только для своей команды',
-                    code=status.HTTP_400_BAD_REQUEST
-                )
-        else:
-            raise APIException(
-                detail='Добавить репозиторий возможно только для своего аккаунта',
-                code=status.HTTP_400_BAD_REQUEST
-            )
-        stars_count = services.get_stars_count(nik, repo)
-        forks_count = services.get_forks_count(nik, repo)
-        commits_count = services.get_commits_count(nik, repo)
-        last_commit = services.get_last_commit(nik, repo)
+        repo_info = services.check_team(repository, nik, validated_data.get('teams'), validated_data.get('user'))
         instance.name = validated_data.get('name', None)
         instance.description = validated_data.get('description', None)
         instance.avatar = validated_data.get('avatar', None)
@@ -128,6 +82,10 @@ class ProjectSerializer(serializers.ModelSerializer):
         for toolkit in validated_data.get('toolkit', None):
             instance.toolkit.add(toolkit)
         instance.repository = validated_data.get('repository', None)
+        instance.stars_count = repo_info.stars_count
+        instance.forks_count = repo_info.forks_count
+        instance.commits_count = repo_info.commits_count
+        instance.last_commit = repo_info.last_commit
         instance.save()
         return instance
 

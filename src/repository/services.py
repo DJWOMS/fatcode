@@ -1,16 +1,19 @@
 from github import Github
 from . import utils
+from .interfaces import Repository
+from ..team.models import Team
+from django.db.models import Q
+from rest_framework import status
+from rest_framework.exceptions import APIException
 import requests
 
 github = Github()
 
 def get_nik(user):
     """Поиск nik в github пользователя"""
-    account = user.user_account.all()
-    nik = ''
-    for item in account:
-        nik = item.nickname_git
-        return nik
+    account_id = user.user_account.filter(prova='github').first().account_id
+    print(account_id)
+    return account_id
 
 def get_my_repository(repository, nik):
     """Поиск репозитория пользователя"""
@@ -71,3 +74,29 @@ def get_project_stats(project):
     repository = get_repository(project.repository)
     utils.repository_stats(project, repository)
     return project
+
+
+def check_team(repository, nik, teams, user) -> Repository:
+    repo = get_my_repository(repository, nik)
+    if repo:
+        try:
+            for team in teams:
+                team = Team.objects.get(
+                    Q(user=user.id) &
+                    Q(id=team.id)
+                )
+        except Team.DoesNotExist:
+            raise APIException(
+                detail='Создать возможно только для своей команды',
+                code=status.HTTP_400_BAD_REQUEST
+            )
+    else:
+        raise APIException(
+            detail='Добавить репозиторий возможно только для своего аккаунта',
+            code=status.HTTP_400_BAD_REQUEST
+        )
+    stars_count = get_stars_count(nik, repo)
+    forks_count = get_forks_count(nik, repo)
+    commits_count = get_commits_count(nik, repo)
+    last_commit = get_last_commit(nik, repo)
+    return Repository(stars_count, forks_count, commits_count, last_commit)

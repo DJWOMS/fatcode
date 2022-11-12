@@ -29,6 +29,14 @@ class UserUpdateSerializer(UserSerializer):
         read_only_fields = (settings.LOGIN_FIELD,)
 
 
+class UserCreateSerializer(UserSerializer):
+    """Serialization to create user data"""
+
+    class Meta:
+        model = FatUser
+        fields = ('username', 'email', 'password')
+
+
 class UserSocialSerializer(serializers.ModelSerializer):
     class Meta:
         model = FatUserSocial
@@ -62,7 +70,7 @@ class AccountSerializer(serializers.ModelSerializer):
         model = Account
         fields = ("url", )
 
-#TODO не выводяться аккаунты гита
+
 class UserSerializer(serializers.ModelSerializer):
     """Serialization for user's internal display"""
     email = serializers.EmailField(read_only=True)
@@ -70,7 +78,7 @@ class UserSerializer(serializers.ModelSerializer):
     user_social = UserSocialSerializer(many=True)
     socials = ListSocialSerializer(many=True)
     courses = ListCourseSerializer(many=True)
-    user_account = AccountSerializer(read_only=True)
+    user_account = AccountSerializer(read_only=True, many=True)
 
     class Meta:
         model = FatUser
@@ -164,10 +172,6 @@ class DashboardUserSerializer(serializers.ModelSerializer):
         def get_finished_courses_count(self, instance):
             return instance.courses.filter(progress=100).count()
 
-
-class GitHubLoginSerializer(serializers.Serializer):
-    code = serializers.CharField(max_length=25)
-    email = serializers.EmailField(max_length=150)
 
 class GitHubAddSerializer(serializers.Serializer):
     code = serializers.CharField(max_length=25)

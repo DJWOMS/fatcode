@@ -333,16 +333,10 @@ class PostUpdateSerializer(serializers.ModelSerializer):
         fields = ("text", )
 
     def create(self, validated_data):
-        try:
-            team = Team.objects.get(Q(user=validated_data.get('user')) & Q(id=validated_data.get('team_id')))
-        except:
-            raise APIException(
-                detail='Нет доступа для создания поста', code=status.HTTP_400_BAD_REQUEST
-            )
         post = Post.objects.create(
             text=validated_data.get('text', None),
             user=validated_data.get('user', None),
-            team=team,
+            team_id=validated_data.get('team_id', None),
         )
         return post
 

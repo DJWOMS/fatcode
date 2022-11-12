@@ -133,6 +133,7 @@ DJOSER = {
     'LOGIN_FIELD': 'email',
     'SERIALIZERS': {
         'current_user': 'src.profiles.serializers.UserUpdateSerializer',
+        'user_create': 'src.profiles.serializers.UserCreateSerializer',
     },
 }
 
