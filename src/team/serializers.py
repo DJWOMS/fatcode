@@ -6,7 +6,6 @@ from ..base.exceptions import CustomException
 from ..base.serializers import FilterCommentListSerializer
 from .models import Post, Comment, Team, TeamMember, Invitation, SocialLink
 from ..profiles.serializers import GetUserSerializer
-from ..base.service import delete_old_file
 
 
 class TeamNameView(serializers.ModelSerializer):
@@ -45,20 +44,11 @@ class CreateSocialLinkSerializer(serializers.ModelSerializer):
         fields = ('name', 'link', 'user')
 
     def create(self, validated_data):
-        try:
-            team = Team.objects.get(
-                Q(user=validated_data.get('user').id) &
-                Q(id=validated_data.get('team_id'))
-            )
-        except Team.DoesNotExist:
-            raise APIException(
-                detail='Добавить ссылку возможно только к своей команде',
-                code=status.HTTP_400_BAD_REQUEST
-            )
+        user = validated_data.pop('user')
+        team_id = validated_data.pop('team_id')
         social_link = SocialLink.objects.create(
-            name=validated_data.get('name', None),
-            link=validated_data.get('link', None),
-            team=team
+            team_id=team_id,
+            **validated_data
         )
         return social_link
 
@@ -89,19 +79,15 @@ class InvitationAskingSerializer(serializers.ModelSerializer):
         fields = ("id", "team", "create_date", "user")
 
     def create(self, validated_data):
-        user = Team.objects.filter(
-            Q(user=validated_data.get('user').id) & Q(id=validated_data.get('team').id)
-        ).exists()
-        member = TeamMember.objects.filter(
-            Q(user=validated_data.get('user')) & Q(team=validated_data.get('team'))
-        ).exists()
-        if user or member:
+        team = validated_data.pop('team')
+        cur_user = validated_data.pop('user')
+        user = Team.objects.filter(Q(user=cur_user.id) & Q(id=team.id)).exists()
+        member = TeamMember.objects.filter(Q(user=cur_user) & Q(team=team)).exists()
+        invitation = Invitation.objects.filter(team=team, user=cur_user, order_status='Waiting').exists()
+        if user or member or invitation:
             raise CustomException()
         else:
-            invitation = Invitation.objects.create(
-                team=validated_data.get('team', None),
-                user=validated_data.get('user', None),
-            )
+            invitation = Invitation.objects.create(team=team, user=cur_user)
             return invitation
 
 
@@ -278,16 +264,7 @@ class CommentCreateSerializer(serializers.ModelSerializer):
         fields = ("text", "user", "id", "parent")
 
     def create(self, validated_data):
-        try:
-            post = Post.objects.get(
-                Q(team__members__user=validated_data.get('user').id) &
-                Q(id=validated_data.get('post_id'))
-            )
-        except Post.DoesNotExist:
-            raise APIException(
-                detail='Нет доступа для написания комментариев',
-                code=status.HTTP_400_BAD_REQUEST
-            )
+        post_id = validated_data.pop('post_id')
         if validated_data.get('parent') is not None:
             try:
                 post = Post.objects.get(id=validated_data.get('parent').post.id)
@@ -295,25 +272,15 @@ class CommentCreateSerializer(serializers.ModelSerializer):
                 raise APIException(
                     detail='Нет доступа для написания комментариев', code=status.HTTP_400_BAD_REQUEST
                 )
-            if post.id != validated_data.get('post_id'):
+            if post.id != post_id:
                 raise APIException(
                     detail='Нет доступа для написания комментариев', code=status.HTTP_400_BAD_REQUEST
                 )
-            comment = Comment.objects.create(
-                text=validated_data.get('text', None),
-                user=validated_data.get('user', None),
-                post=post,
-                parent=validated_data.get('parent', None)
-                )
-            return comment
-        else:
-            comment = Comment.objects.create(
-                text=validated_data.get('text', None),
-                user=validated_data.get('user', None),
-                post=post,
-                parent=validated_data.get('parent', None)
+        comment = Comment.objects.create(
+            post_id=post_id,
+            **validated_data
             )
-            return comment
+        return comment
 
 
 class TeamCommentUpdateSerializer(serializers.ModelSerializer):
@@ -325,20 +292,12 @@ class TeamCommentUpdateSerializer(serializers.ModelSerializer):
         fields = ("text", "user", "id")
 
 
-class PostUpdateSerializer(serializers.ModelSerializer):
+class PostCreateSerializer(serializers.ModelSerializer):
     """ CUD поста """
 
     class Meta:
         model = Post
         fields = ("text", )
-
-    def create(self, validated_data):
-        post = Post.objects.create(
-            text=validated_data.get('text', None),
-            user=validated_data.get('user', None),
-            team_id=validated_data.get('team_id', None),
-        )
-        return post
 
 
 class MemberSerializer(serializers.ModelSerializer):

@@ -1,9 +1,6 @@
-from django.db.models import Q
-from rest_framework import serializers, status
-from rest_framework.exceptions import APIException
+from rest_framework import serializers
 
 from . import models, services
-
 from ..profiles.serializers import GetUserForProjectSerializer
 from ..team.serializers import GetTeamSerializer
 from ..team.models import Team
@@ -49,18 +46,15 @@ class ProjectSerializer(serializers.ModelSerializer):
         teams = validated_data.pop('teams')
         toolkit = validated_data.pop('toolkit', None)
         user = validated_data.pop('user')
-        if nik := services.get_nik(user):
-            repo_info = services.check_team(repository, nik, teams, user)
-        else:
-            raise APIException(
-                detail='Добавить репозиторий возможно только для аккаунтов привязанных к github',
-                code=status.HTTP_400_BAD_REQUEST
-            )
+        account_id = services.get_info_for_user(repository, teams, user)
+        repo_info = services.get_repo(repository, account_id)
         projects = models.Project.objects.create(
                 star=repo_info.stars_count,
                 fork=repo_info.forks_count,
                 commit=repo_info.commits_count,
                 last_commit=repo_info.last_commit,
+                user=user,
+                repository=repository,
                 **validated_data
             )
         for team in teams:
@@ -70,18 +64,19 @@ class ProjectSerializer(serializers.ModelSerializer):
         return projects
 
     def update(self, instance, validated_data):
-        repository = validated_data.get('repository', None)
-        nik = services.get_nik(validated_data.get('user'))
-        repo_info = services.check_team(repository, nik, validated_data.get('teams'), validated_data.get('user'))
-        instance.name = validated_data.get('name', None)
-        instance.description = validated_data.get('description', None)
-        instance.avatar = validated_data.get('avatar', None)
-        instance.category = validated_data.get('category', None)
-        for team in validated_data.get('teams', None):
+        pk = validated_data.pop('pk', None)
+        repository = validated_data.pop('repository', None)
+        teams = validated_data.pop('teams', None)
+        user = validated_data.pop('user', None)
+        account_id = services.get_info_for_user_update(repository, teams, user, pk)
+        repo_info = services.get_repo(repository, account_id)
+        instance = super().update(instance, validated_data)
+        instance.teams.clear()
+        instance.toolkit.clear()
+        for team in teams:
             instance.teams.add(team)
         for toolkit in validated_data.get('toolkit', None):
             instance.toolkit.add(toolkit)
-        instance.repository = validated_data.get('repository', None)
         instance.stars_count = repo_info.stars_count
         instance.forks_count = repo_info.forks_count
         instance.commits_count = repo_info.commits_count

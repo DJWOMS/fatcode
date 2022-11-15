@@ -68,7 +68,7 @@ class AccountSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Account
-        fields = ("url", )
+        fields = ("account_url", )
 
 
 class UserSerializer(serializers.ModelSerializer):

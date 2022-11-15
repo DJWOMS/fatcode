@@ -127,9 +127,9 @@ class PostView(MixedPermissionSerializer, viewsets.ModelViewSet):
     serializer_classes_by_action = {
         'list': serializers.PostSerializer,
         'retrieve': serializers.PostSerializer,
-        'create': serializers.PostUpdateSerializer,
-        'update': serializers.PostUpdateSerializer,
-        'destroy': serializers.PostUpdateSerializer
+        'create': serializers.PostCreateSerializer,
+        'update': serializers.PostCreateSerializer,
+        'destroy': serializers.PostCreateSerializer
     }
     permission_classes_by_action = {
         'list': (permissions.IsMemberTeam, ),

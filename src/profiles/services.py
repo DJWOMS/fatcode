@@ -107,7 +107,7 @@ def get_provider(account_url):
     provider = account_url.split('/')[-2].split('.')[0]
     return provider
 
-def create_account(user, account_id, account_url, account_name):
+def create_account(user, account_name, account_url, account_id):
     return Account.objects.create(
                         user=user,
                         provider=get_provider(account_url),
