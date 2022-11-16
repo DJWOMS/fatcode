@@ -48,39 +48,21 @@ class ProjectSerializer(serializers.ModelSerializer):
         user = validated_data.pop('user')
         account_id = services.get_info_for_user(repository, teams, user)
         repo_info = services.get_repo(repository, account_id)
-        projects = models.Project.objects.create(
-                star=repo_info.stars_count,
-                fork=repo_info.forks_count,
-                commit=repo_info.commits_count,
-                last_commit=repo_info.last_commit,
-                user=user,
-                repository=repository,
-                **validated_data
-            )
-        for team in teams:
-            projects.teams.add(team)
-        for toolkit in toolkit:
-            projects.toolkit.add(toolkit)
-        return projects
+        project = services.project_create(repo_info, user, repository, teams, toolkit, **validated_data)
+        return project
 
     def update(self, instance, validated_data):
         pk = validated_data.pop('pk', None)
         repository = validated_data.pop('repository', None)
         teams = validated_data.pop('teams', None)
         user = validated_data.pop('user', None)
+        toolkits = validated_data.pop('toolkit', None)
         account_id = services.get_info_for_user_update(repository, teams, user, pk)
         repo_info = services.get_repo(repository, account_id)
+        if instance.avatar:
+            instance.avatar.delete()
         instance = super().update(instance, validated_data)
-        instance.teams.clear()
-        instance.toolkit.clear()
-        for team in teams:
-            instance.teams.add(team)
-        for toolkit in validated_data.get('toolkit', None):
-            instance.toolkit.add(toolkit)
-        instance.stars_count = repo_info.stars_count
-        instance.forks_count = repo_info.forks_count
-        instance.commits_count = repo_info.commits_count
-        instance.last_commit = repo_info.last_commit
+        instance = services.project_update(instance, repo_info, teams, toolkits)
         instance.save()
         return instance
 

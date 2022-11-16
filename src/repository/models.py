@@ -35,10 +35,10 @@ class Project(models.Model):
         default='default/project.jpg',
         blank=True,
         null=True,
-        validators=[
-            FileExtensionValidator(allowed_extensions=['jpg']),
-            ImageValidator((250, 250), 524288)
-        ]
+        # validators=[
+        #     FileExtensionValidator(allowed_extensions=['jpg']),
+        #     ImageValidator((250, 250), 524288)
+        # ]
     )
     repository = models.CharField(max_length=150)
     star = models.PositiveIntegerField(blank=True, null=True)

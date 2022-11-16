@@ -136,8 +136,8 @@ class TeamTest(APITestCase):
         data = {
             'name': 'project',
             'description': 'test1',
-            'toolkit': self.toolkit1.id,
-            'category': self.category.id,
+            'toolkit': self.toolkit1,
+            'category': self.category,
             'teams': self.team1.id,
             'repository': 'https://github.com/veraandrianova/drf_git'
         }

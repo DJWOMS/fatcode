@@ -168,3 +168,32 @@ def check_all_teams_to_update(teams, pk, user):
     else:
         if check_teams(teams) and check_my_teams(teams, user):
             return get_id(user)
+
+def project_create(repo_info, user, repository, teams, toolkit, **validated_data):
+    project = models.Project.objects.create(
+        star=repo_info.stars_count,
+        fork=repo_info.forks_count,
+        commit=repo_info.commits_count,
+        last_commit=repo_info.last_commit,
+        user=user,
+        repository=repository,
+        **validated_data
+    )
+    for team in teams:
+        project.teams.add(team)
+    for toolkit in toolkit:
+        project.toolkit.add(toolkit)
+    return project
+
+def project_update(instance, repo_info, teams, toolkits):
+    instance.teams.clear()
+    instance.toolkit.clear()
+    for team in teams:
+        instance.teams.add(team)
+    for toolkit in toolkits:
+        instance.toolkit.add(toolkit)
+    instance.stars_count = repo_info.stars_count
+    instance.forks_count = repo_info.forks_count
+    instance.commits_count = repo_info.commits_count
+    instance.last_commit = repo_info.last_commit
+    return instance

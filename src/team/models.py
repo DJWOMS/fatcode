@@ -17,10 +17,10 @@ class Team(models.Model):
         default='default/team.jpg',
         blank=True,
         null=True,
-        validators=[
-            FileExtensionValidator(allowed_extensions=['jpg']),
-            ImageValidator((250, 250), 524288)
-        ]
+        # validators=[
+        #     FileExtensionValidator(allowed_extensions=['jpg', 'jpeg']),
+        #     ImageValidator((250, 250), 524288)
+        # ]
     )
     user = models.ForeignKey(FatUser, on_delete=models.CASCADE, related_name='teams')
     create_date = models.DateTimeField(auto_now_add=True)

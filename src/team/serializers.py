@@ -238,6 +238,13 @@ class UpdateTeamSerializer(serializers.ModelSerializer):
             "avatar",
         )
 
+    def update(self, instance, validated_data):
+        if instance.avatar:
+            instance.avatar.delete()
+        instance = super().update(instance, validated_data)
+        instance.save()
+        return instance
+
 
 class DetailTeamSerializer(serializers.ModelSerializer):
     """ Просмотр деталей одной команды"""
