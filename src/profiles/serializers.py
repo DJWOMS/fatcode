@@ -28,13 +28,25 @@ class UserUpdateSerializer(UserSerializer):
         )
         read_only_fields = (settings.LOGIN_FIELD,)
 
-
+##TODO как сделать что бы выводилось сообщение email обязательное поле
 class UserCreateSerializer(UserSerializer):
     """Serialization to create user data"""
 
     class Meta:
         model = FatUser
         fields = ('username', 'email', 'password')
+        extra_kwargs = {
+            "email": {
+                "error_messages": {
+                    "required": "User's Email is required",
+                },
+            },
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(UserCreateSerializer, self).__init__(*args, **kwargs)
+        for field in self.fields:
+            self.fields[field].error_messages['required'] = 'Email' % field
 
 
 class UserSocialSerializer(serializers.ModelSerializer):

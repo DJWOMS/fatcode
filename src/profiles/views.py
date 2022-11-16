@@ -25,30 +25,11 @@ class GitGubAuthView(generics.GenericAPIView):
         ser = serializers.GitHubAddSerializer(data=request.data)
         if ser.is_valid():
             account_name, account_url, account_id, email = services.github_get_user_auth(ser.data.get("code"))
-            try:
-                account = models.Account.objects.get(account_id=account_id)
-                user_id, internal_token = services.github_auth(account.user.id)
+            if internal_token := services.check_account_for_auth(account_id):
                 return Response(status.HTTP_200_OK)
-            except models.Account.DoesNotExist:
-                if email is not None:
-                    user = services.create_user_with_email(account_id, email)
-                    if user:
-                        password = services.create_password()
-                        user.set_password(password)
-                        user.save()
-                        services.create_account(user, account_name, account_url, account_id)
-                        user_id, internal_token = services.github_auth(user.id)
-                        return Response(status.HTTP_200_OK)
-                    else:
-                        return Response('Пользователь стаким email уже существует', status.HTTP_400_BAD_REQUEST)
-                elif email is None:
-                    user = services.create_user(account_id)
-                    password = services.create_password()
-                    user.set_password(password)
-                    user.save()
-                    services.create_account(user, account_name, account_url, account_id)
-                    user_id, internal_token = services.github_auth(user.id)
-                    return Response(status.HTTP_200_OK)
+            else:
+                internal_token = services.create_user_and_token(account_id, email, account_name, account_url)
+                return Response(status.HTTP_200_OK)
 
 
 class AddGitHub(generics.GenericAPIView):
@@ -59,12 +40,9 @@ class AddGitHub(generics.GenericAPIView):
         ser = serializers.GitHubAddSerializer(data=request.data)
         if ser.is_valid():
             account_name, account_url, account_id = services.github_get_user_add(ser.data.get("code"))
-            if models.Account.objects.filter(user=request.user, account_id=account_id).exists():
-                return Response('Аккаунт уже существует', status.HTTP_403_FORBIDDEN)
-            if models.Account.objects.filter(account_id=account_id).exists():
-                return Response('Аккаунт уже привязан', status.HTTP_403_FORBIDDEN)
-            services.create_account(request.user, account_name, account_url, account_id)
-        return Response(status.HTTP_200_OK)
+            if services.check_account_for_add(request.user, account_id):
+                services.create_account(request.user, account_name, account_url, account_id)
+                return Response(status.HTTP_200_OK)
 
 
 class UserView(ModelViewSet):

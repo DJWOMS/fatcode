@@ -1,10 +1,14 @@
 import requests
 from django.db.models import F
 from kombu.exceptions import HttpError
+from rest_framework import status
+from rest_framework.exceptions import APIException
 from src.profiles.models import FatUser, Account
 from src.profiles.tokenizator import create_token
 from django.contrib.auth.base_user import BaseUserManager
 from django.conf import settings
+from rest_framework.response import Response
+
 
 def add_experience(user_id: int, exp: int):
     new_exp = FatUser.objects.filter(id=user_id).update(expirience=F('experience') + exp)
@@ -99,10 +103,6 @@ def create_password():
     password = BaseUserManager().make_random_password()
     return password
 
-def send_password_to_mail(email, password):
-    print(email)
-    print(password)
-
 def get_provider(account_url):
     provider = account_url.split('/')[-2].split('.')[0]
     return provider
@@ -116,8 +116,54 @@ def create_account(user, account_name, account_url, account_id):
                         account_name=account_name
                     )
 
-def create_user_with_email(account_id, email):
-    return FatUser.objects.create(username=account_id, email=email)
+def check_user_with_email(account_id, email, account_name, account_url):
+    if user := FatUser.objects.filter(username=account_id, email=email).exists():
+        raise APIException(
+            detail='Пользователь стаким email уже существует',
+            code=status.HTTP_400_BAD_REQUEST
+        )
+    else:
+        user = FatUser.objects.create(username=account_id, email=email)
+        password = create_password()
+        user.set_password(password)
+        user.save()
+        create_account(user, account_name, account_url, account_id)
+        user_id, internal_token = github_auth(user.id)
+        return internal_token
 
 def create_user(account_id):
     return FatUser.objects.create(username=account_id)
+
+def check_account_for_add(user, account_id):
+    if Account.objects.filter(user=user, account_id=account_id).exists():
+        raise APIException(
+            detail='Аккаунт уже существует',
+            code=status.HTTP_403_FORBIDDEN
+        )
+    if Account.objects.filter(account_id=account_id).exists():
+        raise APIException(
+            detail='Аккаунт уже привязан',
+            code=status.HTTP_403_FORBIDDEN
+        )
+    else:
+        return user
+
+def check_account_for_auth(account_id):
+    try:
+        account = Account.objects.get(account_id=account_id)
+        user_id, internal_token = github_auth(account.user.id)
+        return internal_token
+    except Account.DoesNotExist:
+        return False
+
+def create_user_and_token(account_id, email, account_name, account_url):
+    if email is not None:
+        return check_user_with_email(account_id, email, account_name, account_url)
+    elif email is None:
+        user = create_user(account_id)
+        password = create_password()
+        user.set_password(password)
+        user.save()
+        create_account(user, account_name, account_url, account_id)
+        user_id, internal_token = github_auth(user.id)
+        return internal_token
