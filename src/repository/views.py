@@ -6,18 +6,18 @@ from . import serializers, models
 from .filters import ProjectFilter
 from .permissions import IsMemberTeam
 
-from ..base.classes import MixedSerializer, MixedPermissionSerializer
+from ..base.classes import MixedPermissionSerializer
 from ..base.permissions import IsUser
 from ..team.models import Team
 from ..dashboard.models import Board
 
 class CategoryListView(generics.ListAPIView):
-    queryset = models.Category.objects.all()
+    queryset = models.Category.objects.select_related('projects').all()
     serializer_class = serializers.CategorySerializer
 
 
 class ToolkitListView(generics.ListAPIView):
-    queryset = models.Toolkit.objects.all()
+    queryset = models.Toolkit.objects.prefetch_related('projects').all()
     serializer_class = serializers.ToolkitSerializer
 
 
@@ -66,7 +66,8 @@ class UserProjectsView(MixedPermissionSerializer, viewsets.ModelViewSet):
     }
 
     def get_queryset(self):
-        return models.Project.objects.filter(user=self.request.user)
+        return models.Project.objects.select_related('user', 'category').prefetch_related('toolkit', 'teams').\
+            filter(user=self.request.user)
 
 
 class MemberProjectTeamsView(MixedPermissionSerializer, viewsets.ModelViewSet):
@@ -92,4 +93,4 @@ class MemberProjectBoardView(MixedPermissionSerializer, viewsets.ModelViewSet):
     }
 
     def get_queryset(self):
-        return Board.objects.filter(project=self.kwargs.get('pk'))
+        return Board.objects.select_related('board').filter(project=self.kwargs.get('pk'))

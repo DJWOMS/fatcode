@@ -6,6 +6,7 @@ from ..base.exceptions import CustomException
 from ..base.serializers import FilterCommentListSerializer
 from .models import Post, Comment, Team, TeamMember, Invitation, SocialLink
 from ..profiles.serializers import GetUserSerializer
+from src.repository.models import Project
 
 
 class TeamNameView(serializers.ModelSerializer):
@@ -142,9 +143,18 @@ class TeamMemberSerializer(serializers.ModelSerializer):
         fields = ("user",)
 
 
+class ProjectSerializers(serializers.ModelSerializer):
+    """Просмотр проекта команды"""
+
+    class Meta:
+        model = Project
+        fields = ("name",)
+
+
 class TeamSerializer(serializers.ModelSerializer):
     """Просмотр всех команд"""
     user = GetUserSerializer()
+    project_teams = ProjectSerializers(read_only=True, many=True)
 
     class Meta:
         model = Team
@@ -154,6 +164,7 @@ class TeamSerializer(serializers.ModelSerializer):
             "tagline",
             "user",
             "avatar",
+            "project_teams"
         )
 
 
