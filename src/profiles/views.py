@@ -5,8 +5,10 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework import permissions, parsers
 
+from src.base.classes import MixedPermission, MixedPermissionSerializer
 from src.profiles import models, serializers, services
 from src.base.permissions import IsUser
+from src.profiles.permissions import IsNotApplicant, IsNotAlreadyFriend, IsNotYouGetter
 
 
 def title(request):
@@ -125,3 +127,40 @@ class UserAvatar(ModelViewSet):
         obj = get_object_or_404(queryset)
         self.check_object_permissions(self.request, obj)
         return obj
+
+
+class ApplicationView(MixedPermissionSerializer, ModelViewSet):
+    serializer_classes_by_action = {
+        'list': serializers.ApplicationListSerializer,
+        'create': serializers.ApplicationSerializer,
+        'delete': serializers.ApplicationSerializer
+    }
+    permission_classes = [permissions.IsAuthenticated]
+    permission_classes_by_action = {
+        'create': [IsNotApplicant, IsNotYouGetter, IsNotAlreadyFriend],
+    }
+
+    def get_queryset(self):
+        return models.Applications.objects.filter(sender=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(sender=self.request.user)
+
+
+class ApplicationUserGetter(ReadOnlyModelViewSet):
+    serializer_class = serializers.ApplicationListSerializer
+    permissions = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return models.Applications.objects.filter(getter=self.request.user)
+
+
+class FriendView(ModelViewSet):
+    serializer_class = serializers.FriendSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return models.Friends.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)

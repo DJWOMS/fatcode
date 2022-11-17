@@ -9,9 +9,11 @@ from rest_framework import serializers
 from rest_framework.authtoken.models import Token
 
 from src.courses.serializers import ListCourseSerializer
-from src.profiles.models import FatUser, Social, FatUserSocial, Account
+from src.profiles.models import FatUser, Social, FatUserSocial, Account, Applications, Friends
 from src.base.validators import ImageValidator
 from django.db.models import Sum, Count, Q
+
+from src.profiles.services import add_friend
 
 
 class UserUpdateSerializer(UserSerializer):
@@ -161,6 +163,32 @@ class GitHubLoginSerializer(serializers.Serializer):
     code = serializers.CharField(max_length=25)
     email = serializers.EmailField(max_length=150)
 
+
 class GitHubAddSerializer(serializers.Serializer):
     code = serializers.CharField(max_length=25)
+
+
+class ApplicationListSerializer(serializers.ModelSerializer):
+    getter = GetUserSerializer()
+
+    class Meta:
+        model = Applications
+        fields = ('id', 'getter', )
+
+
+class ApplicationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Applications
+        fields = ('id', 'getter', )
+
+
+class FriendSerializer(serializers.ModelSerializer):
+    friend = GetUserSerializer()
+
+    class Meta:
+        model = Friends
+        fields = ('id', 'friend', )
+
+    def create(self, validated_data):
+        return add_friend(friend=validated_data['friend'], user=validated_data['user'])
 

@@ -1,7 +1,7 @@
 import requests
 from django.db.models import F
 from kombu.exceptions import HttpError
-from src.profiles.models import FatUser, Account
+from src.profiles.models import FatUser, Account, Friends, Applications
 from src.profiles.tokenizator import create_token
 from django.contrib.auth.base_user import BaseUserManager
 from django.conf import settings
@@ -40,6 +40,7 @@ def check_token_add(code):
     token = check.text.split("&")[0].split("=")[1]
     return token
 
+
 def check_token(code):
     url_token = 'https://github.com/login/oauth/access_token'
     data = {
@@ -51,12 +52,14 @@ def check_token(code):
     token = check.text.split("&")[0].split("=")[1]
     return token
 
+
 def check_github_auth_add(code: str):
     _token = check_token_add(code)
     if _token != 'bad_verification_code':
         user = check_github_user(_token)
         return user.json()
     return None
+
 
 def check_github_auth(code: str):
     _token = check_token(code)
@@ -65,11 +68,13 @@ def check_github_auth(code: str):
         return user.json()
     return None
 
+
 def check_github_user(_token):
     url_check_user = 'https://api.github.com/user'
     headers = {'Authorization': f'token {_token}'}
     user = requests.get(url_check_user, headers=headers)
     return user
+
 
 def github_get_user_add(code: str):
     user = check_github_auth_add(code)
@@ -81,6 +86,7 @@ def github_get_user_add(code: str):
     else:
         raise HttpError(403, "Bad code")
 
+
 def github_get_user_auth(code: str):
     user = check_github_auth(code)
     if user is not None:
@@ -91,17 +97,21 @@ def github_get_user_auth(code: str):
     else:
         raise HttpError(403, "Bad code")
 
+
 def github_auth(user_id) -> tuple:
     internal_token = create_token(user_id)
     return user_id, internal_token
+
 
 def create_password():
     password = BaseUserManager().make_random_password()
     return password
 
+
 def send_password_to_mail(email, password):
     print(email)
     print(password)
+
 
 def create_account(user, git_id, url, nik):
     return Account.objects.create(
@@ -111,5 +121,15 @@ def create_account(user, git_id, url, nik):
                         nickname_git=nik
                     )
 
+
 def create_user(nik, email):
     return FatUser.objects.create(username=nik, email=email)
+
+
+def add_friend(friend, user):
+    if Applications.objects.filter(getter=friend, sender=user):
+        Applications.objects.filter(getter=friend, sender=user).delete()
+        Friends.objects.create(friend=user, user=friend)
+        return Friends.objects.create(friend=friend, user=user)
+    else:
+        raise ValueError("you have not application")
