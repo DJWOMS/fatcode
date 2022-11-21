@@ -8,6 +8,7 @@ from rest_framework import permissions, parsers
 from src.profiles import models, serializers, services
 
 
+
 def title(request):
     """Для добавления git только авторизованным"""
     if request.user.is_authenticated:
@@ -23,41 +24,12 @@ class GitGubAuthView(generics.GenericAPIView):
     def post(self, request):
         ser = serializers.GitHubAddSerializer(data=request.data)
         if ser.is_valid():
-            nik, url, git_id = services.github_get_user_auth(ser.data.get("code"))
-            try:
-                account = models.Account.objects.get(git_id=git_id)
-                user_id, internal_token = services.github_auth(account.user.id)
+            account_name, account_url, account_id, email = services.github_get_user_auth(ser.data.get("code"))
+            if internal_token := services.check_account_for_auth(account_id):
                 return Response(status.HTTP_200_OK)
-            except models.Account.DoesNotExist:
-                return Response('Пользователя не существует. Требуется регистрация', status.HTTP_403_FORBIDDEN)
-
-
-class GitGubRegisterView(generics.GenericAPIView):
-    """Регистрация через GitHub"""
-    serializer_class = serializers.GitHubLoginSerializer
-
-    def post(self, request):
-        ser = serializers.GitHubLoginSerializer(data=request.data)
-        if ser.is_valid():
-            nik, url, git_id = services.github_get_user_auth(ser.data.get("code"))
-            try:
-                account = models.Account.objects.get(git_id=git_id)
-                user_id, internal_token = services.github_auth(account.user.id)
+            else:
+                internal_token = services.create_user_and_token(account_id, email, account_name, account_url)
                 return Response(status.HTTP_200_OK)
-            except models.Account.DoesNotExist:
-                try:
-                    user = models.FatUser.objects.get(email=ser.data.get("email"))
-                    return Response('Пользователь с таким email уже существует', status.HTTP_403_FORBIDDEN)
-                except models.FatUser.DoesNotExist:
-                    user = services.create_user(nik, ser.data.get("email"))
-                    password = services.create_password()
-                    user.set_password(password)
-                    user.save()
-                    services.create_account(user, git_id, url, nik)
-                    email = ser.data.get("email")
-                    services.send_password_to_mail(email, password)
-                    user_id, internal_token = services.github_auth(user.id)
-                    return Response('Пароль отправлен на Вашу электронную почту', status.HTTP_200_OK)
 
 
 class AddGitHub(generics.GenericAPIView):
@@ -67,13 +39,10 @@ class AddGitHub(generics.GenericAPIView):
     def post(self, request):
         ser = serializers.GitHubAddSerializer(data=request.data)
         if ser.is_valid():
-            nik, url, git_id = services.github_get_user_add(ser.data.get("code"))
-            if models.Account.objects.filter(user=request.user, git_id=git_id).exists():
-                return Response('Аккаунт уже существует', status.HTTP_403_FORBIDDEN)
-            if models.Account.objects.filter(git_id=git_id).exists():
-                return Response('Аккаунт уже привязан', status.HTTP_403_FORBIDDEN)
-            services.create_account(request.user, git_id, url, nik)
-        return Response(status.HTTP_200_OK)
+            account_name, account_url, account_id = services.github_get_user_add(ser.data.get("code"))
+            if services.check_account_for_add(request.user, account_id):
+                services.create_account(request.user, account_name, account_url, account_id)
+                return Response(status.HTTP_200_OK)
 
 
 class UserView(ModelViewSet):
@@ -94,6 +63,7 @@ class UserView(ModelViewSet):
 
 class UserPublicView(ModelViewSet):
     """Public user display"""
+
     queryset = models.FatUser.objects.all()
     serializer_class = serializers.UserPublicSerializer
     permission_classes = [permissions.AllowAny]
@@ -118,7 +88,6 @@ class UserAvatar(ModelViewSet):
     def get_queryset(self):
         return models.FatUser.objects.filter(id=self.request.user.id)
 
-    # TODO для чего переопределили этот метод?
     def get_object(self):
         queryset = self.filter_queryset(self.get_queryset())
         obj = get_object_or_404(queryset)

@@ -34,7 +34,9 @@ class IsMemberTeam(permissions.BasePermission):
     """Только для автора или участника"""
 
     def has_permission(self, request, view):
-        return TeamMember.objects.filter(user=request.user, team__id=view.kwargs.get('pk')).exists()
+        return TeamMember.objects.select_related('user', 'team').filter(
+            user=request.user, team__id=view.kwargs.get('pk')
+        ).exists()
 
 
 ##TODO подумать над permission

@@ -16,8 +16,7 @@ urlpatterns = [
     ), name='user-avatar'),
     path('title/', views.title, name='title'),
     path('add_git_hub/', views.AddGitHub.as_view(), name='add_git_hub'),
-    path('git_hub_auth/', views.GitGubAuthView.as_view(), name='git_hub_auth'),
-    path('git_hub_register/', views.GitGubRegisterView.as_view(), name='git_hub_register')
+    path('git_hub_auth/', views.GitGubAuthView.as_view(), name='git_hub_auth')
 ]
 
 router = DefaultRouter()
