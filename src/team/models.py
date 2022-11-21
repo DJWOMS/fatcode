@@ -18,7 +18,7 @@ class Team(models.Model):
         blank=True,
         null=True,
         validators=[
-            FileExtensionValidator(allowed_extensions=['jpg']),
+            FileExtensionValidator(allowed_extensions=['jpg', 'jpeg']),
             ImageValidator((250, 250), 524288)
         ]
     )

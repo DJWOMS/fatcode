@@ -130,9 +130,10 @@ DJOSER = {
     'ACTIVATION_URL': '#/activate/{uid}/{token}',
     'SEND_ACTIVATION_EMAIL': False,
     'USER_CREATE_PASSWORD_RETYPE': True,
-    'LOGIN_FIELD': 'email',
+    'LOGIN_FIELD': 'username',
     'SERIALIZERS': {
         'current_user': 'src.profiles.serializers.UserUpdateSerializer',
+        'user_create': 'src.profiles.serializers.UserCreateSerializer',
     },
 }
 

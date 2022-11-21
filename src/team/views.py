@@ -2,18 +2,20 @@ from rest_framework import viewsets, status
 from rest_framework.exceptions import APIException
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from rest_framework.response import Response
+from django_filters import rest_framework as filters
 
 from src.base.classes import MixedSerializer, MixedPermission, MixedPermissionSerializer
 from src.base.service import post_view_count
 from src.base.permissions import IsUser
-from src.team.models import Team, Post, Comment, TeamMember, Invitation, SocialLink
-from src.team import serializers
-from src.team import permissions
+from src.team import serializers, permissions, filters, models
+from django_filters import rest_framework as filter
 
 
 class TeamView(MixedPermissionSerializer, viewsets.ModelViewSet):
     """  Посмотреть/создать команду (CRUD)"""
-    queryset = Team.objects.all()
+    filterset_class = filters.TeamFilter
+    filter_backends = (filter.DjangoFilterBackend,)
+    queryset = models.Team.objects.prefetch_related('project_teams').select_related('user').all()
     permission_classes_by_action = {
         'list': (IsAuthenticatedOrReadOnly,),
         'create': (IsAuthenticated,),
@@ -58,7 +60,7 @@ class SocialLinkView(MixedPermissionSerializer, viewsets.ModelViewSet):
     lookup_url_kwarg = 'social_pk'
 
     def get_queryset(self):
-        return SocialLink.objects.filter(team=self.kwargs.get('pk'))
+        return models.SocialLink.objects.select_related('team').filter(team=self.kwargs.get('pk'))
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user, team_id=self.kwargs.get('pk'))
@@ -80,7 +82,8 @@ class OwnTeamListView(MixedPermissionSerializer, viewsets.ModelViewSet):
     }
 
     def get_queryset(self):
-        return Team.objects.filter(user=self.request.user)
+        return models.Team.objects.select_related('user').prefetch_related('social_links')\
+            .filter(user=self.request.user)
 
 
 class MemberTeamListView(MixedPermissionSerializer, viewsets.ModelViewSet):
@@ -93,7 +96,7 @@ class MemberTeamListView(MixedPermissionSerializer, viewsets.ModelViewSet):
     }
 
     def get_queryset(self):
-        return Team.objects.filter(members__user=self.request.user).exclude(user=self.request.user)
+        return models.Team.objects.select_related('user').filter(members__user=self.request.user).exclude(user=self.request.user)
 
 
 class MemberList(MixedPermissionSerializer, viewsets.ModelViewSet):
@@ -111,10 +114,10 @@ class MemberList(MixedPermissionSerializer, viewsets.ModelViewSet):
     lookup_url_kwarg = 'member_pk'
 
     def get_queryset(self):
-        return TeamMember.objects.filter(team=self.kwargs.get('pk'))
+        return models.TeamMember.objects.prefetch_related('user').filter(team=self.kwargs.get('pk'))
 
     def perform_destroy(self, instance):
-        if Team.objects.filter(name=instance.team, user=instance.user).exists():
+        if models.Team.objects.filter(name=instance.team, user=instance.user).exists():
             raise APIException(
                 detail='Невозможно удалить себя из команды',
                 code=status.HTTP_400_BAD_REQUEST
@@ -127,9 +130,9 @@ class PostView(MixedPermissionSerializer, viewsets.ModelViewSet):
     serializer_classes_by_action = {
         'list': serializers.PostSerializer,
         'retrieve': serializers.PostSerializer,
-        'create': serializers.PostUpdateSerializer,
-        'update': serializers.PostUpdateSerializer,
-        'destroy': serializers.PostUpdateSerializer
+        'create': serializers.PostCreateSerializer,
+        'update': serializers.PostCreateSerializer,
+        'destroy': serializers.PostCreateSerializer
     }
     permission_classes_by_action = {
         'list': (permissions.IsMemberTeam, ),
@@ -141,7 +144,7 @@ class PostView(MixedPermissionSerializer, viewsets.ModelViewSet):
     lookup_url_kwarg = 'post_pk'
 
     def get_queryset(self):
-        return Post.objects.filter(team_id=self.kwargs.get('pk'))
+        return models.Post.objects.select_related('team', 'user').filter(team_id=self.kwargs.get('pk'))
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -179,7 +182,7 @@ class CommentsView(MixedPermissionSerializer, viewsets.ModelViewSet):
     lookup_url_kwarg = 'comment_pk'
 
     def get_queryset(self):
-        return Comment.objects.filter(post_id=self.kwargs.get('post_pk'))
+        return models.Comment.objects.select_related('post').filter(post_id=self.kwargs.get('post_pk'))
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user, post_id=self.kwargs.get('post_pk'))
@@ -207,7 +210,7 @@ class InvitationView(MixedPermissionSerializer, viewsets.ModelViewSet):
     }
 
     def get_queryset(self):
-        return Invitation.objects.filter(user=self.request.user)
+        return models.Invitation.objects.select_related('team', 'user').filter(user=self.request.user)
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
@@ -230,7 +233,10 @@ class InvitationDetailView(MixedPermissionSerializer, viewsets.ModelViewSet):
     }
 
     def get_queryset(self):
-        return Invitation.objects.filter(team__user=self.request.user, order_status='Waiting')
+        return models.Invitation.objects.select_related('team', 'user').filter(
+                                                                                team__user=self.request.user,
+                                                                                order_status='Waiting'
+                                                                                )
 
     def perform_update(self, serializer):
         serializer.save(user=self.request.user)

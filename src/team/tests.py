@@ -1,6 +1,6 @@
 from django.urls import reverse
 from rest_framework import status
-from rest_framework.test import APITestCase, APIClient
+from rest_framework.test import APITestCase
 from rest_framework.authtoken.models import Token
 from src.profiles.models import FatUser
 from src.team.models import Post, Comment, Team, TeamMember, Invitation, SocialLink
@@ -97,12 +97,12 @@ class TeamTest(APITestCase):
     def test_team_list(self):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
         response = self.client.get(reverse('teams'))
-        self.assertEqual(len(response.data), 3)
+        self.assertEqual(len(response.data), 4)
         self.assertEqual(response.status_code, 200)
 
     def test_team_list_no_authorization(self):
         response = self.client.get(reverse('teams'))
-        self.assertEqual(len(response.data), 3)
+        self.assertEqual(len(response.data), 4)
         self.assertEqual(response.status_code, 200)
 
     def test_team_detail(self):
@@ -151,6 +151,7 @@ class TeamTest(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile2_token.key)
         response = self.client.delete(reverse('detail_teams', kwargs={'pk': self.team1.id}))
         self.assertEqual(response.status_code, 403)
+        self.assertEqual(Team.objects.filter(id=self.team1.id).exists(), True)
 
     def test_team_delete_no_authorization(self):
         response = self.client.delete(reverse('detail_teams', kwargs={'pk': self.team1.id}))
@@ -164,7 +165,7 @@ class TeamTest(APITestCase):
     def test_my_team(self):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
         response = self.client.get(reverse('my_team'))
-        self.assertEqual(len(response.data), 2)
+        self.assertEqual(len(response.data), 4)
         self.assertEqual(response.status_code, 200)
 
     def test_my_team_no_authorization(self):
@@ -174,7 +175,7 @@ class TeamTest(APITestCase):
     def test_member_team(self):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile3_token.key)
         response = self.client.get(reverse('team_member'))
-        self.assertEqual(len(response.data), 1)
+        self.assertEqual(len(response.data), 4)
         self.assertEqual(response.status_code, 200)
 
     def test_member_team_no_authorization(self):
@@ -215,7 +216,7 @@ class TeamTest(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile2_token.key)
         response = self.client.get(reverse('invitation'))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 1)
+        self.assertEqual(len(response.data), 4)
         self.assertEqual(Invitation.objects.count(), 1)
 
     def test_invitation_no_authorization(self):
@@ -246,7 +247,7 @@ class TeamTest(APITestCase):
     def test_invitation_list(self):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
         response = self.client.get(reverse('invitation_list'))
-        self.assertEqual(len(response.data), 1)
+        self.assertEqual(len(response.data), 4)
         self.assertEqual(response.status_code, 200)
 
     def test_invitation_list_no_authorization(self):
@@ -288,13 +289,13 @@ class TeamTest(APITestCase):
     def test_post_list(self):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
         response = self.client.get(reverse('post', kwargs={'pk': self.team1.id}))
-        self.assertEqual(len(response.data), 1)
+        self.assertEqual(len(response.data), 4)
         self.assertEqual(response.status_code, 200)
 
     def test_post_list_member(self):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile3_token.key)
         response = self.client.get(reverse('post', kwargs={'pk': self.team1.id}))
-        self.assertEqual(len(response.data), 1)
+        self.assertEqual(len(response.data), 4)
         self.assertEqual(response.status_code, 200)
 
     def test_post_list_invalid(self):
@@ -414,13 +415,13 @@ class TeamTest(APITestCase):
     def test_comment_author_list(self):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
         response = self.client.get(reverse('comment', kwargs={'pk': self.team1.id, 'post_pk': self.post1.id}))
-        self.assertEqual(len(response.data), 1)
+        self.assertEqual(len(response.data), 4)
         self.assertEqual(response.status_code, 200)
 
     def test_comment_member_list(self):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile3_token.key)
         response = self.client.get(reverse('comment', kwargs={'pk': self.team1.id, 'post_pk': self.post1.id}))
-        self.assertEqual(len(response.data), 1)
+        self.assertEqual(len(response.data), 4)
         self.assertEqual(response.status_code, 200)
 
     def test_comment_list_invalid(self):
@@ -663,7 +664,7 @@ class TeamTest(APITestCase):
     def test_member_list(self):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile3_token.key)
         response = self.client.get(reverse('member', kwargs={'pk': self.team1.id}))
-        self.assertEqual(len(response.data), 2)
+        self.assertEqual(len(response.data), 4)
         self.assertEqual(response.status_code, 200)
 
     def test_member_list_invalid(self):
@@ -723,12 +724,12 @@ class TeamTest(APITestCase):
     def test_social_links_list(self):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
         response = self.client.get(reverse('social_links', kwargs={'pk': self.team1.id}))
-        self.assertEqual(len(response.data), 1)
+        self.assertEqual(len(response.data), 4)
         self.assertEqual(response.status_code, 200)
 
     def test_social_links_list_no_authorization(self):
         response = self.client.get(reverse('social_links', kwargs={'pk': self.team1.id}))
-        self.assertEqual(len(response.data), 1)
+        self.assertEqual(len(response.data), 4)
         self.assertEqual(response.status_code, 200)
 
     def test_social_links_create(self):
