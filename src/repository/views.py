@@ -12,7 +12,7 @@ from ..team.models import Team
 from ..dashboard.models import Board
 
 class CategoryListView(generics.ListAPIView):
-    queryset = models.Category.objects.select_related('projects').all()
+    queryset = models.Category.objects.prefetch_related('projects').all()
     serializer_class = serializers.CategorySerializer
 
 
@@ -23,6 +23,12 @@ class ToolkitListView(generics.ListAPIView):
 
 class ProjectsView(MixedPermissionSerializer, viewsets.ModelViewSet):
     """CRUD проекта"""
+    queryset = (
+        models.Project.objects
+        .select_related('user', 'category')
+        .all()
+        .prefetch_related('toolkit', 'teams')
+    )
     permission_classes_by_action = {
         'list': (permissions.IsAuthenticated,),
         'retrieve': (permissions.IsAuthenticated,),
@@ -30,12 +36,6 @@ class ProjectsView(MixedPermissionSerializer, viewsets.ModelViewSet):
         'update': (IsUser,),
         'destroy': (IsUser,)
     }
-    queryset = (
-        models.Project.objects
-        .select_related('user', 'category')
-        .prefetch_related('toolkit', 'teams')
-        .all()
-    )
     filterset_class = ProjectFilter
     filter_backends = (filters.DjangoFilterBackend,)
     serializer_classes_by_action = {

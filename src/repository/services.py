@@ -5,9 +5,9 @@ from ..team.models import Team
 from django.db.models import Q
 from rest_framework import status
 from rest_framework.exceptions import APIException
-from kombu.exceptions import HttpError
 import requests
 from . import models
+from ..base import exceptions
 
 github = Github()
 
@@ -17,10 +17,11 @@ def get_id(user):
         account_id = user.user_account.filter(provider='github').first().account_id
         return account_id
     except:
-        raise APIException(
-            detail='Добавить репозиторий возможно только для аккаунтов привязанных к github',
-            code=status.HTTP_400_BAD_REQUEST
-        )
+        raise exceptions.BadAccount()
+        # raise APIException(
+        #     detail='Добавить репозиторий возможно только для аккаунтов привязанных к github',
+        #     code=status.HTTP_400_BAD_REQUEST
+        # )
 
 def get_my_repository(repository, account_id):
     """Поиск репозитория пользователя"""
@@ -30,10 +31,7 @@ def get_my_repository(repository, account_id):
     if cur_repo in user_repos:
         return cur_repo, nik
     else:
-        raise APIException(
-            detail='Добавить репозиторий возможно только для своего аккаунта',
-            code=status.HTTP_400_BAD_REQUEST
-        )
+        raise exceptions.BadAccountAuthor()
 
 def get_nik(repository, account_id):
     cur_nik = repository.split('/')[-2]
@@ -42,10 +40,11 @@ def get_nik(repository, account_id):
     if str(cur_id) == account_id:
         return cur_nik
     else:
-        raise APIException(
-            detail='Bad account_id',
-            code=status.HTTP_400_BAD_REQUEST
-        )
+        # raise APIException(
+        #     detail='Bad account_id',
+        #     code=status.HTTP_400_BAD_REQUEST
+        # )
+        raise exceptions.BadAccountId()
 
 def get_user_repos(nik):
     """Поиск всех репозиториев пользователя"""
@@ -109,10 +108,11 @@ def check_teams(teams):
     for team in teams:
         cur_team = models.Project.objects.filter(teams=team).exists()
         if cur_team:
-            raise APIException(
-                detail='Для данной команды есть проект',
-                code=status.HTTP_400_BAD_REQUEST
-                )
+            raise exceptions.TeamExists()
+            # raise APIException(
+            #     detail='Для данной команды есть проект',
+            #     code=status.HTTP_400_BAD_REQUEST
+            #     )
     return teams
 
 def check_my_teams(teams, user):
@@ -124,18 +124,20 @@ def check_my_teams(teams, user):
             )
         return True
     except Team.DoesNotExist:
-        raise APIException(
-            detail='Создать возможно только для своей команды',
-            code=status.HTTP_400_BAD_REQUEST
-        )
+        raise exceptions.TeamAuthor()
+        # raise APIException(
+        #     detail='Создать возможно только для своей команды',
+        #     code=status.HTTP_400_BAD_REQUEST
+        # )
 
 def check_repo(repo):
     try:
         repository = models.Project.objects.get(repository=repo)
-        raise APIException(
-            detail='Для данного репозитория уже есть проект',
-            code=status.HTTP_400_BAD_REQUEST
-        )
+        raise exceptions.RepositoryExists()
+        # raise APIException(
+        #     detail='Для данного репозитория уже есть проект',
+        #     code=status.HTTP_400_BAD_REQUEST
+        # )
     except models.Project.DoesNotExist:
         return True
 

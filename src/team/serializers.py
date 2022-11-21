@@ -134,143 +134,14 @@ class AcceptInvitationSerializer(serializers.ModelSerializer):
         return instance
 
 
-class TeamMemberSerializer(serializers.ModelSerializer):
-    """Просмотр участников команды"""
-    user = GetUserSerializer()
-
-    class Meta:
-        model = TeamMember
-        fields = ("user",)
-
-
-class ProjectSerializers(serializers.ModelSerializer):
-    """Просмотр проекта команды"""
-
-    class Meta:
-        model = Project
-        fields = ("name",)
-
-
-class TeamSerializer(serializers.ModelSerializer):
-    """Просмотр всех команд"""
-    user = GetUserSerializer()
-    project_teams = ProjectSerializers(read_only=True, many=True)
-
-    class Meta:
-        model = Team
-        fields = (
-            "id",
-            "name",
-            "tagline",
-            "user",
-            "avatar",
-            "project_teams"
-        )
-
-
-class TeamListSerializer(serializers.ModelSerializer):
-    """Просмотр всех команд как создатель"""
-    social_links = SocialLinkSerializer(many=True)
-
-    class Meta:
-        model = Team
-        fields = ("id", "name", "avatar", "tagline", "social_links")
-
-
-class CommentChildrenSerializer(serializers.Serializer):
-    """ Комментарий к комментарию"""
-    def to_representation(self, value):
-        serializer = CommentListSerializer(value, context=self.context)
-        return serializer.data
-
-
 class CommentListSerializer(serializers.ModelSerializer):
     """ Список комментариев """
     user = GetUserSerializer()
+    comments_count = serializers.IntegerField()
 
     class Meta:
-        list_serializer_class = FilterCommentListSerializer
         model = Comment
         fields = ("id", "user", "text", "create_date", "comments_count")
-
-
-class PostSerializer(serializers.ModelSerializer):
-    """ Список постов команды """
-    user = GetUserSerializer()
-    comments = CommentListSerializer(many=True, read_only=True)
-    view_count = serializers.CharField(read_only=True)
-
-    class Meta:
-        model = Post
-        fields = (
-            "id",
-            "create_date",
-            "user",
-            "text",
-            "view_count",
-            "comments",
-            "comments_count"
-        )
-
-
-class CreatePost(serializers.ModelSerializer):
-    '''Добавление поста'''
-    user = GetUserSerializer()
-
-    class Meta:
-        model = Post
-        fields = ("text", )
-
-
-class CreateTeamSerializer(serializers.ModelSerializer):
-    """Добавить команду"""
-    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
-
-    class Meta:
-        model = Team
-        fields = (
-            "name",
-            "tagline",
-            "user",
-            "avatar",
-        )
-
-
-class UpdateTeamSerializer(serializers.ModelSerializer):
-    """Редактирование команды"""
-    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
-
-    class Meta:
-        model = Team
-        fields = (
-            "name",
-            "tagline",
-            "user",
-            "avatar",
-        )
-
-    def update(self, instance, validated_data):
-        if instance.avatar:
-            instance.avatar.delete()
-        instance = super().update(instance, validated_data)
-        instance.save()
-        return instance
-
-
-class DetailTeamSerializer(serializers.ModelSerializer):
-    """ Просмотр деталей одной команды"""
-    user = GetUserSerializer()
-    social_links = SocialLinkSerializer(many=True)
-
-    class Meta:
-        model = Team
-        fields = (
-            "name",
-            "tagline",
-            "user",
-            "avatar",
-            "social_links",
-        )
 
 
 class CommentCreateSerializer(serializers.ModelSerializer):
@@ -310,12 +181,131 @@ class TeamCommentUpdateSerializer(serializers.ModelSerializer):
         fields = ("text", "user", "id")
 
 
+class CommentChildrenSerializer(serializers.Serializer):
+    """ Комментарий к комментарию"""
+    def to_representation(self, value):
+        serializer = CommentListSerializer(value, context=self.context)
+        return serializer.data
+
+
+class PostSerializer(serializers.ModelSerializer):
+    """ Список постов команды """
+    user = GetUserSerializer()
+    view_count = serializers.CharField(read_only=True)
+    comments_count = serializers.IntegerField()
+
+    class Meta:
+        model = Post
+        fields = (
+            "id",
+            "create_date",
+            "user",
+            "text",
+            "view_count",
+            "comments_count"
+        )
+
+
 class PostCreateSerializer(serializers.ModelSerializer):
     """ CUD поста """
 
     class Meta:
         model = Post
-        fields = ("text", )
+        fields = ("text",)
+
+
+class TeamMemberSerializer(serializers.ModelSerializer):
+    """Просмотр участников команды"""
+    user = GetUserSerializer()
+
+    class Meta:
+        model = TeamMember
+        fields = ("user",)
+
+
+class ProjectSerializers(serializers.ModelSerializer):
+    """Просмотр проекта команды"""
+
+    class Meta:
+        model = Project
+        fields = ("name",)
+
+
+class TeamSerializer(serializers.ModelSerializer):
+    """Просмотр всех команд"""
+    user = GetUserSerializer()
+    project_teams = ProjectSerializers(read_only=True, many=True)
+
+    class Meta:
+        model = Team
+        fields = (
+            "id",
+            "name",
+            "tagline",
+            "user",
+            "avatar",
+            "project_teams"
+        )
+
+
+class DetailTeamSerializer(serializers.ModelSerializer):
+    """ Просмотр деталей одной команды"""
+    user = GetUserSerializer()
+    social_links = SocialLinkSerializer(many=True)
+
+    class Meta:
+        model = Team
+        fields = (
+            "name",
+            "tagline",
+            "user",
+            "avatar",
+            "social_links",
+        )
+
+
+class CreateTeamSerializer(serializers.ModelSerializer):
+    """Добавить команду"""
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = Team
+        fields = (
+            "name",
+            "tagline",
+            "user",
+            "avatar",
+        )
+
+
+class UpdateTeamSerializer(serializers.ModelSerializer):
+    """Редактирование команды"""
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = Team
+        fields = (
+            "name",
+            "tagline",
+            "user",
+            "avatar",
+        )
+
+    def update(self, instance, validated_data):
+        if instance.avatar:
+            instance.avatar.delete()
+        instance = super().update(instance, validated_data)
+        instance.save()
+        return instance
+
+
+class TeamListSerializer(serializers.ModelSerializer):
+    """Просмотр всех команд как создатель"""
+    social_links = SocialLinkSerializer(many=True)
+
+    class Meta:
+        model = Team
+        fields = ("id", "name", "avatar", "tagline", "social_links")
 
 
 class MemberSerializer(serializers.ModelSerializer):

@@ -1,3 +1,4 @@
+from django.db.models import Count, Q
 from rest_framework import viewsets, status
 from rest_framework.exceptions import APIException
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
@@ -144,7 +145,9 @@ class PostView(MixedPermissionSerializer, viewsets.ModelViewSet):
     lookup_url_kwarg = 'post_pk'
 
     def get_queryset(self):
-        return models.Post.objects.select_related('team', 'user').filter(team_id=self.kwargs.get('pk'))
+        return models.Post.objects.select_related('user').filter(team_id=self.kwargs.get('pk')).annotate(
+            comments_count=Count("post_comments", filter=Q(post_comments__is_delete=False), distinct=True)
+        )
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -182,7 +185,11 @@ class CommentsView(MixedPermissionSerializer, viewsets.ModelViewSet):
     lookup_url_kwarg = 'comment_pk'
 
     def get_queryset(self):
-        return models.Comment.objects.select_related('post').filter(post_id=self.kwargs.get('post_pk'))
+        return models.Comment.objects.select_related('user', 'parent').filter(
+            parent__isnull=True, post_id=self.kwargs.get('post_pk')
+        ).annotate(
+            comments_count=Count("children")
+        )
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user, post_id=self.kwargs.get('post_pk'))

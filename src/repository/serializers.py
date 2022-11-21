@@ -23,6 +23,22 @@ class ToolkitSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'parent')
 
 
+class GetCategorySerializer(serializers.ModelSerializer):
+    """Категории"""
+
+    class Meta:
+        model = models.Category
+        fields = ('id', 'name')
+
+
+class GetToolkitSerializer(serializers.ModelSerializer):
+    """Инструментарий"""
+
+    class Meta:
+        model = models.Toolkit
+        fields = ('id', 'name')
+
+
 class ProjectSerializer(serializers.ModelSerializer):
     """Проект"""
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
@@ -111,8 +127,8 @@ class ProjectListSerializer(serializers.ModelSerializer):
 class ProjectDetailSerializer(serializers.ModelSerializer):
     """Проект детально"""
     user = GetUserForProjectSerializer()
-    category = CategorySerializer()
-    toolkit = ToolkitSerializer(many=True)
+    category = GetCategorySerializer()
+    toolkit = GetToolkitSerializer(many=True)
     teams = GetTeamSerializer(many=True, read_only=True)
 
     class Meta:
