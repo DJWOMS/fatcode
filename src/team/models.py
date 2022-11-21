@@ -68,8 +68,8 @@ class Post(models.Model):
     def __str__(self):
         return f'id {self.id}'
 
-    def comments_count(self):
-        return self.post_comments.filter(is_delete=False).count()
+    # def comments_count(self):
+    #     return self.post_comments.filter(is_delete=False).count()
 
 
 class Comment(models.Model):
@@ -92,8 +92,8 @@ class Comment(models.Model):
     def __str__(self):
         return f'{self.id}'
 
-    def comments_count(self):
-        return self.children.all().count()
+    # def comments_count(self):
+    #     return self.children.all().count()
 
 
 class SocialLink(models.Model):

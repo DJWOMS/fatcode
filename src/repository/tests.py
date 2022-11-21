@@ -1,10 +1,9 @@
-from django.test import TestCase
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 from rest_framework.authtoken.models import Token
 from src.profiles.models import FatUser, Account
-from src.repository.models import Project, Toolkit, Category, ProjectMember
+from src.repository import models
 from src.team.models import Team, TeamMember
 
 class TeamTest(APITestCase):
@@ -63,6 +62,11 @@ class TeamTest(APITestCase):
             user=self.profile1
         )
 
+        self.team5 = Team.objects.create(
+            name='team5',
+            user=self.profile1
+        )
+
         self.team_member1 = TeamMember.objects.create(
             team=self.team1,
             user=self.profile2
@@ -73,21 +77,21 @@ class TeamTest(APITestCase):
             user=self.profile2
         )
 
-        self.category = Category.objects.create(
+        self.category = models.Category.objects.create(
             name='category1'
         )
         self.category.save()
 
-        self.toolkit1 = Toolkit.objects.create(
+        self.toolkit1 = models.Toolkit.objects.create(
             name='toolkit1'
         )
         self.toolkit1.save()
 
-        self.toolkit2 = Toolkit.objects.create(
+        self.toolkit2 = models.Toolkit.objects.create(
             name='toolkit2'
         )
 
-        self.project1 = Project.objects.create(
+        self.project1 = models.Project.objects.create(
             name='project1',
             description='test1',
             user=self.profile1,
@@ -95,6 +99,17 @@ class TeamTest(APITestCase):
             repository='https://github.com/veraandrianova/oop_1'
         )
         self.project1.teams.add(self.team4)
+        self.project1.toolkit.add(self.toolkit1)
+        self.project1.save()
+
+        self.project2 = models.Project.objects.create(
+            name='project2',
+            description='test2',
+            user=self.profile1,
+            category=self.category,
+            repository='https://github.com/veraandrianova/flask'
+        )
+        self.project1.teams.add(self.team5)
         self.project1.toolkit.add(self.toolkit1)
         self.project1.save()
 
@@ -130,29 +145,89 @@ class TeamTest(APITestCase):
         response = self.client.delete(reverse('project'))
         self.assertEqual(response.status_code, 405)
 
-    ##TODO почему 400?
     def test_project_create(self):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
         data = {
             'name': 'project',
             'description': 'test1',
-            'toolkit': self.toolkit1,
-            'category': self.category,
-            'teams': self.team1.id,
+            'toolkit': [self.toolkit1.id],
+            'category': self.category.id,
+            'teams': [self.team1.id],
             'repository': 'https://github.com/veraandrianova/drf_git'
         }
         response = self.client.post(reverse('project'), data=data, format='json')
-        print(data)
         self.assertEqual(response.status_code, 201)
-        print(response.text)
-        self.assertEqual(len(response.data), 3)
-        self.assertEqual(Project.objects.count(), 4)
+        self.assertEqual(len(response.data), 8)
+
+    def test_project_create_invalid_repo(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
+        data = {
+            'name': 'project',
+            'description': 'test1',
+            'toolkit': [self.toolkit1.id],
+            'category': self.category.id,
+            'teams': [self.team2.id],
+            'repository': 'https://github.com/veraandrianova/oop_1'
+        }
+        response = self.client.post(reverse('project'), data=data, format='json')
+        self.assertEqual(response.status_code, 400)
+
+    def test_project_create_invalid_team(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
+        data = {
+            'name': 'project',
+            'description': 'test1',
+            'toolkit': [self.toolkit1.id],
+            'category': self.category.id,
+            'teams': [self.team4.id],
+            'repository': 'https://github.com/veraandrianova/rest_toy_shop'
+        }
+        response = self.client.post(reverse('project'), data=data, format='json')
+        self.assertEqual(response.status_code, 400)
+
+    def test_project_create_invalid_repo_not_found(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
+        data = {
+            'name': 'project',
+            'description': 'test1',
+            'toolkit': [self.toolkit1.id],
+            'category': self.category.id,
+            'teams': [self.team1.id],
+            'repository': 'https://github.com/veraandrianova/rest'
+        }
+        response = self.client.post(reverse('project'), data=data, format='json')
+        self.assertEqual(response.status_code, 400)
+
+    def test_project_create_invalid_team_not_author(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
+        data = {
+            'name': 'project',
+            'description': 'test1',
+            'toolkit': [self.toolkit1.id],
+            'category': self.category.id,
+            'teams': [self.team3.id],
+            'repository': 'https://github.com/veraandrianova/drf_git'
+        }
+        response = self.client.post(reverse('project'), data=data, format='json')
+        self.assertEqual(response.status_code, 400)
+
+    def test_project_create_no_authorization(self):
+        data = {
+            'name': 'project',
+            'description': 'test1',
+            'toolkit': [self.toolkit1.id],
+            'category': self.category.id,
+            'teams': [self.team1.id],
+            'repository': 'https://github.com/veraandrianova/rest'
+        }
+        response = self.client.post(reverse('project'), data=data, format='json')
+        self.assertEqual(response.status_code, 401)
 
     def test_project_detail(self):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
         response = self.client.get(reverse('project_detail', kwargs={'pk': self.project1.id}))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(Project.objects.count(), 1)
+        self.assertEqual(Project.objects.count(), 2)
 
     def test_project_detail_no_author(self):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile2_token.key)
@@ -162,20 +237,110 @@ class TeamTest(APITestCase):
     def test_project_detail_no_authorization(self):
         response = self.client.get(reverse('project_detail', kwargs={'pk': self.project1.id}))
         self.assertEqual(response.status_code, 401)
-##TODO почему 400?
-    # def test_project_update(self):
-    #     self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
-    #     data = {
-    #         'name': 'test',
-    #         'description': 'test1',
-    #         'toolkit': self.toolkit1.id,
-    #         'category': self.category.id,
-    #         'teams': self.team1.id,
-    #         'repository': 'https://github.com/veraandrianova/oop_1'
-    #     }
-    #     response = self.client.put(reverse('project_detail', kwargs={'pk': self.project1.id}), data=data, format='json')
-    #     self.assertEqual(len(response.data), 2)
-    #     self.assertEqual(response.status_code, 200)
+
+    def test_project_update(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
+        data = {
+            'name': 'test',
+            'description': 'test1',
+            'toolkit': [self.toolkit1.id],
+            'category': self.category.id,
+            'teams': [self.team1.id],
+            'repository': 'https://github.com/veraandrianova/drf_git'
+        }
+        response = self.client.put(reverse('project_detail',
+                                   kwargs={'pk': self.project1.id}),
+                                   data=data,
+                                   format='json'
+                                   )
+        self.assertEqual(len(response.data), 8)
+        self.assertEqual(response.status_code, 200)
+
+    def test_project_update_invalid_repo_not_found(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
+        data = {
+            'name': 'test',
+            'description': 'test1',
+            'toolkit': [self.toolkit1.id],
+            'category': self.category.id,
+            'teams': [self.team1.id],
+            'repository': 'https://github.com/veraandrianova/123'
+        }
+        response = self.client.put(reverse('project_detail',
+                                   kwargs={'pk': self.project1.id}),
+                                   data=data,
+                                   format='json'
+                                   )
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.status_code, 400)
+
+    def test_project_update_invalid_repo(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
+        data = {
+            'name': 'test',
+            'description': 'test1',
+            'toolkit': [self.toolkit1.id],
+            'category': self.category.id,
+            'teams': [self.team1.id],
+            'repository': 'https://github.com/veraandrianova/flask'
+        }
+        response = self.client.put(reverse('project_detail',
+                                   kwargs={'pk': self.project1.id}),
+                                   data=data,
+                                   format='json'
+                                   )
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.status_code, 400)
+
+    def test_project_update_invalid_team(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
+        data = {
+            'name': 'test',
+            'description': 'test1',
+            'toolkit': [self.toolkit1.id],
+            'category': self.category.id,
+            'teams': [self.team4.id],
+            'repository': 'https://github.com/veraandrianova/123'
+        }
+        response = self.client.put(reverse('project_detail',
+                                            kwargs={'pk': self.project1.id}),
+                                            data=data,
+                                            format='json'
+                                            )
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.status_code, 400)
+
+    def test_project_update_invalid_team_no_author(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
+        data = {
+            'name': 'test',
+            'description': 'test1',
+            'toolkit': [self.toolkit1.id],
+            'category': self.category.id,
+            'teams': [self.team3.id],
+            'repository': 'https://github.com/veraandrianova/123'
+        }
+        response = self.client.put(reverse('project_detail',
+                                            kwargs={'pk': self.project1.id}),
+                                            data=data,
+                                            format='json')
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.status_code, 400)
+
+    def test_project_update_no_authorization(self):
+        data = {
+            'name': 'test',
+            'description': 'test1',
+            'toolkit': [self.toolkit1.id],
+            'category': self.category.id,
+            'teams': [self.team3.id],
+            'repository': 'https://github.com/veraandrianova/123'
+        }
+        response = self.client.put(reverse('project_detail',
+                                            kwargs={'pk': self.project1.id}),
+                                            data=data,
+                                            format='json')
+        self.assertEqual(response.status_code, 401)
 
     def test_project_delete(self):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
