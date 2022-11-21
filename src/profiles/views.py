@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.shortcuts import render
 from rest_framework.generics import get_object_or_404
 from rest_framework import generics, status
@@ -5,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework import permissions, parsers
 
-from src.base.classes import MixedPermission, MixedPermissionSerializer
+from src.base.classes import MixedPermission, MixedPermissionSerializer, MixedSerializer
 from src.profiles import models, serializers, services
 from src.base.permissions import IsUser
 from src.profiles.permissions import IsNotApplicant, IsNotAlreadyFriend, IsNotYouGetter
@@ -155,12 +156,16 @@ class ApplicationUserGetter(ReadOnlyModelViewSet):
         return models.Applications.objects.filter(getter=self.request.user)
 
 
-class FriendView(ModelViewSet):
-    serializer_class = serializers.FriendSerializer
+class FriendView(MixedSerializer, ModelViewSet):
+    serializer_classes_by_action = {
+        'list': serializers.FriendListSerializer,
+        'create': serializers.FriendSerializer,
+        'delete': serializers.FriendListSerializer
+    }
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return models.Friends.objects.filter(user=self.request.user)
+        return models.Friends.objects.filter(Q(user=self.request.user) | Q(friend=self.request.user))
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)

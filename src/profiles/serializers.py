@@ -9,7 +9,7 @@ from rest_framework import serializers
 from rest_framework.authtoken.models import Token
 
 from src.courses.serializers import ListCourseSerializer
-from src.profiles.models import FatUser, Social, FatUserSocial, Account, Applications, Friends
+from src.profiles import models
 from src.base.validators import ImageValidator
 from django.db.models import Sum, Count, Q
 
@@ -172,23 +172,31 @@ class ApplicationListSerializer(serializers.ModelSerializer):
     getter = GetUserSerializer()
 
     class Meta:
-        model = Applications
+        model = models.Applications
         fields = ('id', 'getter', )
 
 
 class ApplicationSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Applications
+        model = models.Applications
         fields = ('id', 'getter', )
 
 
-class FriendSerializer(serializers.ModelSerializer):
+class FriendListSerializer(serializers.ModelSerializer):
     friend = GetUserSerializer()
 
     class Meta:
-        model = Friends
+        model = models.Friends
         fields = ('id', 'friend', )
 
     def create(self, validated_data):
         return add_friend(friend=validated_data['friend'], user=validated_data['user'])
 
+
+class FriendSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Friends
+        fields = ('id', 'friend', )
+
+    def create(self, validated_data):
+        return add_friend(friend=validated_data['friend'], user=validated_data['user'])

@@ -129,7 +129,6 @@ def create_user(nik, email):
 def add_friend(friend, user):
     if Applications.objects.filter(getter=friend, sender=user):
         Applications.objects.filter(getter=friend, sender=user).delete()
-        Friends.objects.create(friend=user, user=friend)
         return Friends.objects.create(friend=friend, user=user)
     else:
         raise ValueError("you have not application")
