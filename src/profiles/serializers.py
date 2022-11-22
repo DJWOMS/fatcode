@@ -1,17 +1,11 @@
-from datetime import datetime
-
-from djoser.serializers import UserSerializer
+from djoser.serializers import UserSerializer, UserCreateSerializer
 from djoser.conf import settings
-from django.dispatch import receiver
-from django.db.models.signals import post_save
 
 from rest_framework import serializers
-from rest_framework.authtoken.models import Token
-
 from src.courses.serializers import ListCourseSerializer
 from src.profiles import models
 from src.base.validators import ImageValidator
-from django.db.models import Sum, Count, Q
+
 
 from src.profiles.services import add_friend
 
@@ -20,8 +14,8 @@ class UserUpdateSerializer(UserSerializer):
     """Serialization to change user data"""
 
     class Meta:
-        model = FatUser
-        fields = tuple(FatUser.REQUIRED_FIELDS) + (
+        model = models.FatUser
+        fields = tuple(models.FatUser.REQUIRED_FIELDS) + (
             settings.USER_ID_FIELD,
             settings.LOGIN_FIELD,
             'first_name',
@@ -30,10 +24,25 @@ class UserUpdateSerializer(UserSerializer):
         )
         read_only_fields = (settings.LOGIN_FIELD,)
 
+##TODO как сделать что бы выводилось сообщение email обязательное поле
+class UsersCreateSerializer(UserCreateSerializer):
+    """Serialization to create user data"""
+
+    class Meta:
+        model = models.FatUser
+        fields = ('username', 'email', 'password')
+        extra_kwargs = {
+            "email": {
+                "error_messages": {
+                    "required": "User's Email is required",
+                },
+            },
+        }
+
 
 class UserSocialSerializer(serializers.ModelSerializer):
     class Meta:
-        model = FatUserSocial
+        model = models.FatUserSocial
         fields = '__all__'
 
 
@@ -41,7 +50,7 @@ class ListSocialSerializer(serializers.ModelSerializer):
     logo = serializers.ImageField(read_only=True)
 
     class Meta:
-        model = Social
+        model = models.Social
         fields = '__all__'
 
 
@@ -50,7 +59,7 @@ class UserAvatarSerializer(serializers.ModelSerializer):
     avatar = serializers.ImageField(validators=[ImageValidator((100, 100), 1048576)])
 
     class Meta:
-        model = FatUser
+        model = models.FatUser
         fields = [
             "id",
             "avatar"
@@ -61,10 +70,10 @@ class AccountSerializer(serializers.ModelSerializer):
     """Serialization for user's git_hub account"""
 
     class Meta:
-        model = Account
-        fields = ("url", )
+        model = models.Account
+        fields = ("account_url", )
 
-#TODO не выводяться аккаунты гита
+
 class UserSerializer(serializers.ModelSerializer):
     """Serialization for user's internal display"""
     email = serializers.EmailField(read_only=True)
@@ -72,10 +81,10 @@ class UserSerializer(serializers.ModelSerializer):
     user_social = UserSocialSerializer(many=True)
     socials = ListSocialSerializer(many=True)
     courses = ListCourseSerializer(many=True)
-    user_account = AccountSerializer(read_only=True)
+    user_account = AccountSerializer(read_only=True, many=True)
 
     class Meta:
-        model = FatUser
+        model = models.FatUser
         exclude = (
             "password",
             "last_login",
@@ -115,7 +124,7 @@ class UserPublicSerializer(serializers.ModelSerializer):
     courses = ListCourseSerializer(many=True)
 
     class Meta:
-        model = FatUser
+        model = models.FatUser
         exclude = (
             "email",
             "password",
@@ -132,8 +141,16 @@ class GetUserSerializer(serializers.ModelSerializer):
     """Serialization for other serializers"""
 
     class Meta:
-        model = FatUser
+        model = models.FatUser
         fields = ("id", "username", "avatar")
+
+
+class GetUserForProjectSerializer(serializers.ModelSerializer):
+    """Serialization for other serializers"""
+
+    class Meta:
+        model = models.FatUser
+        fields = ("id", "username")
 
 
 class DashboardUserSerializer(serializers.ModelSerializer):
@@ -142,7 +159,7 @@ class DashboardUserSerializer(serializers.ModelSerializer):
     finished_courses_count = serializers.SerializerMethodField()
 
     class Meta:
-        model = FatUser
+        model = models.FatUser
         fields = (
                 'coins',
                 'experience',
@@ -157,11 +174,6 @@ class DashboardUserSerializer(serializers.ModelSerializer):
 
         def get_finished_courses_count(self, instance):
             return instance.courses.filter(progress=100).count()
-
-
-class GitHubLoginSerializer(serializers.Serializer):
-    code = serializers.CharField(max_length=25)
-    email = serializers.EmailField(max_length=150)
 
 
 class GitHubAddSerializer(serializers.Serializer):
