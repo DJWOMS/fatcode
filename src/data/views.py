@@ -18,7 +18,7 @@ from src.repository.models import Project
 
 class UserView(ListAPIView):
     queryset = FatUser.objects.annotate(Count('courses')).all()
-    permission_classes = [IsAdminUser]
+    permission_classes = (IsAdminUser, )
     # pagination_class = UserPaginationInfo
     # filter_backends = (DjangoFilterBackend, )
     filterset_class = UsersFilter
@@ -27,14 +27,14 @@ class UserView(ListAPIView):
 
 class HelpMentorView(ListAPIView):
     queryset = HelpUser.objects.all()
-    permission_classes = [IsAdminUser]
+    permission_classes = (IsAdminUser, )
     filter_backends = (DjangoFilterBackend, )
     filterset_class = HelpUserFilter
     serializer_class = HelpUserSerializer
 
 
 class TeamProjectCountView(ListAPIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = (IsAdminUser, )
 
     def list(self, request, *args, **kwargs):
         return Response(

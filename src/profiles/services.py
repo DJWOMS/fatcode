@@ -3,7 +3,7 @@ from django.db.models import F
 from kombu.exceptions import HttpError
 from rest_framework import status
 from rest_framework.exceptions import APIException
-from src.profiles.models import FatUser, Account
+from src.profiles.models import FatUser, Account, Friends, Applications
 from src.profiles.tokenizator import create_token
 from django.contrib.auth.base_user import BaseUserManager
 from django.conf import settings
@@ -43,6 +43,7 @@ def check_token_add(code):
     token = check.text.split("&")[0].split("=")[1]
     return token
 
+
 def check_token(code):
     url_token = 'https://github.com/login/oauth/access_token'
     data = {
@@ -54,12 +55,14 @@ def check_token(code):
     token = check.text.split("&")[0].split("=")[1]
     return token
 
+
 def check_github_auth_add(code: str):
     _token = check_token_add(code)
     if _token != 'bad_verification_code':
         user = check_github_user(_token)
         return user.json()
     return None
+
 
 def check_github_auth(code: str):
     _token = check_token(code)
@@ -68,11 +71,13 @@ def check_github_auth(code: str):
         return user.json()
     return None
 
+
 def check_github_user(_token):
     url_check_user = 'https://api.github.com/user'
     headers = {'Authorization': f'token {_token}'}
     user = requests.get(url_check_user, headers=headers)
     return user
+
 
 def github_get_user_add(code: str):
     user = check_github_auth_add(code)
@@ -83,6 +88,7 @@ def github_get_user_add(code: str):
         return account_name, account_url, account_id
     else:
         raise HttpError(403, "Bad code")
+
 
 def github_get_user_auth(code: str):
     user = check_github_auth(code)
@@ -95,17 +101,21 @@ def github_get_user_auth(code: str):
     else:
         raise HttpError(403, "Bad code")
 
+
 def github_auth(user_id) -> tuple:
     internal_token = create_token(user_id)
     return user_id, internal_token
+
 
 def create_password():
     password = BaseUserManager().make_random_password()
     return password
 
+
 def get_provider(account_url):
     provider = account_url.split('/')[-2].split('.')[0]
     return provider
+
 
 def create_account(user, account_name, account_url, account_id):
     return Account.objects.create(
@@ -115,6 +125,19 @@ def create_account(user, account_name, account_url, account_id):
                         account_url=account_url,
                         account_name=account_name
                     )
+
+
+def create_user(nik, email):
+    return FatUser.objects.create(username=nik, email=email)
+
+
+def add_friend(friend, user):
+    if Applications.objects.filter(getter=friend, sender=user):
+        Applications.objects.filter(getter=friend, sender=user).delete()
+        return Friends.objects.create(friend=friend, user=user)
+    else:
+        raise ValueError("you have not application")
+        
 
 def check_user_with_email(account_id, email, account_name, account_url):
     if user := FatUser.objects.filter(username=account_id, email=email).exists():

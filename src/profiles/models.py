@@ -3,6 +3,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy as _
 
+from fatcode import settings
 from src.base.validators import ImageValidator
 from src.courses.models import Course
 
@@ -31,6 +32,7 @@ class FatUser(AbstractUser):
     """User model override"""
     avatar = models.ImageField(
         upload_to=user_directory_path,
+        default='default/default.jpg',
         null=True,
         blank=True,
         validators=[ImageValidator((100, 100), 1048576)]
@@ -48,7 +50,7 @@ class FatUserSocial(models.Model):
     """Intermediate table for the ManyToMany FatUser and Social relationship"""
     social = models.ForeignKey(Social, on_delete=models.CASCADE)
     user = models.ForeignKey(
-        FatUser,
+        settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='user_social'
     )
@@ -56,7 +58,7 @@ class FatUserSocial(models.Model):
 
 
 class Account(models.Model):
-    user = models.ForeignKey(FatUser, on_delete=models.CASCADE, related_name='user_account')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='user_account')
     provider = models.CharField(max_length=25, default='')
     account_id = models.CharField(max_length=150, blank=True, null=True)
     account_url = models.CharField(max_length=250, default='')
@@ -65,3 +67,18 @@ class Account(models.Model):
     def __str__(self):
         return self.account_id
 
+
+class Applications(models.Model):
+    sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="sender")
+    getter = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="getter")
+
+    def __str__(self):
+        return f'{self.sender} wants to be friends with {self.getter}'
+
+
+class Friends(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="user")
+    friend = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="friend")
+
+    def __str__(self):
+        return f'{self.friend} is friends with {self.user}'

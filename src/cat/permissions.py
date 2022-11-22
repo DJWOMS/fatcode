@@ -9,22 +9,12 @@ class IsInventoryCatUser(metaclass=BasePermissionMetaclass):
         if request.user.is_superuser:
             return True
         if request.user.is_authenticated:
-            return models.Cat.objects.filter(
-                user=request.user, inventory__id=view.kwargs['id']
-            ).exists()
+            cat_user = models.Cat.objects.filter(user=request.user, inventory__id=view.kwargs['id']).exists()
+            return cat_user
 
     def has_object_permission(self, request, view, obj):
-        # TODO оператор OR? Нет не слышал
         if request.user.is_superuser:
             return True
         if obj.cat.user == request.user:
-            return True
-        return False
-
-
-class IsCatAuthUser(BasePermission):
-    def has_object_permission(self, request, view, obj):
-        # TODO сразу return если сделать? Это законно?
-        if obj.user == request.user:
             return True
         return False

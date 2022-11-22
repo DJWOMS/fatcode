@@ -2,11 +2,10 @@ from django.db.models import Prefetch
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated, AllowAny
 
-from ..base.permissions import IsAuthor
-from ..base.classes import MixedPermissionSerializer
-
 from .permissions import IsNotFollower
-from .models import Question, Answer, QuestionReview, AnswerReview, Tag, QuestionFollowers
+from ..base.permissions import IsAuthor
+from ..base.classes import MixedPermissionSerializer, MixedPermission
+from .models import Question, Answer, QuestionReview, AnswerReview, QuestionFollowers
 from . import serializers
 
 
@@ -72,18 +71,14 @@ class CreateAnswerReview(ModelViewSet):
 class UpdateAnswerAccept(ModelViewSet):
     serializer_class = serializers.UpdateAcceptAnswerSerializer
     permission_classes = (IsAuthenticated,)
-    queryset = Answer.objects.all()
+    queryset = Answer.objects.select_related('author', 'question', 'parent').all()
 
 
-class QuestionFollower(MixedPermissionSerializer, ModelViewSet):
+class QuestionFollower(MixedPermission, ModelViewSet):
+    serializer_class = serializers.FollowerQuestionSerializer
     permission_classes = (IsAuthenticated,)
     permission_classes_by_action = {
-        "create": (IsNotFollower,)
-    }
-    serializer_classes_by_action = {
-        "create": serializers.FollowerQuestionSerializer,
-        "destroy": serializers.FollowerQuestionSerializer,
-        "list": serializers.FollowerQuestionSerializer,
+        "create": (IsNotFollower, ),
     }
 
     def get_queryset(self):
