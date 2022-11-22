@@ -14,6 +14,7 @@ class IsNotFollower(BasePermission):
     message = "You are already subscribed to this question."
 
     def has_permission(self, request, view):
-        if models.QuestionFollowers.objects.filter(question=request.data['question'], follower=request.user):
-            return False
-        return False
+        return not models.QuestionFollowers.objects.filter(
+            question=request.data['question'],
+            follower=request.user
+        ).exists()

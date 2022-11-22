@@ -84,7 +84,7 @@ class UserView(ModelViewSet):
     """Internal user display"""
 
     serializer_class = serializers.UserSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = (permissions.IsAuthenticated, )
 
     def get_queryset(self):
         return models.FatUser.objects.filter(id=self.request.user.id)
@@ -101,7 +101,7 @@ class UserPublicView(ModelViewSet):
 
     queryset = models.FatUser.objects.all()
     serializer_class = serializers.UserPublicSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = (permissions.AllowAny, )
 
 
 class SocialView(ReadOnlyModelViewSet):
@@ -116,9 +116,9 @@ class SocialView(ReadOnlyModelViewSet):
 class UserAvatar(ModelViewSet):
     """Create and update user avatar"""
 
-    parser_classes = [parsers.MultiPartParser]
+    parser_classes = (parsers.MultiPartParser, )
     serializer_class = serializers.UserAvatarSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = (permissions.IsAuthenticated, )
 
     def get_queryset(self):
         return models.FatUser.objects.filter(id=self.request.user.id)
@@ -138,7 +138,7 @@ class ApplicationView(MixedPermissionSerializer, ModelViewSet):
     }
     permission_classes = [permissions.IsAuthenticated]
     permission_classes_by_action = {
-        'create': [IsNotApplicant, IsNotYouGetter, IsNotAlreadyFriend],
+        'create': (IsNotApplicant, IsNotYouGetter, IsNotAlreadyFriend, ),
     }
 
     def get_queryset(self):
@@ -150,7 +150,7 @@ class ApplicationView(MixedPermissionSerializer, ModelViewSet):
 
 class ApplicationUserGetter(ReadOnlyModelViewSet):
     serializer_class = serializers.ApplicationListSerializer
-    permissions = [permissions.IsAuthenticated]
+    permissions = (permissions.IsAuthenticated, )
 
     def get_queryset(self):
         return models.Applications.objects.filter(getter=self.request.user)
@@ -162,7 +162,7 @@ class FriendView(MixedSerializer, ModelViewSet):
         'create': serializers.FriendSerializer,
         'delete': serializers.FriendListSerializer
     }
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = (permissions.IsAuthenticated, )
 
     def get_queryset(self):
         return models.Friends.objects.filter(Q(user=self.request.user) | Q(friend=self.request.user))

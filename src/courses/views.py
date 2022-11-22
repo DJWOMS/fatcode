@@ -57,11 +57,11 @@ class LessonView(classes.MixedPermissionSerializer, ModelViewSet):
 
 class StudentWorkView(CreateAPIView):
     queryset = models.StudentWork.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsAuthenticated, )
     serializer_class = serializers.StudentWorkSerializer
 
 
 class HelpUserView(CreateAPIView):
     queryset = models.HelpUser
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsAuthenticated, )
     serializer_class = serializers.HelpUserSerializer
