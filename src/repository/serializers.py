@@ -1,12 +1,11 @@
-from django.db.models import Q
-from rest_framework import serializers, status
-from rest_framework.exceptions import APIException
+from rest_framework import serializers
 
 from . import models, services
-
-from ..profiles.serializers import GetUserSerializer
+from ..profiles.serializers import GetUserForProjectSerializer
 from ..team.serializers import GetTeamSerializer
 from ..team.models import Team
+from ..dashboard.models import Board
+
 
 class CategorySerializer(serializers.ModelSerializer):
     """Категории"""
@@ -22,6 +21,22 @@ class ToolkitSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Toolkit
         fields = ('id', 'name', 'parent')
+
+
+class GetCategorySerializer(serializers.ModelSerializer):
+    """Категории"""
+
+    class Meta:
+        model = models.Category
+        fields = ('id', 'name')
+
+
+class GetToolkitSerializer(serializers.ModelSerializer):
+    """Инструментарий"""
+
+    class Meta:
+        model = models.Toolkit
+        fields = ('id', 'name')
 
 
 class ProjectSerializer(serializers.ModelSerializer):
@@ -43,53 +58,53 @@ class ProjectSerializer(serializers.ModelSerializer):
         )
 
     def create(self, validated_data):
-        repository = validated_data.get('repository', None)
-        nik = services.get_nik(validated_data.get('user'))
-        if nik:
-            repo = services.get_my_repository(repository, nik)
-            if repo:
-                try:
-                    for team in validated_data.get('teams'):
-                        team = Team.objects.get(
-                            Q(user=validated_data.get('user').id) &
-                            Q(id=team.id)
-                        )
-                except Team.DoesNotExist:
-                    raise APIException(
-                        detail='Создать возможно только для своей команды',
-                        code=status.HTTP_400_BAD_REQUEST
-                    )
-            else:
-                raise APIException(
-                    detail='Добавить репозиторий возможно только для своего аккаунта',
-                    code=status.HTTP_400_BAD_REQUEST
-                )
-            stars_count = services.get_stars_count(nik, repo)
-            forks_count = services.get_forks_count(nik, repo)
-            commits_count = services.get_commits_count(nik, repo)
-            last_commit = services.get_last_commit(nik, repo)
-        else:
-            raise APIException(
-                detail='Добавить репозиторий возможно только для аккаунтов привязанных к github',
-                code=status.HTTP_400_BAD_REQUEST
-            )
+        repository = validated_data.pop('repository', None)
+        teams = validated_data.pop('teams')
+        toolkit = validated_data.pop('toolkit', None)
+        user = validated_data.pop('user')
+        account_id = services.get_info_for_user(repository, teams, user)
+        repo_info = services.get_repo(repository, account_id)
+        project = services.project_create(repo_info, user, repository, teams, toolkit, **validated_data)
+        return project
 
-        # projects = models.Project.objects.create(
-        #         name=validated_data.get('name', None),
-        #         description=validated_data.get('description', None),
-        #         user=validated_data.get('user', None),
-        #         category=validated_data.get('category', None),
-        #         toolkit=validated_data.get('toolkit', None),
-        #         teams=validated_data.get('teams', None),
-        #         avatar=validated_data.get('avatar', None),
-        #         repository=validated_data.get('repository', None)
-        #     )
-        # return projects
+    def update(self, instance, validated_data):
+        pk = validated_data.pop('pk', None)
+        repository = validated_data.pop('repository', None)
+        teams = validated_data.pop('teams', None)
+        user = validated_data.pop('user', None)
+        toolkits = validated_data.pop('toolkit', None)
+        account_id = services.get_info_for_user_update(repository, teams, user, pk)
+        repo_info = services.get_repo(repository, account_id)
+        if instance.avatar:
+            instance.avatar.delete()
+        instance = super().update(instance, validated_data)
+        instance = services.project_update(instance, repo_info, teams, toolkits)
+        instance.save()
+        return instance
+
+
+class ProjectUserListSerializer(serializers.ModelSerializer):
+    """Список проектов пользователя"""
+    category = CategorySerializer()
+    toolkit = ToolkitSerializer(many=True)
+    teams = GetTeamSerializer(many=True)
+
+    class Meta:
+        model = models.Project
+        fields = (
+            'id',
+            'name',
+            'description',
+            'create_date',
+            'toolkit',
+            'category',
+            'teams',
+            'repository'
+        )
 
 
 class ProjectListSerializer(serializers.ModelSerializer):
     """Список проектов"""
-    user = GetUserSerializer()
     category = CategorySerializer()
     toolkit = ToolkitSerializer(many=True)
 
@@ -100,18 +115,20 @@ class ProjectListSerializer(serializers.ModelSerializer):
             'name',
             'description',
             'create_date',
-            'user',
-            'avatar',
             'toolkit',
-            'category'
+            'category',
+            'star',
+            'fork',
+            'commit',
+            'last_commit'
         )
 
 
 class ProjectDetailSerializer(serializers.ModelSerializer):
     """Проект детально"""
-    user = GetUserSerializer()
-    category = CategorySerializer()
-    toolkit = ToolkitSerializer(many=True)
+    user = GetUserForProjectSerializer()
+    category = GetCategorySerializer()
+    toolkit = GetToolkitSerializer(many=True)
     teams = GetTeamSerializer(many=True, read_only=True)
 
     class Meta:
@@ -131,4 +148,26 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
             'fork',
             'commit',
             'last_commit'
+        )
+
+
+class ProjectTeamsSerializer(serializers.ModelSerializer):
+    """Список команд"""
+
+    class Meta:
+        model = Team
+        fields = (
+            'name',
+        )
+
+
+class ProjectBoardSerializer(serializers.ModelSerializer):
+    """Доска задач"""
+    user = GetUserForProjectSerializer()
+
+    class Meta:
+        model = Board
+        fields = (
+            'title',
+            'user'
         )

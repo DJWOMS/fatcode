@@ -38,8 +38,8 @@ class FatUserAdmin(UserAdmin):
 
 
 class AccountAdmin(admin.ModelAdmin):
-    list_display = ("user", "nickname_git", "git_id", "url")
-    search_fields = ("user", "nickname_git", "git_id", "url")
+    list_display = ("user", "account_id", "account_url", "account_name")
+    search_fields = ("user", "account_id", "account_url", "account_name")
 
 
 admin.site.register(models.FatUser, FatUserAdmin)
