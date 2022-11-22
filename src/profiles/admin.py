@@ -45,3 +45,5 @@ class AccountAdmin(admin.ModelAdmin):
 admin.site.register(models.FatUser, FatUserAdmin)
 admin.site.register(models.Social)
 admin.site.register(models.Account, AccountAdmin)
+admin.site.register(models.Applications)
+admin.site.register(models.Friends)

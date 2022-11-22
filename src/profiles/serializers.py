@@ -7,6 +7,8 @@ from src.profiles import models
 from src.base.validators import ImageValidator
 
 
+from src.profiles.services import add_friend
+
 
 class UserUpdateSerializer(UserSerializer):
     """Serialization to change user data"""
@@ -177,3 +179,36 @@ class DashboardUserSerializer(serializers.ModelSerializer):
 class GitHubAddSerializer(serializers.Serializer):
     code = serializers.CharField(max_length=25)
 
+
+class ApplicationListSerializer(serializers.ModelSerializer):
+    getter = GetUserSerializer()
+
+    class Meta:
+        model = models.Applications
+        fields = ('id', 'getter', )
+
+
+class ApplicationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Applications
+        fields = ('id', 'getter', )
+
+
+class FriendListSerializer(serializers.ModelSerializer):
+    friend = GetUserSerializer()
+
+    class Meta:
+        model = models.Friends
+        fields = ('id', 'friend', )
+
+    def create(self, validated_data):
+        return add_friend(friend=validated_data['friend'], user=validated_data['user'])
+
+
+class FriendSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Friends
+        fields = ('id', 'friend', )
+
+    def create(self, validated_data):
+        return add_friend(friend=validated_data['friend'], user=validated_data['user'])

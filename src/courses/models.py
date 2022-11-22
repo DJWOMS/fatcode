@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.utils.text import slugify
 
 
 class Tag(models.Model):
@@ -20,7 +21,7 @@ class Category(models.Model):
 class Course(models.Model):
     name = models.CharField(max_length=50)
     description = models.TextField()
-    slug = models.SlugField()
+    slug = models.SlugField(max_length=255, unique=True, db_index=True, verbose_name="URL")
     view_count = models.IntegerField(editable=False, default=0)
     published = models.DateField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
@@ -43,6 +44,10 @@ class Course(models.Model):
         blank=True
     )
     tags = models.ManyToManyField(Tag)
+
+    def save(self, *args, **kwargs):
+        self.slug = slugify(self.name)
+        super(Course, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.name
@@ -71,7 +76,7 @@ class Lesson(models.Model):
     published = models.DateField(auto_now_add=True)
     sorted = models.IntegerField(default=1)
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='lessons')
-    slug = models.SlugField()
+    slug = models.SlugField(max_length=255, unique=True, db_index=True, verbose_name="URL")
     description = models.TextField()
     test = models.FileField(upload_to='files/test/python/', null=True, blank=True)
 

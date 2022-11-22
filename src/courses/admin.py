@@ -22,6 +22,7 @@ class CourseAdmin(admin.ModelAdmin):
     inlines = [LessonTabInlines]
     list_display = ('name', 'author', 'mentor')
     ordering = ['published']
+    prepopulated_fields = {"slug": ("name",)}
 
     class Meta:
         fields = '__all__'
