@@ -6,6 +6,7 @@ from src.profiles.models import FatUser, Account
 from src.repository import models
 from src.team.models import Team, TeamMember
 
+
 class TeamTest(APITestCase):
     def setUp(self):
         self.profile1 = FatUser.objects.create(
@@ -227,7 +228,7 @@ class TeamTest(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
         response = self.client.get(reverse('project_detail', kwargs={'pk': self.project1.id}))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(Project.objects.count(), 2)
+        self.assertEqual(models.Project.objects.count(), 2)
 
     def test_project_detail_no_author(self):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile2_token.key)
@@ -346,13 +347,13 @@ class TeamTest(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
         response = self.client.delete(reverse('project_detail', kwargs={'pk': self.project1.id}))
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(Project.objects.filter(id=self.project1.id).exists(), False)
+        self.assertEqual(models.Project.objects.filter(id=self.project1.id).exists(), False)
 
     def test_project_delete_invalid(self):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile2_token.key)
         response = self.client.delete(reverse('project_detail', kwargs={'pk': self.project1.id}))
         self.assertEqual(response.status_code, 403)
-        self.assertEqual(Project.objects.filter(id=self.project1.id).exists(), True)
+        self.assertEqual(models.Project.objects.filter(id=self.project1.id).exists(), True)
 
     def test_project_teams_list(self):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
