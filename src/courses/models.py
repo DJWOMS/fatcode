@@ -27,7 +27,7 @@ class Category(models.Model):
 class Course(models.Model):
     name = models.CharField(max_length=50)
     description = models.TextField()
-    slug = models.SlugField(max_length=255, unique=True, db_index=True, verbose_name="URL")
+    slug = models.SlugField(max_length=255, unique=True, verbose_name="URL")
     view_count = models.IntegerField(editable=False, default=0)
     published = models.DateField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
@@ -82,7 +82,7 @@ class Lesson(models.Model):
     published = models.DateField(auto_now_add=True)
     sorted = models.IntegerField(default=1)
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='lessons')
-    slug = models.SlugField(max_length=255, unique=True, db_index=True, verbose_name="URL")
+    slug = models.SlugField(max_length=255, unique=True, verbose_name="URL")
     description = models.TextField()
     test = models.FileField(upload_to='files/test/python/', null=True, blank=True)
 
