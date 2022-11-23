@@ -56,14 +56,14 @@ class TestKnowledge(APITestCase):
     def test_tag_list(self):
         request = self.client.get(reverse("tag-list"))
         self.assertEqual(request.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(request.data), 2)
+        self.assertEqual(len(request.json().get('results')), 2)
 
     def test_category_list(self):
         request = self.client.get(reverse("category-list"))
         self.assertEqual(request.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(request.data), 3)
+        self.assertEqual(len(request.json().get('results')), 3)
 
     def test_get_glossary_letters(self):
         request = self.client.get(reverse("glossary-letter"))
         self.assertEqual(request.status_code, status.HTTP_200_OK)
-        self.assertEqual(request.data[0], OrderedDict([('id', 1), ('letter', 'f')]))
+        self.assertEqual(request.json().get('results'), [{'id': 1, 'letter': 'f'}])
