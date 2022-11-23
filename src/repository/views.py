@@ -23,12 +23,6 @@ class ToolkitListView(generics.ListAPIView):
 
 class ProjectsView(MixedPermissionSerializer, viewsets.ModelViewSet):
     """CRUD проекта"""
-    queryset = (
-        models.Project.objects
-        .select_related('user', 'category')
-        .all()
-        .prefetch_related('toolkit', 'teams')
-    )
     permission_classes_by_action = {
         'list': (permissions.IsAuthenticated,),
         'retrieve': (permissions.IsAuthenticated,),
@@ -45,6 +39,15 @@ class ProjectsView(MixedPermissionSerializer, viewsets.ModelViewSet):
         'update': serializers.ProjectSerializer,
         'destroy': serializers.ProjectSerializer
     }
+
+    def get_queryset(self):
+        teams = Team.objects.filter(user=self.request.user)
+        project = models.Project.objects.select_related('user', 'category').all().prefetch_related('toolkit', 'teams')
+        # project = models.Project.objects.select_related('user', 'category').prefetch_related('toolkit').filter(
+        #     teams=teams
+        # )
+        # print(project)
+        return project
 
     def perform_create(self, serializer):
         serializer.save()

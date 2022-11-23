@@ -3,7 +3,6 @@ from rest_framework import viewsets, status
 from rest_framework.exceptions import APIException
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from rest_framework.response import Response
-from django_filters import rest_framework as filters
 
 from src.base.classes import MixedSerializer, MixedPermission, MixedPermissionSerializer
 from src.base.service import post_view_count

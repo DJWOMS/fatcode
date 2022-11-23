@@ -3,9 +3,9 @@ from djoser.conf import settings
 
 from rest_framework import serializers
 from src.courses.serializers import ListCourseSerializer
-from src.profiles import models
+from src.profiles import models, services
 from src.base.validators import ImageValidator
-
+from src.repository.models import Toolkit
 
 
 class UserUpdateSerializer(UserSerializer):
@@ -176,4 +176,57 @@ class DashboardUserSerializer(serializers.ModelSerializer):
 
 class GitHubAddSerializer(serializers.Serializer):
     code = serializers.CharField(max_length=25)
+
+
+class QuestionnaireSerializer(serializers.ModelSerializer):
+    """ Анкета пользователя """
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = models.Questionnaire
+        fields = (
+            "description",
+            "country",
+            "town",
+            "phone",
+            "avatar",
+            "user",
+            "toolkit",
+            "teams",
+            "projects",
+            "accounts",
+            "category"
+        )
+
+    def create(self, validated_data):
+        teams = validated_data.pop('teams', None)
+        toolkit = validated_data.pop('toolkit', None)
+        projects = validated_data.pop('projects', None)
+        accounts = validated_data.pop('accounts', None)
+        user = validated_data.pop('user')
+        check_teams = services.check_teams(teams, user)
+        print(check_teams)
+        check_projects = services.check_projects(projects, user)
+        # repo_info = services.get_repo(repository, account_id)
+        # project = services.project_create(repo_info, user, repository, teams, toolkit, **validated_data)
+        # return project
+
+
+class GetToolkitForUserSerializer(serializers.ModelSerializer):
+    """Инструментарий"""
+
+    class Meta:
+        model = Toolkit
+        fields = ('name', )
+
+
+class QuestionnaireListSerializer(serializers.ModelSerializer):
+    """Список анкет"""
+    user = GetUserSerializer()
+    toolkit = GetToolkitForUserSerializer(many=True)
+
+    class Meta:
+        model = models.Questionnaire
+        fields = ('user', 'toolkit')
+
 

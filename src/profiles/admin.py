@@ -41,6 +41,17 @@ class AccountAdmin(admin.ModelAdmin):
     list_display = ("user", "account_id", "account_url", "account_name")
     search_fields = ("user", "account_id", "account_url", "account_name")
 
+
+class QuestionnaireAdmin(admin.ModelAdmin):
+    list_display = ('user', 'description')
+    search_fields = ('user', )
+
+class LanguageAdmin(admin.ModelAdmin):
+    list_display = ('name', )
+    search_fields = ('name', )
+
 admin.site.register(models.FatUser, FatUserAdmin)
 admin.site.register(models.Social)
 admin.site.register(models.Account, AccountAdmin)
+admin.site.register(models.Questionnaire, QuestionnaireAdmin)
+admin.site.register(models.Language, LanguageAdmin)

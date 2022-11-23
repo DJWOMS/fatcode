@@ -3,8 +3,6 @@ from . import utils
 from .interfaces import Repository
 from ..team.models import Team
 from django.db.models import Q
-from rest_framework import status
-from rest_framework.exceptions import APIException
 import requests
 from . import models
 from ..base import exceptions
@@ -18,10 +16,7 @@ def get_id(user):
         return account_id
     except:
         raise exceptions.BadAccount()
-        # raise APIException(
-        #     detail='Добавить репозиторий возможно только для аккаунтов привязанных к github',
-        #     code=status.HTTP_400_BAD_REQUEST
-        # )
+
 
 def get_my_repository(repository, account_id):
     """Поиск репозитория пользователя"""
@@ -40,10 +35,6 @@ def get_nik(repository, account_id):
     if str(cur_id) == account_id:
         return cur_nik
     else:
-        # raise APIException(
-        #     detail='Bad account_id',
-        #     code=status.HTTP_400_BAD_REQUEST
-        # )
         raise exceptions.BadAccountId()
 
 def get_user_repos(nik):
@@ -109,10 +100,6 @@ def check_teams(teams):
         cur_team = models.Project.objects.filter(teams=team).exists()
         if cur_team:
             raise exceptions.TeamExists()
-            # raise APIException(
-            #     detail='Для данной команды есть проект',
-            #     code=status.HTTP_400_BAD_REQUEST
-            #     )
     return teams
 
 def check_my_teams(teams, user):
@@ -125,19 +112,12 @@ def check_my_teams(teams, user):
         return True
     except Team.DoesNotExist:
         raise exceptions.TeamAuthor()
-        # raise APIException(
-        #     detail='Создать возможно только для своей команды',
-        #     code=status.HTTP_400_BAD_REQUEST
-        # )
+
 
 def check_repo(repo):
     try:
         repository = models.Project.objects.get(repository=repo)
         raise exceptions.RepositoryExists()
-        # raise APIException(
-        #     detail='Для данного репозитория уже есть проект',
-        #     code=status.HTTP_400_BAD_REQUEST
-        # )
     except models.Project.DoesNotExist:
         return True
 

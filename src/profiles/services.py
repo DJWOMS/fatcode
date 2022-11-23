@@ -7,6 +7,8 @@ from src.profiles.models import FatUser, Account
 from src.profiles.tokenizator import create_token
 from django.contrib.auth.base_user import BaseUserManager
 from django.conf import settings
+from src.team.models import Team, TeamMember
+from ..base import exceptions
 from rest_framework.response import Response
 
 
@@ -43,6 +45,7 @@ def check_token_add(code):
     token = check.text.split("&")[0].split("=")[1]
     return token
 
+
 def check_token(code):
     url_token = 'https://github.com/login/oauth/access_token'
     data = {
@@ -54,12 +57,14 @@ def check_token(code):
     token = check.text.split("&")[0].split("=")[1]
     return token
 
+
 def check_github_auth_add(code: str):
     _token = check_token_add(code)
     if _token != 'bad_verification_code':
         user = check_github_user(_token)
         return user.json()
     return None
+
 
 def check_github_auth(code: str):
     _token = check_token(code)
@@ -68,11 +73,13 @@ def check_github_auth(code: str):
         return user.json()
     return None
 
+
 def check_github_user(_token):
     url_check_user = 'https://api.github.com/user'
     headers = {'Authorization': f'token {_token}'}
     user = requests.get(url_check_user, headers=headers)
     return user
+
 
 def github_get_user_add(code: str):
     user = check_github_auth_add(code)
@@ -83,6 +90,7 @@ def github_get_user_add(code: str):
         return account_name, account_url, account_id
     else:
         raise HttpError(403, "Bad code")
+
 
 def github_get_user_auth(code: str):
     user = check_github_auth(code)
@@ -95,17 +103,21 @@ def github_get_user_auth(code: str):
     else:
         raise HttpError(403, "Bad code")
 
+
 def github_auth(user_id) -> tuple:
     internal_token = create_token(user_id)
     return user_id, internal_token
+
 
 def create_password():
     password = BaseUserManager().make_random_password()
     return password
 
+
 def get_provider(account_url):
     provider = account_url.split('/')[-2].split('.')[0]
     return provider
+
 
 def create_account(user, account_name, account_url, account_id):
     return Account.objects.create(
@@ -115,6 +127,7 @@ def create_account(user, account_name, account_url, account_id):
                         account_url=account_url,
                         account_name=account_name
                     )
+
 
 def check_user_with_email(account_id, email, account_name, account_url):
     if user := FatUser.objects.filter(username=account_id, email=email).exists():
@@ -131,8 +144,10 @@ def check_user_with_email(account_id, email, account_name, account_url):
         user_id, internal_token = github_auth(user.id)
         return internal_token
 
+
 def create_user(account_id):
     return FatUser.objects.create(username=account_id)
+
 
 def check_account_for_add(user, account_id):
     if Account.objects.filter(user=user, account_id=account_id).exists():
@@ -148,6 +163,7 @@ def check_account_for_add(user, account_id):
     else:
         return user
 
+
 def check_account_for_auth(account_id):
     try:
         account = Account.objects.get(account_id=account_id)
@@ -155,6 +171,7 @@ def check_account_for_auth(account_id):
         return internal_token
     except Account.DoesNotExist:
         return False
+
 
 def create_user_and_token(account_id, email, account_name, account_url):
     if email is not None:
@@ -167,3 +184,20 @@ def create_user_and_token(account_id, email, account_name, account_url):
         create_account(user, account_name, account_url, account_id)
         user_id, internal_token = github_auth(user.id)
         return internal_token
+
+
+def check_teams(teams, user):
+    if teams is not None:
+        for team in teams:
+            cur_team = TeamMember.objects.filter(user=user, team=team).exists()
+            if not cur_team:
+                raise exceptions.TeamMemberExists()
+    return teams
+
+def check_projects(projects, user):
+    if projects is not None:
+        for project in projects:
+            cur
+
+
+

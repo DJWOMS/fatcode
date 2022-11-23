@@ -37,3 +37,8 @@ class RepositoryExists(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Для данного репозитория уже есть проект'
     default_code = 'error'
+
+class TeamMemberExists(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Добавить можно только команду, в которой состоите'
+    default_code = 'error'

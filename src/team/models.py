@@ -4,7 +4,6 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from src.profiles.models import FatUser
 from src.base.validators import ImageValidator
 
 
@@ -22,7 +21,7 @@ class Team(models.Model):
             ImageValidator((250, 250), 524288)
         ]
     )
-    user = models.ForeignKey(FatUser, on_delete=models.CASCADE, related_name='teams')
+    user = models.ForeignKey('profiles.FatUser', on_delete=models.CASCADE, related_name='teams')
     create_date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -31,7 +30,7 @@ class Team(models.Model):
 
 class TeamMember(models.Model):
     '''Модель промежуточная пользователь команда'''
-    user = models.ForeignKey(FatUser, on_delete=models.CASCADE, related_name='team_members')
+    user = models.ForeignKey('profiles.FatUser', on_delete=models.CASCADE, related_name='team_members')
     team = models.ForeignKey(Team, related_name="members", on_delete=models.CASCADE)
     create_date = models.DateTimeField(auto_now_add=True)
 
@@ -47,7 +46,7 @@ class Invitation(models.Model):
         ('Rejected', 'Отклонено')
     )
     team = models.ForeignKey(Team, related_name="invitations", on_delete=models.CASCADE)
-    user = models.ForeignKey(FatUser, on_delete=models.CASCADE, related_name='invitations')
+    user = models.ForeignKey('profiles.FatUser', on_delete=models.CASCADE, related_name='invitations')
     order_status = models.CharField(max_length=100, choices=STATUS, default='Waiting')
     create_date = models.DateTimeField(auto_now_add=True)
 
@@ -62,14 +61,11 @@ class Post(models.Model):
     published = models.BooleanField(default=True)
     moderation = models.BooleanField(default=True)
     view_count = models.PositiveIntegerField(default=0)
-    user = models.ForeignKey(FatUser, on_delete=models.CASCADE, related_name='posts')
+    user = models.ForeignKey('profiles.FatUser', on_delete=models.CASCADE, related_name='posts')
     team = models.ForeignKey(Team, related_name="articles", on_delete=models.CASCADE)
 
     def __str__(self):
         return f'id {self.id}'
-
-    # def comments_count(self):
-    #     return self.post_comments.filter(is_delete=False).count()
 
 
 class Comment(models.Model):
@@ -79,7 +75,7 @@ class Comment(models.Model):
     update_date = models.DateTimeField(auto_now=True)
     is_publish = models.BooleanField(default=True)
     is_delete = models.BooleanField(default=False)
-    user = models.ForeignKey(FatUser, on_delete=models.CASCADE, related_name='team_comments')
+    user = models.ForeignKey('profiles.FatUser', on_delete=models.CASCADE, related_name='team_comments')
     post = models.ForeignKey(Post, related_name="post_comments", on_delete=models.CASCADE)
     parent = models.ForeignKey(
         "self",
@@ -91,9 +87,6 @@ class Comment(models.Model):
 
     def __str__(self):
         return f'{self.id}'
-
-    # def comments_count(self):
-    #     return self.children.all().count()
 
 
 class SocialLink(models.Model):

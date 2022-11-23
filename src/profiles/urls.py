@@ -12,6 +12,9 @@ urlpatterns = [
         {'get': 'retrieve'}
     ), name="user-pub"),
 
+    path('questionnaire/', views.QuestionnaireView.as_view({"get": "list", "post": "create"}), name='questionnaire'),
+    path('questionnaire/<int:pk>/', views.QuestionnaireView.as_view(
+        {"get": "retrieve", "put": "update", "delete": "destroy"}), name='questionnaire_detail'),
     path('avatar/', views.UserAvatar.as_view(
         {'put': 'update', 'post': 'create'}
     ), name='user-avatar'),

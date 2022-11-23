@@ -2,9 +2,12 @@ import uuid
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy as _
+from django.core.validators import FileExtensionValidator
+from django.utils import timezone
 
 from src.base.validators import ImageValidator
 from src.courses.models import Course
+from .validators import phone_validator
 
 
 def user_directory_path(instance: 'FatUser', filename: str) -> str:
@@ -59,6 +62,7 @@ class FatUserSocial(models.Model):
 
 
 class Account(models.Model):
+    """Модель аккаунтов привязанных к пользователю"""
     user = models.ForeignKey(FatUser, on_delete=models.CASCADE, related_name='user_account')
     provider = models.CharField(max_length=25, default='')
     account_id = models.CharField(max_length=150, blank=True, null=True)
@@ -66,5 +70,40 @@ class Account(models.Model):
     account_name = models.CharField(max_length=250, default='')
 
     def __str__(self):
-        return self.account_id
+        return self.account_url
+
+
+class Language(models.Model):
+    name = models.CharField(max_length=150)
+
+    def __str__(self):
+        return self.name
+
+
+class Questionnaire(models.Model):
+    '''Модель анкеты'''
+    description = models.TextField()
+    country = models.CharField(max_length=150, blank=True, null=True)
+    town = models.CharField(max_length=150, blank=True, null=True)
+    phone = models.CharField(validators=[phone_validator], max_length=13, blank=True, null=True)
+    avatar = models.ImageField(
+        upload_to='questionnaire/avatar/',
+        default='default/questionnaire.jpg',
+        blank=True,
+        null=True,
+        validators=[
+            FileExtensionValidator(allowed_extensions=['jpg', 'jpeg']),
+            ImageValidator((250, 250), 524288)
+        ]
+    )
+    user = models.OneToOneField(FatUser, on_delete=models.CASCADE, related_name='questionnaire')
+    toolkit = models.ManyToManyField('repository.Toolkit', related_name="questionnaire_projects", blank=True)
+    teams = models.ManyToManyField('team.Team', related_name='questionnaire_teams', blank=True)
+    projects = models.ManyToManyField('repository.Project', related_name='questionnaire_projects', blank=True)
+    accounts = models.ManyToManyField(Account, related_name='questionnaire_accounts', blank=True)
+    category = models.ForeignKey(Language, related_name="questionnaire_language", on_delete=models.SET_NULL, null=True)
+    create_date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.id
 

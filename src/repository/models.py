@@ -1,9 +1,7 @@
 from django.core.validators import FileExtensionValidator
 from django.db import models
 
-from src.profiles.models import FatUser
 from src.base.validators import ImageValidator
-from src.team.models import Team
 
 
 class Category(models.Model):
@@ -26,10 +24,10 @@ class Project(models.Model):
     name = models.CharField(max_length=150)
     description = models.TextField()
     create_date = models.DateTimeField(auto_now_add=True)
-    user = models.ForeignKey(FatUser, on_delete=models.CASCADE, related_name="projects")
+    user = models.ForeignKey('profiles.FatUser', on_delete=models.CASCADE, related_name="projects")
     category = models.ForeignKey(Category, related_name="projects", on_delete=models.PROTECT, default='1')
     toolkit = models.ManyToManyField(Toolkit, related_name="projects")
-    teams = models.ManyToManyField(Team, related_name='project_teams')
+    teams = models.ManyToManyField('team.Team', related_name='project_teams')
     avatar = models.ImageField(
         upload_to='project/avatar/',
         default='default/project.jpg',
@@ -51,7 +49,7 @@ class Project(models.Model):
 
 
 class ProjectMember(models.Model):
-    user = models.ForeignKey(FatUser, on_delete=models.CASCADE, related_name='project_members')
+    user = models.ForeignKey('profiles.FatUser', on_delete=models.CASCADE, related_name='project_members')
     project = models.ForeignKey(Project, related_name="members", on_delete=models.CASCADE)
     create_date = models.DateTimeField(auto_now_add=True)
 

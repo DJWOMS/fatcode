@@ -4,9 +4,11 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework import permissions, parsers
+from rest_framework.permissions import IsAuthenticated
 
 from src.profiles import models, serializers, services
-
+from src.base.classes import MixedPermissionSerializer
+from src.base.permissions import IsUser
 
 
 def title(request):
@@ -93,3 +95,33 @@ class UserAvatar(ModelViewSet):
         obj = get_object_or_404(queryset)
         self.check_object_permissions(self.request, obj)
         return obj
+
+
+class QuestionnaireView(MixedPermissionSerializer, ModelViewSet):
+    """CRUD анкеты пользователя"""
+    permission_classes_by_action = {
+        'list': (IsAuthenticated,),
+        'create': (IsUser,),
+        'retrieve': (IsAuthenticated, ),
+        'update': (IsUser,),
+        'destroy': (IsUser,),
+    }
+    serializer_classes_by_action = {
+        'list': serializers.QuestionnaireListSerializer,
+        'retrieve': serializers.QuestionnaireSerializer,
+        'create': serializers.QuestionnaireSerializer,
+        'update': serializers.QuestionnaireSerializer,
+        'destroy': serializers.QuestionnaireSerializer
+    }
+
+    def get_queryset(self):
+        return models.Questionnaire.objects.all()
+
+    def perform_create(self, serializer):
+        serializer.save()
+
+    def perform_update(self, serializer):
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        instance.delete()
