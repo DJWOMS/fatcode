@@ -8,7 +8,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 from rest_framework.authtoken.models import Token
 
-from .models import Category, Report
+from . import models
 from src.profiles.models import FatUser
 
 
@@ -23,9 +23,9 @@ class SupportTests(APITestCase):
         self.user_test1.save()
         self.user_test1_token = Token.objects.create(user=self.user_test1)
 
-        self.category = Category.objects.create(name="Ошибка в проверке задания")
+        self.category = models.Category.objects.create(name="Ошибка в проверке задания")
 
-        self.report = Report.objects.create(
+        self.report = models.Report.objects.create(
             category=self.category,
             user=self.user_test1,
             text="Пропала кнопка проверить",
