@@ -1,11 +1,16 @@
 from rest_framework import parsers
-from rest_framework.viewsets import ModelViewSet
-
-from . import serializers
-from .models import Report
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
 from ..base.classes import MixedSerializer
 from ..base.permissions import IsUser
+
+from . import serializers
+from .models import Report, Category
+
+
+class CategoryView(ReadOnlyModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = serializers.CategorySerializer
 
 
 class ReportView(MixedSerializer, ModelViewSet):
@@ -18,7 +23,7 @@ class ReportView(MixedSerializer, ModelViewSet):
     }
 
     def get_queryset(self):
-        return Report.objects.filter(user_id=self.request.user.id).select_related("user", "category")
+        return Report.objects.select_related("user", "category").filter(user_id=self.request.user.id)
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
