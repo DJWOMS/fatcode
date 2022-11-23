@@ -28,11 +28,7 @@ class QuestionApiViewTestCase(APITestCase):
         )
         self.token = Token.objects.create(user=self.user)
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token}')
-        self.question = Question.objects.create(
-            title='title1',
-            author=self.user,
-            text='text',
-        )
+        self.question = Question.objects.create(title='title1', author=self.user, text='text')
 
     def test_create_question(self):
         data = {
@@ -64,7 +60,7 @@ class QuestionApiViewTestCase(APITestCase):
         response = self.client.get(url)
         serialize = serializers.RetrieveQuestionSerializer(self.question)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, serialize.data)
+        self.assertEqual(response.json().get("text"), serialize.data.get("text"))
 
     def test_update_question(self):
         data = {

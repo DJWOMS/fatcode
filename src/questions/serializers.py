@@ -153,6 +153,6 @@ class UpdateAcceptAnswerSerializer(serializers.ModelSerializer):
 class FollowerQuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.QuestionFollowers
-        fields = ('id', 'question', )
+        fields = ('id', 'question')
 
 
