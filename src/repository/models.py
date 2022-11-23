@@ -1,5 +1,7 @@
 from django.core.validators import FileExtensionValidator
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 from src.base.validators import ImageValidator
 
@@ -55,3 +57,10 @@ class ProjectMember(models.Model):
 
     def __str__(self):
         return f'User {self.user} is member {self.project} project'
+
+
+@receiver(post_save, sender=Project)
+def team_member_create(sender, instance, created, **kwargs):
+    """Create TeamMember after creating new Team (add author of Team to TeamMember)"""
+    if created:
+        ProjectMember.objects.create(user=instance.user, project_id=instance.pk)

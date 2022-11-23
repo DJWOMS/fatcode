@@ -42,3 +42,26 @@ class TeamMemberExists(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Добавить можно только команду, в которой состоите'
     default_code = 'error'
+
+class ProjectMemberExists(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Добавить можно только проект, в котором состоите'
+    default_code = 'error'
+
+
+class AccountMemberExists(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Добавить можно только свои социальные сети'
+    default_code = 'error'
+
+
+class QuestionnaireUserExists(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Создать анкету можно только один раз'
+    default_code = 'error'
+
+
+class EmailNotExists(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Email обязательное поле'
+    default_code = 'error'

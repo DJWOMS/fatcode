@@ -101,9 +101,9 @@ class Questionnaire(models.Model):
     teams = models.ManyToManyField('team.Team', related_name='questionnaire_teams', blank=True)
     projects = models.ManyToManyField('repository.Project', related_name='questionnaire_projects', blank=True)
     accounts = models.ManyToManyField(Account, related_name='questionnaire_accounts', blank=True)
-    category = models.ForeignKey(Language, related_name="questionnaire_language", on_delete=models.SET_NULL, null=True)
+    category = models.ManyToManyField(Language, related_name="questionnaire_language", blank=True)
     create_date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.id
+        return f'{self.id}'
 

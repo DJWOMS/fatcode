@@ -7,8 +7,10 @@ from src.profiles.models import FatUser, Account
 from src.profiles.tokenizator import create_token
 from django.contrib.auth.base_user import BaseUserManager
 from django.conf import settings
-from src.team.models import Team, TeamMember
+from src.team.models import TeamMember
+from src.repository.models import ProjectMember
 from ..base import exceptions
+from .models import Questionnaire
 from rest_framework.response import Response
 
 
@@ -194,10 +196,64 @@ def check_teams(teams, user):
                 raise exceptions.TeamMemberExists()
     return teams
 
+
 def check_projects(projects, user):
     if projects is not None:
         for project in projects:
-            cur
+            cur_project = ProjectMember.objects.filter(user=user, project=project).exists()
+            if not cur_project:
+                raise exceptions.ProjectMemberExists()
+    return projects
+
+
+def check_account(accounts, user):
+    if accounts is not None:
+        for account in accounts:
+            cur_account = Account.objects.filter(user=user, account_url=account).exists()
+            if not cur_account:
+                raise exceptions.AccountMemberExists()
+    return accounts
+
+
+def questionnaire_create(user, teams, projects, accounts, toolkit, languages, **validated_data):
+    questionnaire = Questionnaire.objects.create(
+        user=user,
+        **validated_data
+    )
+    for team in teams:
+        questionnaire.teams.add(team)
+    for toolkit in toolkit:
+        questionnaire.toolkit.add(toolkit)
+    for project in projects:
+        questionnaire.projects.add(project)
+    for account in accounts:
+        questionnaire.accounts.add(account)
+    for language in languages:
+        questionnaire.category.add(language)
+    return questionnaire
+
+
+def check_profile(user, teams, projects, accounts):
+    if check_teams(teams, user) and check_projects(projects, user) and check_account(accounts, user):
+        return user
+
+def questionnaire_update(instance, teams, toolkits, projects, accounts, languages):
+    instance.teams.clear()
+    instance.toolkit.clear()
+    instance.accounts.clear()
+    instance.projects.clear()
+    instance.category.clear()
+    for team in teams:
+        instance.teams.add(team)
+    for toolkit in toolkits:
+        instance.toolkit.add(toolkit)
+    for project in projects:
+        instance.projects.add(project)
+    for language in languages:
+        instance.category.add(language)
+    for account in accounts:
+        instance.accounts.add(account)
+    return instance
 
 
 

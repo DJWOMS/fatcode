@@ -1,4 +1,4 @@
-from djoser.serializers import UserSerializer, UserCreateSerializer
+from djoser.serializers import UserSerializer, UserCreatePasswordRetypeSerializer
 from djoser.conf import settings
 
 from rest_framework import serializers
@@ -6,7 +6,8 @@ from src.courses.serializers import ListCourseSerializer
 from src.profiles import models, services
 from src.base.validators import ImageValidator
 from src.repository.models import Toolkit
-
+from ..base import exceptions
+from .models import FatUser
 
 class UserUpdateSerializer(UserSerializer):
     """Serialization to change user data"""
@@ -23,7 +24,7 @@ class UserUpdateSerializer(UserSerializer):
         read_only_fields = (settings.LOGIN_FIELD,)
 
 ##TODO как сделать что бы выводилось сообщение email обязательное поле
-class UsersCreateSerializer(UserCreateSerializer):
+class UsersCreateSerializer(UserCreatePasswordRetypeSerializer):
     """Serialization to create user data"""
 
     class Meta:
@@ -36,6 +37,15 @@ class UsersCreateSerializer(UserCreateSerializer):
                 },
             },
         }
+
+    def create(self, validated_data):
+        print(validated_data)
+        # email = validated_data.get('email', None)
+        # print('email', email)
+        # if email is None:
+        #     raise exceptions.EmailNotExists()
+        # else:
+        #     return FatUser.objects.create(**validated_data)
 
 
 class UserSocialSerializer(serializers.ModelSerializer):
@@ -204,12 +214,31 @@ class QuestionnaireSerializer(serializers.ModelSerializer):
         projects = validated_data.pop('projects', None)
         accounts = validated_data.pop('accounts', None)
         user = validated_data.pop('user')
-        check_teams = services.check_teams(teams, user)
-        print(check_teams)
-        check_projects = services.check_projects(projects, user)
-        # repo_info = services.get_repo(repository, account_id)
-        # project = services.project_create(repo_info, user, repository, teams, toolkit, **validated_data)
-        # return project
+        languages = validated_data.pop('category', None)
+        check_profile = services.check_profile(user, teams, projects)
+        questionnaire = services.questionnaire_create(user,
+                                                      teams,
+                                                      projects,
+                                                      accounts,
+                                                      toolkit,
+                                                      languages,
+                                                      **validated_data)
+        return questionnaire
+
+    def update(self, instance, validated_data):
+        teams = validated_data.pop('teams', None)
+        toolkits = validated_data.pop('toolkit', None)
+        projects = validated_data.pop('projects', None)
+        accounts = validated_data.pop('accounts', None)
+        user = validated_data.pop('user')
+        languages = validated_data.pop('category', None)
+        check_profile = services.check_profile(user, teams, projects, accounts)
+        if instance.avatar:
+            instance.avatar.delete()
+        instance = super().update(instance, validated_data)
+        instance = services.questionnaire_update(instance, teams, toolkits, projects, accounts, languages)
+        instance.save()
+        return instance
 
 
 class GetToolkitForUserSerializer(serializers.ModelSerializer):
@@ -227,6 +256,6 @@ class QuestionnaireListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Questionnaire
-        fields = ('user', 'toolkit')
+        fields = ('id', 'user', 'toolkit')
 
 

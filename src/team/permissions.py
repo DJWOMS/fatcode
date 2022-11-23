@@ -1,5 +1,3 @@
-from django.db.models import Q
-from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework import permissions
 from src.team.models import Team, TeamMember, Invitation, Post
 

@@ -9,6 +9,7 @@ from rest_framework.permissions import IsAuthenticated
 from src.profiles import models, serializers, services
 from src.base.classes import MixedPermissionSerializer
 from src.base.permissions import IsUser
+from .permissions import IsQuestionnaireNotExists
 
 
 def title(request):
@@ -101,7 +102,7 @@ class QuestionnaireView(MixedPermissionSerializer, ModelViewSet):
     """CRUD анкеты пользователя"""
     permission_classes_by_action = {
         'list': (IsAuthenticated,),
-        'create': (IsUser,),
+        'create': (IsQuestionnaireNotExists,),
         'retrieve': (IsAuthenticated, ),
         'update': (IsUser,),
         'destroy': (IsUser,),
