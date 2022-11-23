@@ -1,12 +1,25 @@
+from django.db.models import Q, OuterRef
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.generics import CreateAPIView
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 
 from ..base import classes
 
 from . import serializers, models
 from .filters import CourseFilter
+
+
+class CategoryView(ReadOnlyModelViewSet):
+    serializer_class = serializers.CategoryChildrenSerializer
+
+    def get_queryset(self):
+        return models.Category.objects.prefetch_related('children').filter(parent__isnull=True)
+
+
+class TagView(ReadOnlyModelViewSet):
+    queryset = models.Tag.objects.all()
+    serializer_class = serializers.TagSerializer
 
 
 class CourseView(classes.MixedPermissionSerializer, ModelViewSet):

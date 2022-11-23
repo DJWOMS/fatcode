@@ -24,14 +24,23 @@ class QuizSerializer(serializers.ModelSerializer):
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Tag
-        fields = ('name',)
+        fields = ('id', 'name',)
 
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Category
-        fields = ('name', 'parent')
+        fields = ('id', 'name')
         ref_name = 'courses_category'
+
+
+class CategoryChildrenSerializer(serializers.ModelSerializer):
+    children = CategorySerializer(many=True)
+
+    class Meta:
+        model = models.Category
+        fields = ('id', 'name', 'children')
+        ref_name = 'courses_category_children'
 
 
 class LessonDetailSerializer(serializers.ModelSerializer):
