@@ -6,11 +6,9 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework import permissions, parsers
 
-from src.base.classes import MixedPermission, MixedPermissionSerializer, MixedSerializer
+from src.base.classes import MixedPermissionSerializer, MixedSerializer
 from src.profiles import models, serializers, services
-from src.base.permissions import IsUser
 from src.profiles.permissions import IsNotApplicant, IsNotAlreadyFriend, IsNotYouGetter
-
 
 
 def title(request):
