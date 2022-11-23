@@ -134,6 +134,7 @@ DJOSER = {
     'SERIALIZERS': {
         'current_user': 'src.profiles.serializers.UserUpdateSerializer',
         'user_create': 'src.profiles.serializers.UsersCreateSerializer',
+        'user_create_password_retype': 'src.profiles.serializers.UsersCreateSerializer',
     },
 }
 

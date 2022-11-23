@@ -17,7 +17,6 @@ urlpatterns = [
     path('title/', views.title, name='title'),
     path('add_git_hub/', views.AddGitHub.as_view(), name='add_git_hub'),
     path('git_hub_auth/', views.GitGubAuthView.as_view(), name='git_hub_auth'),
-    path('git_hub_register/', views.GitGubRegisterView.as_view(), name='git_hub_register'),
     path('application/', views.ApplicationView.as_view({'get': 'list', 'post': 'create'})),
     path('application/<int:pk>/', views.ApplicationView.as_view({'delete': 'destroy'})),
     path('application/to_me', views.ApplicationUserGetter.as_view({'get': 'list'})),

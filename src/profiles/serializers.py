@@ -1,4 +1,4 @@
-from djoser.serializers import UserSerializer, UserCreateSerializer
+from djoser.serializers import UserSerializer, UserCreatePasswordRetypeSerializer
 from djoser.conf import settings
 
 from rest_framework import serializers
@@ -24,20 +24,14 @@ class UserUpdateSerializer(UserSerializer):
         )
         read_only_fields = (settings.LOGIN_FIELD,)
 
-##TODO как сделать что бы выводилось сообщение email обязательное поле
-class UsersCreateSerializer(UserCreateSerializer):
+
+class UsersCreateSerializer(UserCreatePasswordRetypeSerializer):
     """Serialization to create user data"""
+    email = serializers.EmailField(required=True)
 
     class Meta:
         model = models.FatUser
         fields = ('username', 'email', 'password')
-        extra_kwargs = {
-            "email": {
-                "error_messages": {
-                    "required": "User's Email is required",
-                },
-            },
-        }
 
 
 class UserSocialSerializer(serializers.ModelSerializer):
