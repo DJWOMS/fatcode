@@ -50,8 +50,12 @@ class LanguageAdmin(admin.ModelAdmin):
     list_display = ('name', )
     search_fields = ('name', )
 
+class FatUserSocialAdmin(admin.ModelAdmin):
+    list_display = ('social', 'user', 'user_url')
+
 admin.site.register(models.FatUser, FatUserAdmin)
 admin.site.register(models.Social)
 admin.site.register(models.Account, AccountAdmin)
 admin.site.register(models.Questionnaire, QuestionnaireAdmin)
 admin.site.register(models.Language, LanguageAdmin)
+admin.site.register(models.FatUserSocial, FatUserSocialAdmin)

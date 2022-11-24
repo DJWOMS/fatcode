@@ -61,7 +61,15 @@ class QuestionnaireUserExists(APIException):
     default_code = 'error'
 
 
+class SocialUserNotExists(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Добавить можно только свои социальные сети'
+    default_code = 'error'
+
+
 class EmailNotExists(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Email обязательное поле'
     default_code = 'error'
+
+

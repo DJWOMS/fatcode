@@ -60,6 +60,9 @@ class FatUserSocial(models.Model):
     )
     user_url = models.CharField(max_length=500, default='')
 
+    def __str__(self):
+        return self.user_url
+
 
 class Account(models.Model):
     """Модель аккаунтов привязанных к пользователю"""
@@ -102,7 +105,9 @@ class Questionnaire(models.Model):
     projects = models.ManyToManyField('repository.Project', related_name='questionnaire_projects', blank=True)
     accounts = models.ManyToManyField(Account, related_name='questionnaire_accounts', blank=True)
     category = models.ManyToManyField(Language, related_name="questionnaire_language", blank=True)
+    socials = models.ManyToManyField(FatUserSocial, related_name="questionnaire_social", blank=True)
     create_date = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True, null=True, blank=True)
 
     def __str__(self):
         return f'{self.id}'

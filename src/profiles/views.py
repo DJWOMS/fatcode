@@ -116,7 +116,7 @@ class QuestionnaireView(MixedPermissionSerializer, ModelViewSet):
     }
 
     def get_queryset(self):
-        return models.Questionnaire.objects.all()
+        return models.Questionnaire.objects.all().prefetch_related('user', 'teams', 'projects', 'accounts', 'category', 'socials')
 
     def perform_create(self, serializer):
         serializer.save()

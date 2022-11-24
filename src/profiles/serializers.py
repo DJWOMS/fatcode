@@ -205,6 +205,7 @@ class QuestionnaireSerializer(serializers.ModelSerializer):
             "teams",
             "projects",
             "accounts",
+            "socials",
             "category"
         )
 
@@ -215,13 +216,15 @@ class QuestionnaireSerializer(serializers.ModelSerializer):
         accounts = validated_data.pop('accounts', None)
         user = validated_data.pop('user')
         languages = validated_data.pop('category', None)
-        check_profile = services.check_profile(user, teams, projects)
+        socials = validated_data.pop('socials', None)
+        check_profile = services.check_profile(user, teams, projects, accounts, socials)
         questionnaire = services.questionnaire_create(user,
                                                       teams,
                                                       projects,
                                                       accounts,
                                                       toolkit,
                                                       languages,
+                                                      socials,
                                                       **validated_data)
         return questionnaire
 
@@ -232,11 +235,12 @@ class QuestionnaireSerializer(serializers.ModelSerializer):
         accounts = validated_data.pop('accounts', None)
         user = validated_data.pop('user')
         languages = validated_data.pop('category', None)
-        check_profile = services.check_profile(user, teams, projects, accounts)
+        socials = validated_data.pop('socials', None)
+        check_profile = services.check_profile(user, teams, projects, accounts, socials)
         if instance.avatar:
             instance.avatar.delete()
         instance = super().update(instance, validated_data)
-        instance = services.questionnaire_update(instance, teams, toolkits, projects, accounts, languages)
+        instance = services.questionnaire_update(instance, teams, toolkits, projects, accounts, languages, socials)
         instance.save()
         return instance
 

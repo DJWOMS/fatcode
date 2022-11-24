@@ -1,9 +1,34 @@
+import io
+from PIL import Image
+
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 from rest_framework.authtoken.models import Token
+
 from src.profiles.models import FatUser
 from src.team.models import Post, Comment, Team, TeamMember, Invitation, SocialLink
+
+def temporary_image():
+    bts = io.BytesIO()
+    img = Image.new("RGB", (250, 250))
+    img.save(bts, 'jpeg')
+    return SimpleUploadedFile("test.jpg", bts.getvalue())
+
+
+def temporary_image_2():
+    bts = io.BytesIO()
+    img = Image.new("RGB", (300, 300))
+    img.save(bts, 'jpeg')
+    return SimpleUploadedFile("test2.jpg", bts.getvalue())
+
+
+def temporary_image_3():
+    bts = io.BytesIO()
+    img = Image.new("RGB", (250, 250))
+    img.save(bts, 'jpeg')
+    return SimpleUploadedFile("test3.jpg", bts.getvalue())
 
 
 class TeamTest(APITestCase):
@@ -41,7 +66,8 @@ class TeamTest(APITestCase):
 
         self.team1 = Team.objects.create(
             name='team1',
-            user=self.profile1
+            user=self.profile1,
+            avatar=temporary_image()
         )
         self.team_member1 = TeamMember.objects.create(
             team=self.team1,
@@ -87,12 +113,23 @@ class TeamTest(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
         data = {
             'name': 'name1',
-            'user': self.profile1.id
+            'user': self.profile1.id,
+            'avatar': temporary_image()
         }
-        response = self.client.post(reverse('teams'), data=data, format='json')
+        response = self.client.post(reverse('teams'), data=data, format='multipart')
         self.assertEqual(response.status_code, 201)
         self.assertEqual(len(response.data), 3)
         self.assertEqual(Team.objects.count(), 4)
+
+    def test_team_create_invalid_avatar(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
+        data = {
+            'name': 'name1',
+            'user': self.profile1.id,
+            'avatar': temporary_image_2()
+        }
+        response = self.client.post(reverse('teams'), data=data, format='multipart')
+        self.assertEqual(response.status_code, 400)
 
     def test_team_list(self):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
@@ -118,9 +155,10 @@ class TeamTest(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
         data = {
             'name': 'name_test',
-            'user': self.profile1.id
+            'user': self.profile1.id,
+            'avatar': temporary_image_3()
         }
-        response = self.client.put(reverse('detail_teams', kwargs={'pk': self.team1.id}), data=data, format='json')
+        response = self.client.put(reverse('detail_teams', kwargs={'pk': self.team1.id}), data=data, format='multipart')
         self.assertEqual(response.status_code, 200)
 
     def test_team_update_invalid(self):
@@ -132,6 +170,16 @@ class TeamTest(APITestCase):
         response = self.client.put(reverse('detail_teams', kwargs={'pk': self.team1.id}), data=data, format='json')
         team = Team.objects.get(id=self.team1.id)
         self.assertEqual(response.status_code, 403)
+
+    def test_team_update_invalid_avatar(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
+        data = {
+            'name': 'name_test',
+            'user': self.profile1.id,
+            'avatar': temporary_image_2()
+        }
+        response = self.client.put(reverse('detail_teams', kwargs={'pk': self.team1.id}), data=data, format='multipart')
+        self.assertEqual(response.status_code, 400)
 
     def test_team_update_no_authorization(self):
         data = {

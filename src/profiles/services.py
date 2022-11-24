@@ -10,8 +10,7 @@ from django.conf import settings
 from src.team.models import TeamMember
 from src.repository.models import ProjectMember
 from ..base import exceptions
-from .models import Questionnaire
-from rest_framework.response import Response
+from .models import Questionnaire, FatUserSocial
 
 
 def add_experience(user_id: int, exp: int):
@@ -215,7 +214,7 @@ def check_account(accounts, user):
     return accounts
 
 
-def questionnaire_create(user, teams, projects, accounts, toolkit, languages, **validated_data):
+def questionnaire_create(user, teams, projects, accounts, toolkit, languages, socials, **validated_data):
     questionnaire = Questionnaire.objects.create(
         user=user,
         **validated_data
@@ -230,19 +229,32 @@ def questionnaire_create(user, teams, projects, accounts, toolkit, languages, **
         questionnaire.accounts.add(account)
     for language in languages:
         questionnaire.category.add(language)
+    for social in socials:
+        questionnaire.socials.add(social)
     return questionnaire
 
 
-def check_profile(user, teams, projects, accounts):
-    if check_teams(teams, user) and check_projects(projects, user) and check_account(accounts, user):
+def check_socials(user, socials):
+    if socials is not None:
+        for social in socials:
+            cur_social = FatUserSocial.objects.filter(user=user, user_url=social).exists()
+            if not cur_social:
+                raise exceptions.SocialUserNotExists()
+    return socials
+
+
+def check_profile(user, teams, projects, accounts, socials):
+    if check_teams(teams, user) and check_projects(projects, user) and check_account(accounts, user) \
+            and check_socials(user, socials):
         return user
 
-def questionnaire_update(instance, teams, toolkits, projects, accounts, languages):
+def questionnaire_update(instance, teams, toolkits, projects, accounts, languages, socials):
     instance.teams.clear()
     instance.toolkit.clear()
     instance.accounts.clear()
     instance.projects.clear()
     instance.category.clear()
+    instance.socials.clear()
     for team in teams:
         instance.teams.add(team)
     for toolkit in toolkits:
@@ -253,6 +265,8 @@ def questionnaire_update(instance, teams, toolkits, projects, accounts, language
         instance.category.add(language)
     for account in accounts:
         instance.accounts.add(account)
+    for social in socials:
+        instance.socials.add(social)
     return instance
 
 
