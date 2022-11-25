@@ -41,12 +41,7 @@ class ProjectsView(MixedPermissionSerializer, viewsets.ModelViewSet):
     }
 
     def get_queryset(self):
-        teams = Team.objects.filter(user=self.request.user)
         project = models.Project.objects.select_related('user', 'category').all().prefetch_related('toolkit', 'teams')
-        # project = models.Project.objects.select_related('user', 'category').prefetch_related('toolkit').filter(
-        #     teams=teams
-        # )
-        # print(project)
         return project
 
     def perform_create(self, serializer):

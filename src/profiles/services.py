@@ -3,10 +3,11 @@ from django.db.models import F
 from kombu.exceptions import HttpError
 from rest_framework import status
 from rest_framework.exceptions import APIException
-from src.profiles.models import FatUser, Account
-from src.profiles.tokenizator import create_token
 from django.contrib.auth.base_user import BaseUserManager
 from django.conf import settings
+
+from src.profiles.models import FatUser, Account
+from src.profiles.tokenizator import create_token
 from src.team.models import TeamMember
 from src.repository.models import ProjectMember
 from ..base import exceptions
@@ -43,8 +44,7 @@ def check_token_add(code):
         "client_secret": settings.CLIENT_SECRET,
     }
     check = requests.post(url_token, data=data)
-    token = check.text.split("&")[0].split("=")[1]
-    return token
+    return check.text.split("&")[0].split("=")[1]
 
 
 def check_token(code):
@@ -55,31 +55,27 @@ def check_token(code):
         "client_secret": settings.CLIENT_SECRET_FOR_AUTH,
     }
     check = requests.post(url_token, data=data)
-    token = check.text.split("&")[0].split("=")[1]
-    return token
+    return check.text.split("&")[0].split("=")[1]
 
 
 def check_github_auth_add(code: str):
     _token = check_token_add(code)
     if _token != 'bad_verification_code':
-        user = check_github_user(_token)
-        return user.json()
+        return check_github_user(_token).json()
     return None
 
 
 def check_github_auth(code: str):
     _token = check_token(code)
     if _token != 'bad_verification_code':
-        user = check_github_user(_token)
-        return user.json()
+        return check_github_user(_token).json()
     return None
 
 
 def check_github_user(_token):
     url_check_user = 'https://api.github.com/user'
     headers = {'Authorization': f'token {_token}'}
-    user = requests.get(url_check_user, headers=headers)
-    return user
+    return requests.get(url_check_user, headers=headers)
 
 
 def github_get_user_add(code: str):
@@ -111,13 +107,11 @@ def github_auth(user_id) -> tuple:
 
 
 def create_password():
-    password = BaseUserManager().make_random_password()
-    return password
+    return BaseUserManager().make_random_password()
 
 
 def get_provider(account_url):
-    provider = account_url.split('/')[-2].split('.')[0]
-    return provider
+    return account_url.split('/')[-2].split('.')[0]
 
 
 def create_account(user, account_name, account_url, account_id):
@@ -190,8 +184,7 @@ def create_user_and_token(account_id, email, account_name, account_url):
 def check_teams(teams, user):
     if teams is not None:
         for team in teams:
-            cur_team = TeamMember.objects.filter(user=user, team=team).exists()
-            if not cur_team:
+            if not TeamMember.objects.filter(user=user, team=team).exists():
                 raise exceptions.TeamMemberExists()
     return teams
 
@@ -214,21 +207,18 @@ def check_account(accounts, user):
     return accounts
 
 
-def questionnaire_create(user, teams, projects, accounts, toolkit, languages, socials, **validated_data):
-    questionnaire = Questionnaire.objects.create(
-        user=user,
-        **validated_data
-    )
+def questionnaire_create(user, teams, projects, accounts, toolkits, languages, socials, **validated_data):
+    questionnaire = Questionnaire.objects.create(user=user,**validated_data)
     for team in teams:
         questionnaire.teams.add(team)
-    for toolkit in toolkit:
-        questionnaire.toolkit.add(toolkit)
+    for toolkit in toolkits:
+        questionnaire.toolkits.add(toolkit)
     for project in projects:
         questionnaire.projects.add(project)
     for account in accounts:
         questionnaire.accounts.add(account)
     for language in languages:
-        questionnaire.category.add(language)
+        questionnaire.languages.add(language)
     for social in socials:
         questionnaire.socials.add(social)
     return questionnaire
@@ -244,26 +234,27 @@ def check_socials(user, socials):
 
 
 def check_profile(user, teams, projects, accounts, socials):
-    if check_teams(teams, user) and check_projects(projects, user) and check_account(accounts, user) \
-            and check_socials(user, socials):
+    check_teams_and_projects = check_teams(teams, user) and check_projects(projects, user)
+    check_accounts_and_socials = check_account(accounts, user) and check_socials(user, socials)
+    if check_teams_and_projects and check_accounts_and_socials:
         return user
 
 
 def questionnaire_update(instance, teams, toolkits, projects, accounts, languages, socials):
     instance.teams.clear()
-    instance.toolkit.clear()
+    instance.toolkits.clear()
     instance.accounts.clear()
     instance.projects.clear()
-    instance.category.clear()
+    instance.languages.clear()
     instance.socials.clear()
     for team in teams:
         instance.teams.add(team)
     for toolkit in toolkits:
-        instance.toolkit.add(toolkit)
+        instance.toolkits.add(toolkit)
     for project in projects:
         instance.projects.add(project)
     for language in languages:
-        instance.category.add(language)
+        instance.languages.add(language)
     for account in accounts:
         instance.accounts.add(account)
     for social in socials:
@@ -271,11 +262,3 @@ def questionnaire_update(instance, teams, toolkits, projects, accounts, language
     return instance
 
 
-def check_and_create_user(email, password, **validated_data):
-    if email == '':
-        raise exceptions.EmailNotExists()
-    else:
-        user = FatUser.objects.create(email=email, **validated_data)
-        user.set_password(password)
-        user.save()
-        return user

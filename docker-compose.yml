@@ -57,6 +57,7 @@ services:
       - redis
       - db
       - web
+      - celery
 
 volumes:
   db_fatcode_vol:

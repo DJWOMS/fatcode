@@ -1,12 +1,9 @@
-from django.db.models import Q
-from rest_framework import serializers, status
-from rest_framework.exceptions import APIException
+from rest_framework import serializers
 
-from ..base.exceptions import CustomException
-from ..base.serializers import FilterCommentListSerializer
 from .models import Post, Comment, Team, TeamMember, Invitation, SocialLink
 from ..profiles.serializers import GetUserSerializer
 from src.repository.models import Project
+from . import services
 
 
 class TeamNameView(serializers.ModelSerializer):
@@ -82,14 +79,7 @@ class InvitationAskingSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         team = validated_data.pop('team')
         cur_user = validated_data.pop('user')
-        user = Team.objects.filter(Q(user=cur_user.id) & Q(id=team.id)).exists()
-        member = TeamMember.objects.filter(Q(user=cur_user) & Q(team=team)).exists()
-        invitation = Invitation.objects.filter(team=team, user=cur_user, order_status='Waiting').exists()
-        if user or member or invitation:
-            raise CustomException()
-        else:
-            invitation = Invitation.objects.create(team=team, user=cur_user)
-            return invitation
+        return services.check_and_create_invitation(team, cur_user)
 
 
 class RetrieveDeleteMember(serializers.ModelSerializer):
@@ -120,15 +110,7 @@ class AcceptInvitationSerializer(serializers.ModelSerializer):
         fields = ("order_status", "user")
 
     def update(self, instance, validated_data):
-        try:
-            TeamMember.objects.get(Q(user=instance.user) & Q(team=instance.team))
-            raise APIException(
-                detail='Участником одной команды можно стать один раз',
-                code=status.HTTP_400_BAD_REQUEST
-            )
-        except TeamMember.DoesNotExist:
-            if instance.order_status == 'Approved':
-                TeamMember.objects.create(user=instance.user, team=instance.team)
+        services.check_and_create_team_member(instance)
         instance.order_status = validated_data.get('order_status', None)
         instance.save()
         return instance
@@ -154,17 +136,7 @@ class CommentCreateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         post_id = validated_data.pop('post_id')
-        if validated_data.get('parent') is not None:
-            try:
-                post = Post.objects.get(id=validated_data.get('parent').post.id)
-            except Post.DoesNotExist:
-                raise APIException(
-                    detail='Нет доступа для написания комментариев', code=status.HTTP_400_BAD_REQUEST
-                )
-            if post.id != post_id:
-                raise APIException(
-                    detail='Нет доступа для написания комментариев', code=status.HTTP_400_BAD_REQUEST
-                )
+        services.check_post(post_id, **validated_data)
         comment = Comment.objects.create(
             post_id=post_id,
             **validated_data

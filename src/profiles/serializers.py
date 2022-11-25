@@ -26,15 +26,11 @@ class UserUpdateSerializer(UserSerializer):
 
 class UsersCreateSerializer(UserCreatePasswordRetypeSerializer):
     """Serialization to create user data"""
+    email = serializers.EmailField(required=True)
 
     class Meta:
         model = models.FatUser
         fields = ('username', 'email', 'password')
-
-    def create(self, validated_data):
-        email = validated_data.pop('email', None)
-        password = validated_data.pop('password', None)
-        return services.check_and_create_user(email, password, **validated_data)
 
 
 class UserSocialSerializer(serializers.ModelSerializer):
@@ -190,42 +186,43 @@ class QuestionnaireSerializer(serializers.ModelSerializer):
             "phone",
             "avatar",
             "user",
-            "toolkit",
+            "toolkits",
             "teams",
             "projects",
             "accounts",
             "socials",
-            "category"
+            "languages"
         )
 
     def create(self, validated_data):
         teams = validated_data.pop('teams', None)
-        toolkit = validated_data.pop('toolkit', None)
+        toolkits = validated_data.pop('toolkits', None)
         projects = validated_data.pop('projects', None)
         accounts = validated_data.pop('accounts', None)
         user = validated_data.pop('user')
-        languages = validated_data.pop('category', None)
+        languages = validated_data.pop('languages', None)
         socials = validated_data.pop('socials', None)
-        check_profile = services.check_profile(user, teams, projects, accounts, socials)
-        questionnaire = services.questionnaire_create(user,
-                                                      teams,
-                                                      projects,
-                                                      accounts,
-                                                      toolkit,
-                                                      languages,
-                                                      socials,
-                                                      **validated_data)
-        return questionnaire
+        services.check_profile(user, teams, projects, accounts, socials)
+        return services.questionnaire_create(
+            user,
+            teams,
+            projects,
+            accounts,
+            toolkits,
+            languages,
+            socials,
+            **validated_data
+        )
 
     def update(self, instance, validated_data):
         teams = validated_data.pop('teams', None)
-        toolkits = validated_data.pop('toolkit', None)
+        toolkits = validated_data.pop('toolkits', None)
         projects = validated_data.pop('projects', None)
         accounts = validated_data.pop('accounts', None)
         user = validated_data.pop('user')
-        languages = validated_data.pop('category', None)
+        languages = validated_data.pop('languages', None)
         socials = validated_data.pop('socials', None)
-        check_profile = services.check_profile(user, teams, projects, accounts, socials)
+        services.check_profile(user, teams, projects, accounts, socials)
         if instance.avatar:
             instance.avatar.delete()
         instance = super().update(instance, validated_data)
@@ -245,10 +242,10 @@ class GetToolkitForUserSerializer(serializers.ModelSerializer):
 class QuestionnaireListSerializer(serializers.ModelSerializer):
     """Список анкет"""
     user = GetUserSerializer()
-    toolkit = GetToolkitForUserSerializer(many=True)
+    toolkits = GetToolkitForUserSerializer(many=True)
 
     class Meta:
         model = models.Questionnaire
-        fields = ('id', 'user', 'toolkit')
+        fields = ('id', 'user', 'toolkits')
 
 

@@ -120,14 +120,14 @@ class QuestionnaireView(MixedPermissionSerializer, ModelViewSet):
     filterset_class = filters.ToolkitFilter
 
     def get_queryset(self):
-        # teams = Team.objects.filter(user=self.request.user)
-        # print(teams)
-        # questionnaire = models.Questionnaire.objects.filter(
-        #     teams=Q(teams__user=self.request.user))
-        #
-        # print(questionnaire)
-        # return questionnaire
-        return models.Questionnaire.objects.all().prefetch_related('user', 'teams', 'projects', 'accounts', 'category', 'socials')
+        return models.Questionnaire.objects.all().prefetch_related(
+            'user',
+            'teams',
+            'projects',
+            'accounts',
+            'languages',
+            'socials'
+        )
 
     def perform_create(self, serializer):
         serializer.save()
