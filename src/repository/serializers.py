@@ -103,27 +103,6 @@ class ProjectUserListSerializer(serializers.ModelSerializer):
         )
 
 
-# class ProjectListSerializer(serializers.ModelSerializer):
-#     """Список проектов"""
-#     category = CategorySerializer()
-#     toolkit = ToolkitSerializer(many=True)
-#
-#     class Meta:
-#         model = models.Project
-#         fields = (
-#             'id',
-#             'name',
-#             'description',
-#             'create_date',
-#             'toolkit',
-#             'category',
-#             'star',
-#             'fork',
-#             'commit',
-#             'last_commit'
-#         )
-
-
 class ProjectDetailSerializer(serializers.ModelSerializer):
     """Проект детально"""
     user = GetUserForProjectSerializer()

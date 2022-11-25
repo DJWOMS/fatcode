@@ -5,11 +5,13 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework import permissions, parsers
 from rest_framework.permissions import IsAuthenticated
+from django_filters import rest_framework as filter
 
-from src.profiles import models, serializers, services
+from src.profiles import models, serializers, services, filters
 from src.base.classes import MixedPermissionSerializer
 from src.base.permissions import IsUser
 from .permissions import IsQuestionnaireNotExists
+from src.team.models import Team
 
 
 def title(request):
@@ -114,8 +116,17 @@ class QuestionnaireView(MixedPermissionSerializer, ModelViewSet):
         'update': serializers.QuestionnaireSerializer,
         'destroy': serializers.QuestionnaireSerializer
     }
+    filter_backends = (filter.DjangoFilterBackend,)
+    filterset_class = filters.ToolkitFilter
 
     def get_queryset(self):
+        # teams = Team.objects.filter(user=self.request.user)
+        # print(teams)
+        # questionnaire = models.Questionnaire.objects.filter(
+        #     teams=Q(teams__user=self.request.user))
+        #
+        # print(questionnaire)
+        # return questionnaire
         return models.Questionnaire.objects.all().prefetch_related('user', 'teams', 'projects', 'accounts', 'category', 'socials')
 
     def perform_create(self, serializer):

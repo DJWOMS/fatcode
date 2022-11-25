@@ -248,6 +248,7 @@ def check_profile(user, teams, projects, accounts, socials):
             and check_socials(user, socials):
         return user
 
+
 def questionnaire_update(instance, teams, toolkits, projects, accounts, languages, socials):
     instance.teams.clear()
     instance.toolkit.clear()
@@ -270,4 +271,11 @@ def questionnaire_update(instance, teams, toolkits, projects, accounts, language
     return instance
 
 
-
+def check_and_create_user(email, password, **validated_data):
+    if email == '':
+        raise exceptions.EmailNotExists()
+    else:
+        user = FatUser.objects.create(email=email, **validated_data)
+        user.set_password(password)
+        user.save()
+        return user
