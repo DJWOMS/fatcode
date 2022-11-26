@@ -9,7 +9,7 @@ SECRET_KEY = "Sdasdad3w#RmF34ef43%E5&*6DV%$5DSvBF*fY9V(y*&VNFdfBU(t8DnfDS"
 def create_token(user_id: int) -> dict:
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     return {
-        "access_token": create_access_token(
+        "auth_token": create_access_token(
             data={"user_id": user_id}, expires_delta=access_token_expires
         ),
         "token_type": "Token",

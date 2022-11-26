@@ -21,7 +21,7 @@ def title(request):
     else:
         return render(request, 'profiles/title_auth.html')
 
-
+##TODO не уверена что правильно отдаю токен в return
 class GitGubAuthView(generics.GenericAPIView):
     """Авторизация через Гитхаб"""
     serializer_class = serializers.GitHubAddSerializer
@@ -31,10 +31,12 @@ class GitGubAuthView(generics.GenericAPIView):
         if ser.is_valid():
             account_name, account_url, account_id, email = services.github_get_user_auth(ser.data.get("code"))
             if internal_token := services.check_account_for_auth(account_id):
-                return Response(status.HTTP_200_OK)
+                serializer = serializers.TokenSerializer(internal_token)
+                return Response(serializer.data)
             else:
                 internal_token = services.create_user_and_token(account_id, email, account_name, account_url)
-                return Response(status.HTTP_200_OK)
+                serializer = serializers.TokenSerializer(internal_token)
+                return Response(serializer.data)
 
 
 class AddGitHub(generics.GenericAPIView):

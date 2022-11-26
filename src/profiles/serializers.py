@@ -249,3 +249,10 @@ class QuestionnaireListSerializer(serializers.ModelSerializer):
         fields = ('id', 'user', 'toolkits')
 
 
+class TokenSerializer(serializers.Serializer):
+    """Сериализатор Токена"""
+    auth_token = serializers.CharField(max_length=255)
+    token_type = serializers.CharField(max_length=20)
+
+
+
