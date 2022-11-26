@@ -45,3 +45,6 @@ class AnswerService:
         self.answer.accepted = not self.answer.accepted
         return self.answer
 
+
+def create_follow(question, follower):
+    models.QuestionFollowers.objects.create(question=question, follower=follower)
