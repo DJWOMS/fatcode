@@ -6,24 +6,21 @@ from src.repository.models import Project
 
 
 class Board(models.Model):
-    """ Модель доски заданий
-    """
+    """Модель доски заданий"""
     project = models.OneToOneField(Project, on_delete=models.CASCADE, related_name='board')
     user = models.ForeignKey(FatUser, on_delete=models.CASCADE, related_name='boards')
     title = models.CharField(max_length=50, blank=True, null=True)
 
 
 class Column(models.Model):
-    """ Модель столбцов в доске заданий
-    """
+    """Модель столбцов в доске заданий"""
     board = models.ForeignKey(Board, on_delete=models.CASCADE, related_name='columns')
     position = models.IntegerField(default=0)
     title = models.CharField(max_length=50)
 
 
 class Card(models.Model):
-    """ Модель карточек в доске заданий
-    """
+    """Модель карточек в доске заданий"""
     column = models.ForeignKey(Column, on_delete=models.CASCADE, related_name='cards')
     position = models.IntegerField(default=0)
     title = models.CharField(max_length=50)
@@ -35,8 +32,7 @@ class Card(models.Model):
 
 
 class Label(models.Model):
-    """ Модель меток в доске заданий
-    """
+    """Модель меток в доске заданий"""
     board = models.ForeignKey(Board, on_delete=models.CASCADE, related_name='labels')
     title = models.CharField(max_length=50)
     color = models.CharField(max_length=20)

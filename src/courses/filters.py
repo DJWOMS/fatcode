@@ -7,4 +7,4 @@ class CourseFilter(filters.FilterSet):
 
     class Meta:
         model = Course
-        fields = ['name', 'tags', 'category']
+        fields = ('name', 'tags', 'category')

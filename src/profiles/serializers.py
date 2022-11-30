@@ -2,12 +2,16 @@ from djoser.serializers import UserSerializer, UserCreatePasswordRetypeSerialize
 from djoser.conf import settings
 
 from rest_framework import serializers
-from src.courses.serializers import ListCourseSerializer
+# from src.courses.serializers import ListCourseSerializer
 from src.profiles import models, services
-from src.base.validators import ImageValidator
 from src.repository.models import Toolkit
-from ..base import exceptions
-from .models import FatUser
+from src.profiles import models
+from src.base.validators import ImageValidator
+
+
+from src.profiles.services import add_friend
+
+
 
 class UserUpdateSerializer(UserSerializer):
     """Serialization to change user data"""
@@ -27,10 +31,31 @@ class UserUpdateSerializer(UserSerializer):
 class UsersCreateSerializer(UserCreatePasswordRetypeSerializer):
     """Serialization to create user data"""
     email = serializers.EmailField(required=True)
+    # invite = serializers.CharField(max_length=50)
+
+    def create(self, validate_data):
+        invite = validate_data.pop('invite', None)
+        username = validate_data.pop('username', None)
+        email = validate_data.pop('email', None)
+        password = validate_data.pop('password', None)
+        # re_password = validate_data.pop('re_password', None)
+        return services.check_invite(invite, username, email, password)
+
+
+class UsersCreateInviteSerializer(UserCreatePasswordRetypeSerializer):
+    """Serialization to create user data"""
+    email = serializers.EmailField(required=True)
 
     class Meta:
         model = models.FatUser
         fields = ('username', 'email', 'password')
+
+    def create(self, validate_data):
+        invite = validate_data.pop('invite')
+        username = validate_data.pop('username')
+        email = validate_data.pop('email')
+        password = validate_data.pop('password')
+        return services.check_invite(invite, username, email, password)
 
 
 class UserSocialSerializer(serializers.ModelSerializer):
@@ -73,7 +98,7 @@ class UserSerializer(serializers.ModelSerializer):
     avatar = serializers.ImageField(validators=[ImageValidator((100, 100), 1048576)])
     user_social = UserSocialSerializer(many=True)
     socials = ListSocialSerializer(many=True)
-    courses = ListCourseSerializer(many=True)
+    # courses = serializers.ListCourseSerializer(many=True)
     user_account = AccountSerializer(read_only=True, many=True)
 
     class Meta:
@@ -114,7 +139,7 @@ class UserPublicSerializer(serializers.ModelSerializer):
     avatar = serializers.ImageField(read_only=True)
     user_social = UserSocialSerializer(many=True)
     socials = ListSocialSerializer(many=True)
-    courses = ListCourseSerializer(many=True)
+    # courses = ListCourseSerializer(many=True)
 
     class Meta:
         model = models.FatUser
@@ -252,7 +277,38 @@ class QuestionnaireListSerializer(serializers.ModelSerializer):
 class TokenSerializer(serializers.Serializer):
     """Сериализатор Токена"""
     auth_token = serializers.CharField(max_length=255)
-    token_type = serializers.CharField(max_length=20)
 
 
+class ApplicationListSerializer(serializers.ModelSerializer):
+    getter = GetUserSerializer()
+
+    class Meta:
+        model = models.Applications
+        fields = ('id', 'getter', )
+
+
+class ApplicationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Applications
+        fields = ('id', 'getter', )
+
+
+class FriendListSerializer(serializers.ModelSerializer):
+    friend = GetUserSerializer()
+
+    class Meta:
+        model = models.Friends
+        fields = ('id', 'friend', )
+
+    def create(self, validated_data):
+        return add_friend(friend=validated_data['friend'], user=validated_data['user'])
+
+
+class FriendSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Friends
+        fields = ('id', 'friend', )
+
+    def create(self, validated_data):
+        return add_friend(friend=validated_data['friend'], user=validated_data['user'])
 

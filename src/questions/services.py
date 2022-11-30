@@ -26,14 +26,8 @@ class QuestionService:
                 tag = models.Tag.objects.create(**tag_data)
             self.question.tags.add(tag)
 
-    def answers_count(self):
-        return self.question.answers.all()
-
     def all_answers(self):
         return self.question.answers.all()
-
-    def correct_answers_count(self):
-        return self.question.answers.filter(accepted=True)
 
 
 class AnswerService:
@@ -42,6 +36,7 @@ class AnswerService:
         self.answer = answer
 
     def update_rating(self):
+        # TODO что здесь происходит?
         self.answer.rating += self.answer.review.objects.filter(answer=self, grade=True).count()
         self.answer.rating -= self.answer.review.objects.filter(answer=self, grade=False).count()
         return super().save()

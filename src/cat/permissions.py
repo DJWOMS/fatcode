@@ -18,10 +18,3 @@ class IsInventoryCatUser(metaclass=BasePermissionMetaclass):
         if obj.cat.user == request.user:
             return True
         return False
-
-
-class IsCatAuthUser(BasePermission):
-    def has_object_permission(self, request, view, obj):
-        if obj.user == request.user:
-            return True
-        return False

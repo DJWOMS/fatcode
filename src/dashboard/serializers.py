@@ -28,22 +28,21 @@ class CardMixin:
 
 
 class ProfileForCardSerializer(serializers.Serializer):
-    """ Profile serializer for cards of board serializer"""
+    """Profile serializer for cards of board serializer"""
     id = serializers.IntegerField()
     username = serializers.CharField()
     avatar = serializers.ImageField(read_only=True)
 
 
 class LabelForCreateCardSerializer(serializers.Serializer):
-    """ Label serializer for cards of board serializer"""
+    """Label serializer for cards of board serializer"""
     id = serializers.IntegerField(required=False)
     boardId = serializers.IntegerField(write_only=True)
     title = serializers.CharField()
 
 
 class LabelForUpdateCardSerializer(serializers.ModelSerializer):
-    """ Serializer Label доски заданий
-    """
+    """Serializer Label доски заданий"""
     id = serializers.IntegerField()
 
     class Meta:
@@ -52,8 +51,7 @@ class LabelForUpdateCardSerializer(serializers.ModelSerializer):
 
 
 class LabelSerializer(serializers.ModelSerializer):
-    """ Serializer Label доски заданий
-    """
+    """Serializer Label доски заданий"""
 
     class Meta:
         model = models.Label
@@ -61,8 +59,7 @@ class LabelSerializer(serializers.ModelSerializer):
 
 
 class SetCardSerializer(CardMixin, serializers.ModelSerializer):
-    """ Serializer Card доски заданий
-    """
+    """Serializer Card доски заданий"""
     labels = LabelForCreateCardSerializer(many=True)
     members = ProfileForCardSerializer(many=True)
     board = serializers.SerializerMethodField('get_board_id', read_only=True)
@@ -89,16 +86,13 @@ class SetCardSerializer(CardMixin, serializers.ModelSerializer):
         data_members = validated_data.pop('members')
         data_labels = validated_data.pop('labels')
         instance = models.Card.objects.create(**validated_data)
-        # instance.members.clear()
-        # instance.labels.clear()
         self.set_members(instance, data_members)
         self.set_labels(instance, data_labels)
         return instance
 
 
 class UpdateCardSerializer(CardMixin, serializers.ModelSerializer):
-    """ Serializer Card доски заданий
-    """
+    """Serializer Card доски заданий"""
     labels = LabelForUpdateCardSerializer(many=True)
     members = ProfileForCardSerializer(many=True)
 
@@ -128,8 +122,7 @@ class UpdateCardSerializer(CardMixin, serializers.ModelSerializer):
 
 
 class GetCardSerializer(serializers.ModelSerializer):
-    """ Serializer Card доски заданий
-    """
+    """Serializer Card доски заданий"""
     members = GetUserSerializer(many=True)
     labels = LabelSerializer(many=True)
     board = serializers.SerializerMethodField('get_board_id')
@@ -154,17 +147,14 @@ class GetCardSerializer(serializers.ModelSerializer):
 
 
 class SetColumnSerializer(serializers.ModelSerializer):
-    """ Serializer Column доски заданий
-    """
-
+    """Serializer Column доски заданий"""
     class Meta:
         model = models.Column
         fields = ('id', 'board', 'position', 'title')
 
 
 class UpdateColumnSerializer(serializers.ModelSerializer):
-    """ Serializer update Column доски заданий
-    """
+    """Serializer update Column доски заданий"""
     cards = GetCardSerializer(many=True, read_only=True)
 
     class Meta:
@@ -179,8 +169,7 @@ class UpdateColumnSerializer(serializers.ModelSerializer):
 
 
 class GetColumnSerializer(serializers.ModelSerializer):
-    """ Serializer Column доски заданий
-    """
+    """Serializer Column доски заданий"""
     cards = GetCardSerializer(many=True, read_only=True)
 
     class Meta:
@@ -189,8 +178,7 @@ class GetColumnSerializer(serializers.ModelSerializer):
 
 
 class SetBoardSerializer(serializers.ModelSerializer):
-    """ Serializer доски заданий
-    """
+    """Serializer доски заданий"""
     columns = GetColumnSerializer(many=True, read_only=True)
     labels = LabelSerializer(many=True, read_only=True)
 
@@ -200,8 +188,7 @@ class SetBoardSerializer(serializers.ModelSerializer):
 
 
 class GetBoardSerializer(serializers.ModelSerializer):
-    """ Serializer доски заданий
-    """
+    """Serializer доски заданий"""
     columns = GetColumnSerializer(many=True)
     labels = LabelSerializer(many=True)
 

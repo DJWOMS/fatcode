@@ -1,8 +1,14 @@
 from rest_framework import serializers
+from ..profiles.serializers import GetUserSerializer
 
 from . import models
 
-from ..profiles.serializers import GetUserSerializer
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Category
+        fields = ('id', 'name')
+        ref_name = 'support_category'
 
 
 class SupportAnswerSerializer(serializers.ModelSerializer):

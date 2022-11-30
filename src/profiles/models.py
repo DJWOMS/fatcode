@@ -5,6 +5,7 @@ from django.utils.translation import gettext_lazy as _
 from django.core.validators import FileExtensionValidator
 from django.utils import timezone
 
+from fatcode import settings
 from src.base.validators import ImageValidator
 from src.courses.models import Course
 from .validators import phone_validator
@@ -17,7 +18,6 @@ def user_directory_path(instance: 'FatUser', filename: str) -> str:
 
 class Social(models.Model):
     """Social networks"""
-
     title = models.CharField(max_length=200)
     logo = models.ImageField(
         upload_to='social/logo',
@@ -31,11 +31,19 @@ class Social(models.Model):
         return self.title
 
 
+class Invitation(models.Model):
+    """Модель приглашений"""
+    code = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.code
+
+
 class FatUser(AbstractUser):
     """User model override"""
-
     avatar = models.ImageField(
         upload_to=user_directory_path,
+        default='default/default.jpg',
         null=True,
         blank=True,
         validators=[ImageValidator((100, 100), 1048576)]
@@ -49,12 +57,12 @@ class FatUser(AbstractUser):
     USERNAME_FIELD = "username"
 
 
+
 class FatUserSocial(models.Model):
     """Intermediate table for the ManyToMany FatUser and Social relationship"""
-
     social = models.ForeignKey(Social, on_delete=models.CASCADE)
     user = models.ForeignKey(
-        FatUser,
+        settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='user_social'
     )
@@ -64,9 +72,10 @@ class FatUserSocial(models.Model):
         return self.user_url
 
 
+
 class Account(models.Model):
     """Модель аккаунтов привязанных к пользователю"""
-    user = models.ForeignKey(FatUser, on_delete=models.CASCADE, related_name='user_account')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='user_account')
     provider = models.CharField(max_length=25, default='')
     account_id = models.CharField(max_length=150, blank=True, null=True)
     account_url = models.CharField(max_length=250, default='')
@@ -111,4 +120,21 @@ class Questionnaire(models.Model):
 
     def __str__(self):
         return f'{self.id}'
+
+
+class Applications(models.Model):
+    sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="sender")
+    getter = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="getter")
+
+    def __str__(self):
+        return f'{self.sender} wants to be friends with {self.getter}'
+
+
+class Friends(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="user")
+    friend = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="friend")
+
+    def __str__(self):
+        return f'{self.friend} is friends with {self.user}'
+
 

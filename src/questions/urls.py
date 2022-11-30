@@ -12,10 +12,9 @@ urlpatterns = [
     ),
 
     path("follow/", views.QuestionFollower.as_view({"post": "create", "get": "list"})),
-    path("follow/<int:pk>", views.QuestionFollower.as_view({"delete": "destroy"})),
+    path("follow/<int:pk>/", views.QuestionFollower.as_view({"delete": "destroy"})),
 
     path("answer/<int:pk>/accept", views.UpdateAnswerAccept.as_view({"patch": "update"})),
-    path("<int:pk>/follow/", views.QuestionFollower.as_view({"post": "create", "delete": "destroy"})),
     path("<int:pk>/", views.QuestionView.as_view(
         {"get": "retrieve", "patch": "update", "delete": "destroy"}), name="question"
     ),

@@ -4,8 +4,9 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 from rest_framework.authtoken.models import Token
 
-from src.courses.models import Lesson, Course, Category
+from src.courses.models import Lesson, Course, Category, Tag
 from src.profiles.models import FatUser
+from src.courses import serializers
 
 
 # TODO Добавить тесты
@@ -22,29 +23,29 @@ class TestCoursesAPI(APITestCase):
         self.user_test1_token = Token.objects.create(user=user_test1)
 
         self.category = Category.objects.create(name='category1')
+        self.category_child = Category.objects.create(name='category2', parent=self.category)
         self.course = Course.objects.create(
-            id=1,
             name='Django blog',
             description='description',
             slug='slug',
             author=user_test1,
-            category=self.category,
-
+            category=self.category
         )
         self.lesson = Lesson.objects.create(
-            id=1,
             lesson_type="python",
             name='django',
             published='2022-08-29',
             slug='billie-jean',
             description='Lorem ipsum dolor sit amet.',
-            course=self.course,
+            course=self.course
         )
+
+        self.tag = Tag.objects.create(name='Django')
 
     def test_get_courses_list(self):
         response = self.client.get(reverse("courses"))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
+        self.assertEqual(len(response.data['results']), 1)
 
     def test_get_course_detail(self):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.user_test1_token.key)
@@ -70,3 +71,21 @@ class TestCoursesAPI(APITestCase):
     def test_get_lesson_not_auth(self):
         response = self.client.get(reverse("lesson", kwargs={"pk": self.lesson.pk}))
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_get_categories(self):
+        response = self.client.get(reverse("get-categories"))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(response.data['results'][0]["name"], "category1")
+
+    def test_get_categories_children(self):
+        response = self.client.get(reverse("get-categories"))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(response.json().get("results")[0]['children'][0]["name"], "category2")
+
+    def test_get_tags(self):
+        response = self.client.get(reverse("get-tags"))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(response.data['results'][0]["name"], "Django")

@@ -6,7 +6,7 @@ from src.team.models import TeamMember
 
 
 class IsAuthorProject(BasePermission):
-    """ Is author of project """
+    """Is author of project"""
 
     def has_permission(self, request, view):
         return Project.objects.filter(
@@ -15,14 +15,14 @@ class IsAuthorProject(BasePermission):
 
 
 class IsAuthorBoard(BasePermission):
-    """ Is author of board """
+    """Is author of board"""
 
     def has_permission(self, request, view):
         return Board.objects.filter(user=request.user).exists()
 
 
 class IsMemberBoard(BasePermission):
-    """ Is member of project """
+    """Is member of project"""
 
     def has_object_permission(self, request, view, obj):
         return TeamMember.objects.filter(
@@ -31,7 +31,7 @@ class IsMemberBoard(BasePermission):
 
 
 class IsMemberProject(BasePermission):
-    """ Is member of project """
+    """Is member of project"""
 
     def has_object_permission(self, request, view, obj):
         return TeamMember.objects.filter(user=request.user, team=obj.project.team).exists()

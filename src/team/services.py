@@ -1,4 +1,4 @@
-from datetime import datetime, date
+from datetime import date
 
 from src.team import models
 from ..base import exceptions

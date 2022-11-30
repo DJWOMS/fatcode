@@ -2,12 +2,10 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
 from rest_framework.generics import ListAPIView
 from rest_framework.viewsets import ModelViewSet
+from ..base.classes import MixedSerializer
 
 from . import models, serializers
 from .filters import ArticleFilter
-from .services import ListArticleViewPagination
-
-from ..base.classes import MixedSerializer
 
 
 class CategoryView(ModelViewSet):
@@ -32,7 +30,7 @@ class ArticleView(MixedSerializer, ModelViewSet):
         'retrieve': serializers.DetailArticleSerializer,
     }
     # pagination_class = ListArticleViewPagination
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter, )
     filterset_class = ArticleFilter
     search_fields = ['title']
 

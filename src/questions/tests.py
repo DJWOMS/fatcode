@@ -4,8 +4,9 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 from rest_framework.authtoken.models import Token
 
-from .models import Question, QuestionReview, Answer
 from src.profiles.models import FatUser
+
+from .models import Question, QuestionReview, Answer
 from . import serializers
 
 
@@ -27,11 +28,20 @@ class QuestionApiViewTestCase(APITestCase):
         )
         self.token = Token.objects.create(user=self.user)
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token}')
-        self.question = Question.objects.create(
-            title='title1',
-            author=self.user,
-            text='text',
-        )
+        self.question = Question.objects.create(title='title1', author=self.user, text='text')
+
+    def test_create_question(self):
+        data = {
+            "title": "boobs",
+            "text": "big boobs",
+            "tags": [
+                {
+                    "boob"
+                }
+            ]
+        }
+        response = self.client.post(reverse("questions"), data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_get_question_list(self):
         response = self.client.get(reverse("questions"))
@@ -50,14 +60,20 @@ class QuestionApiViewTestCase(APITestCase):
         response = self.client.get(url)
         serialize = serializers.RetrieveQuestionSerializer(self.question)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, serialize.data)
+        self.assertEqual(response.json().get("text"), serialize.data.get("text"))
 
     def test_update_question(self):
         data = {
-            'text': 'text2'
+            "title": "title2",
+            "text": "text2",
+            "tags": [
+                {
+                  "name": "name2"
+                }
+            ]
         }
         url = reverse("question", kwargs={"pk": self.question.id})
-        response = self.client.patch(url, data)
+        response = self.client.patch(url, data, format='json')
         self.question = Question.objects.get(id=self.question.id)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(self.question.text, data['text'])
@@ -94,7 +110,7 @@ class QuestionApiViewTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_repeat_question_review(self):
-        review = QuestionReview.objects.create(
+        QuestionReview.objects.create(
             question=self.question,
             user=self.user,
             grade=False

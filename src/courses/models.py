@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.utils.text import slugify
 
 
 class Tag(models.Model):
@@ -11,7 +12,13 @@ class Tag(models.Model):
 
 class Category(models.Model):
     name = models.CharField(max_length=30)
-    parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True)
+    parent = models.ForeignKey(
+        'self',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='children'
+    )
 
     def __str__(self):
         return self.name
@@ -20,7 +27,7 @@ class Category(models.Model):
 class Course(models.Model):
     name = models.CharField(max_length=50)
     description = models.TextField()
-    slug = models.SlugField()
+    slug = models.SlugField(max_length=255, unique=True, verbose_name="URL")
     view_count = models.IntegerField(editable=False, default=0)
     published = models.DateField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
@@ -43,6 +50,10 @@ class Course(models.Model):
         blank=True
     )
     tags = models.ManyToManyField(Tag)
+
+    def save(self, *args, **kwargs):
+        self.slug = slugify(self.name)
+        super(Course, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.name
@@ -71,7 +82,7 @@ class Lesson(models.Model):
     published = models.DateField(auto_now_add=True)
     sorted = models.IntegerField(default=1)
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='lessons')
-    slug = models.SlugField()
+    slug = models.SlugField(max_length=255, unique=True, verbose_name="URL")
     description = models.TextField()
     test = models.FileField(upload_to='files/test/python/', null=True, blank=True)
 
@@ -105,6 +116,7 @@ class StudentWork(models.Model):
         return self.quiz_answer.right
 
     def create_testfile(self):
+        # TODO Да уж, жестко так путь хардклрить
         path_file = f'/app/media/files/test/python/{self.lesson.course.name}.py'
         with open(self.lesson.test.path, 'r') as lesson_test, open(path_file, 'w') as test:
             test.write(f'{self.code_answer} \n')

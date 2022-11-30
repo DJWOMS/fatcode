@@ -4,7 +4,7 @@ from rest_framework.exceptions import APIException
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from rest_framework.response import Response
 
-from src.base.classes import MixedSerializer, MixedPermission, MixedPermissionSerializer
+from src.base.classes import MixedPermissionSerializer
 from src.base.service import post_view_count
 from src.base.permissions import IsUser
 from src.team import serializers, permissions, filters, models
@@ -20,8 +20,8 @@ class TeamView(MixedPermissionSerializer, viewsets.ModelViewSet):
         'list': (IsAuthenticatedOrReadOnly,),
         'create': (IsAuthenticated,),
         'retrieve': (IsAuthenticatedOrReadOnly,),
-        'update': (IsUser, ),
-        'destroy': (IsUser, )
+        'update': (IsUser,),
+        'destroy': (IsUser,)
     }
     serializer_classes_by_action = {
         'list': serializers.TeamSerializer,
@@ -44,11 +44,11 @@ class TeamView(MixedPermissionSerializer, viewsets.ModelViewSet):
 class SocialLinkView(MixedPermissionSerializer, viewsets.ModelViewSet):
     """CRUD социальной ссылке к команде"""
     permission_classes_by_action = {
-        'list': (IsAuthenticatedOrReadOnly, ),
-        'create': (permissions.IsAuthorTeam, ),
-        'retrieve': (permissions.IsAuthorTeamOrRead, ),
-        'update': (permissions.IsAuthorTeam, ),
-        'destroy': (permissions.IsAuthorTeam, ),
+        'list': (IsAuthenticatedOrReadOnly,),
+        'create': (permissions.IsAuthorTeam,),
+        'retrieve': (permissions.IsAuthorTeamOrRead,),
+        'update': (permissions.IsAuthorTeam,),
+        'destroy': (permissions.IsAuthorTeam,),
     }
     serializer_classes_by_action = {
         'list': serializers.ListSocialLinkSerializer,
@@ -73,9 +73,9 @@ class SocialLinkView(MixedPermissionSerializer, viewsets.ModelViewSet):
 
 
 class OwnTeamListView(MixedPermissionSerializer, viewsets.ModelViewSet):
-    """Просморт команды где как создатель"""
+    """Просмотр команды как создатель"""
     permission_classes_by_action = {
-        'list': (IsAuthenticated, )
+        'list': (IsAuthenticated,)
     }
     serializer_classes_by_action = {
         'list': serializers.TeamListSerializer
@@ -87,9 +87,9 @@ class OwnTeamListView(MixedPermissionSerializer, viewsets.ModelViewSet):
 
 
 class MemberTeamListView(MixedPermissionSerializer, viewsets.ModelViewSet):
-    """Просморт команд где как участник"""
+    """Просмотр команд как участник"""
     permission_classes_by_action = {
-        'list': (IsAuthenticated, ),
+        'list': (IsAuthenticated,),
     }
     serializer_classes_by_action = {
         'list': serializers.TeamListSerializer,
@@ -102,9 +102,9 @@ class MemberTeamListView(MixedPermissionSerializer, viewsets.ModelViewSet):
 class MemberList(MixedPermissionSerializer, viewsets.ModelViewSet):
     """ Просмотр участников команды"""
     permission_classes_by_action = {
-        'list': (permissions.IsMemberTeam, ),
-        'retrieve': (permissions.IsMemberTeam, ),
-        'destroy': (permissions.IsAuthorTeam, )
+        'list': (permissions.IsMemberTeam,),
+        'retrieve': (permissions.IsMemberTeam,),
+        'destroy': (permissions.IsAuthorTeam,)
     }
     serializer_classes_by_action = {
         'list': serializers.MemberSerializer,
@@ -135,11 +135,11 @@ class PostView(MixedPermissionSerializer, viewsets.ModelViewSet):
         'destroy': serializers.PostCreateSerializer
     }
     permission_classes_by_action = {
-        'list': (permissions.IsMemberTeam, ),
-        'retrieve': (permissions.IsMemberTeam, ),
-        'create': (permissions.IsAuthorTeam, ),
-        'update': (IsUser, ),
-        'destroy': (IsUser, ),
+        'list': (permissions.IsMemberTeam,),
+        'retrieve': (permissions.IsMemberTeam,),
+        'create': (permissions.IsAuthorTeam,),
+        'update': (IsUser,),
+        'destroy': (IsUser,),
     }
     lookup_url_kwarg = 'post_pk'
 
@@ -155,8 +155,7 @@ class PostView(MixedPermissionSerializer, viewsets.ModelViewSet):
         return Response(serializer.data)
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user,
-                        team_id=self.kwargs.get('pk'))
+        serializer.save(user=self.request.user, team_id=self.kwargs.get('pk'))
 
     def perform_destroy(self, instance):
         instance.delete()
@@ -168,11 +167,11 @@ class PostView(MixedPermissionSerializer, viewsets.ModelViewSet):
 class CommentsView(MixedPermissionSerializer, viewsets.ModelViewSet):
     """CRUD комментариев к постам"""
     permission_classes_by_action = {
-        'list': (permissions.IsMemberTeam, ),
-        'create':  (permissions.IsMemberTeam, ),
-        'update': (IsUser, ),
-        'retrieve': (permissions.IsMemberTeam, ),
-        'destroy': (IsUser, )
+        'list': (permissions.IsMemberTeam,),
+        'create': (permissions.IsMemberTeam,),
+        'update': (IsUser,),
+        'retrieve': (permissions.IsMemberTeam,),
+        'destroy': (IsUser,)
     }
     serializer_classes_by_action = {
         'list': serializers.CommentListSerializer,
@@ -203,10 +202,10 @@ class CommentsView(MixedPermissionSerializer, viewsets.ModelViewSet):
 class InvitationView(MixedPermissionSerializer, viewsets.ModelViewSet):
     """CD заявки в команду"""
     permission_classes_by_action = {
-        'list': (IsAuthenticated, ),
-        'retrieve': (IsUser, ),
-        'create': (IsAuthenticated, ),
-        'destroy': (IsUser, )
+        'list': (IsAuthenticated,),
+        'retrieve': (IsUser,),
+        'create': (IsAuthenticated,),
+        'destroy': (IsUser,)
     }
     serializer_classes_by_action = {
         'list': serializers.InvitationSerializer,
@@ -229,8 +228,8 @@ class InvitationDetailView(MixedPermissionSerializer, viewsets.ModelViewSet):
     """ Принять/отклонить заявки в команду"""
     permission_classes_by_action = {
         'list': (IsAuthenticated,),
-        'retrieve': (permissions.IsAuthorTeamForInvitation, ),
-        'update': (permissions.IsAuthorTeamForInvitation, ),
+        'retrieve': (permissions.IsAuthorTeamForInvitation,),
+        'update': (permissions.IsAuthorTeamForInvitation,),
     }
     serializer_classes_by_action = {
         'list': serializers.AcceptInvitationSerializerList,
@@ -246,5 +245,3 @@ class InvitationDetailView(MixedPermissionSerializer, viewsets.ModelViewSet):
 
     def perform_update(self, serializer):
         serializer.save(user=self.request.user)
-
-

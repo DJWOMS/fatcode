@@ -90,3 +90,33 @@ class PostException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Нет доступа для написания комментариев'
     default_code = 'error'
+
+
+class InvitationNotExists(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Нет доступа регистрации'
+    default_code = 'error'
+
+
+class EmailExists(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Пользователь с таким email уже существует'
+    default_code = 'error'
+
+
+class UsernameExists(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Пользователь с таким именем уже существует'
+    default_code = 'error'
+
+
+class AccountExists(APIException):
+    status_code = status.HTTP_403_FORBIDDEN
+    default_detail = 'Аккаунт уже существует'
+    default_code = 'error'
+
+
+class AccountIdExists(APIException):
+    status_code = status.HTTP_403_FORBIDDEN
+    default_detail = 'Аккаунт уже привязан'
+    default_code = 'error'
