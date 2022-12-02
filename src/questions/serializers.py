@@ -2,7 +2,7 @@ from rest_framework import serializers
 from ..profiles.serializers import GetUserSerializer
 
 from . import models
-from .services import QuestionService, AnswerService
+from .services import QuestionService, AnswerService, create_follow
 from .validators import QuestionValidator
 
 
@@ -45,6 +45,11 @@ class CreateQuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Question
         fields = ("title", "text")
+
+    def create(self, validated_data):
+        question = self.Meta.model.objects.create(**validated_data)
+        create_follow(question, validated_data['author'])
+        return question
 
 
 class RetrieveQuestionSerializer(serializers.ModelSerializer):

@@ -5,6 +5,8 @@ from src.profiles import views
 
 
 urlpatterns = [
+    path('users/', views.UsersView.as_view({"get": "list"})),
+    path('users/<int:pk>/', views.UsersView.as_view({"get": "retrieve"})),
     path(r'user/', views.UserView.as_view(
         {'get': 'retrieve', 'put': 'partial_update', 'patch': 'partial_update'}
     ), name="user"),
@@ -22,8 +24,8 @@ urlpatterns = [
     path('git_hub_auth/', views.GitGubAuthView.as_view(), name='git_hub_auth'),
     path('application/', views.ApplicationView.as_view({'get': 'list', 'post': 'create'})),
     path('application/<int:pk>/', views.ApplicationView.as_view({'delete': 'destroy'})),
-    path('application/to_me', views.ApplicationUserGetter.as_view({'get': 'list'})),
-    path('application/to_me/<int:pk>/', views.ApplicationUserGetter.as_view({'get': 'retrieve'})),
+    path('application/to_me', views.ApplicationUserGetterView.as_view({'get': 'list'})),
+    path('application/to_me/<int:pk>/', views.ApplicationUserGetterView.as_view({'get': 'retrieve'})),
     path('friend/', views.FriendView.as_view({'get': 'list', 'post': 'create'})),
     path('friend/<int:pk>/', views.FriendView.as_view({'delete': 'destroy'})),
     # path('auth/users/<invite_code>/', views.RegisterInvite.as_view()),
