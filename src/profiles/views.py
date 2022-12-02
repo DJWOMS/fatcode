@@ -1,6 +1,6 @@
 from django.db.models import Q
 from django.shortcuts import render
-from rest_framework.generics import get_object_or_404, CreateAPIView
+from rest_framework.generics import get_object_or_404
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
@@ -8,12 +8,9 @@ from rest_framework import permissions, parsers
 from rest_framework.permissions import IsAuthenticated
 from django_filters import rest_framework as filter
 
-
 from src.profiles import models, serializers, services, filters
-from src.base.classes import MixedPermissionSerializer
 from src.base.permissions import IsUser
 from .permissions import IsQuestionnaireNotExists
-from src.team.models import Team
 from src.base.classes import MixedPermissionSerializer, MixedSerializer
 from src.profiles import models, serializers, services
 from src.profiles.permissions import IsNotApplicant, IsNotAlreadyFriend, IsNotYouGetter
@@ -187,9 +184,9 @@ class FriendView(MixedSerializer, ModelViewSet):
         serializer.save(user=self.request.user)
 
 
-class RegisterInvite(CreateAPIView):
-    """Можель регистрации пользователя по приглашению"""
-    serializer_class = serializers.UsersCreateInviteSerializer
-
-    def perform_create(self, serializer):
-        serializer.save(invite=self.kwargs.get('invite_code'))
+# class RegisterInvite(CreateAPIView):
+#     """Можель регистрации пользователя по приглашению"""
+#     serializer_class = serializers.UsersCreateInviteSerializer
+#
+#     def perform_create(self, serializer):
+#         serializer.save(invite=self.kwargs.get('invite_code'))

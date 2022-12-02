@@ -1,20 +1,11 @@
+import uuid
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-import uuid
-
-from django.http import HttpResponseRedirect
-from src.profiles import models
 from django.utils.translation import gettext_lazy as _
-from src.courses.models import UserCourseThrough
 from django.urls import path
+from django.http import HttpResponseRedirect
 
-
-class SocialInLineFatUser(admin.TabularInline):
-    model = models.FatUser.socials.through
-
-
-class CourseInLineFatUser(admin.TabularInline):
-    model = UserCourseThrough
+from . import models
 
 
 class FatUserAdmin(UserAdmin):
@@ -35,10 +26,7 @@ class FatUserAdmin(UserAdmin):
             },
         ),
         (_("Important dates"), {"fields": ("last_login", "date_joined")}),
-        # (_("socials"), {"fields": ("socials", )}),
     )
-
-    inlines = (SocialInLineFatUser, CourseInLineFatUser)
 
 
 class AccountAdmin(admin.ModelAdmin):

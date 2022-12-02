@@ -19,6 +19,13 @@ user_create_data = {
     'email': 'antonenique@example.com'
 }
 
+user_create_data_2 = {
+    'username': 'anton_1',
+    'password': 'V97tn7M4rU',
+    're_password': 'V97tn7M4rU',
+    'email': 'antonenique@example.com'
+}
+
 image = io.BytesIO()
 Image.new("RGB", (100, 100)).save(image, "JPEG")
 
@@ -55,13 +62,10 @@ class ProfileRegTests(APITestCase):
             'Пользователь С Таким Именем Уже Существует.'
         )
 
-    # TODO написать тест для проверки почты, почта уже существует
     def test_create_user_unique_email(self):
         self.client.post('/api/v1/auth/users/', user_create_data, format='json')
-        response = self.client.post('/api/v1/auth/users/', user_create_data, format='json')
-        self.assertEqual(
-            response.data['email'][0].title(),
-            'Пользователь С Таким Email Уже Существует.')
+        response = self.client.post('/api/v1/auth/users/', user_create_data_2, format='json')
+        self.assertEqual(response.status_code, 400)
 
 
 class ProfileAuthTests(APITestCase):
@@ -236,11 +240,13 @@ def temporary_image():
     img.save(bts, 'jpeg')
     return SimpleUploadedFile("test.jpg", bts.getvalue())
 
+
 def temporary_image_2():
     bts = io.BytesIO()
     img = Image.new("RGB", (300, 300))
     img.save(bts, 'jpeg')
     return SimpleUploadedFile("test2.jpg", bts.getvalue())
+
 
 def temporary_image_3():
     bts = io.BytesIO()

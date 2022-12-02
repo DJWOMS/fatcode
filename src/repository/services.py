@@ -10,7 +10,7 @@ from ..base import exceptions
 
 github = Github()
 
-##TODO не понимаю какую ошибку обрабатывать
+
 def get_id(user):
     """Поиск nik в github пользователя"""
     try:
@@ -155,9 +155,8 @@ def check_all_teams_to_update(teams, pk, user):
     if check_instance_teams(teams, pk):
         if check_my_teams(teams, user):
             return get_id(user)
-    else:
-        if check_teams(teams) and check_my_teams(teams, user):
-            return get_id(user)
+    elif check_teams(teams) and check_my_teams(teams, user):
+        return get_id(user)
 
 
 def project_create(repo_info, user, repository, teams, toolkit, **validated_data):

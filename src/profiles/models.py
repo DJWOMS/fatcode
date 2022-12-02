@@ -57,7 +57,6 @@ class FatUser(AbstractUser):
     USERNAME_FIELD = "username"
 
 
-
 class FatUserSocial(models.Model):
     """Intermediate table for the ManyToMany FatUser and Social relationship"""
     social = models.ForeignKey(Social, on_delete=models.CASCADE)
@@ -70,7 +69,6 @@ class FatUserSocial(models.Model):
 
     def __str__(self):
         return self.user_url
-
 
 
 class Account(models.Model):

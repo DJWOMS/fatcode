@@ -109,11 +109,6 @@ def github_get_user_auth(code: str):
         raise HttpError(403, "Bad code")
 
 
-def github_auth(user):
-    token = binascii.hexlify(os.urandom(20)).decode()
-    return token
-
-
 def create_password():
     return BaseUserManager().make_random_password()
 
@@ -168,14 +163,10 @@ def check_account_for_add(user, account_id):
 def check_or_create_token(user):
     try:
         cur_token = Token.objects.get(user=user)
-        if cur_token:
-            token = {'auth_token': cur_token.key}
-            return token
-    except:
-        internal_token = github_auth(user)
-        cur_token = Token.objects.create(key=internal_token, user=user)
-        token = {'auth_token': cur_token}
-        return token
+        return {'auth_token': cur_token.key}
+    except Token.DoesNotExist:
+        cur_token = Token.objects.create(user=user)
+        return {'auth_token': cur_token}
 
 
 def check_account_for_auth(account_id):
@@ -284,17 +275,15 @@ def questionnaire_update(instance, teams, toolkits, projects, accounts, language
     return instance
 
 
-def check_invite(invite, username, email, password):
-    if check_email(email):
-        if invite != '':
-            cur_invite = Invitation.objects.filter(code=invite)
-            if cur_invite:
-                cur_invite.delete()
-                return create_user_with_password(username, email, password)
-            else:
-                raise exceptions.InvitationNotExists()
+def check_invite(invite):
+    if invite:
+        cur_invite = Invitation.objects.filter(code=invite)
+        if cur_invite:
+            cur_invite.delete()
+            return True
         else:
-            return create_user_with_password(username, email, password)
+            raise exceptions.InvitationNotExists()
+    raise exceptions.InvitationNotExists()
 
 
 def create_user_with_password(username, email, password):
@@ -305,8 +294,7 @@ def create_user_with_password(username, email, password):
 
 
 def check_email(email):
-    cur_email = FatUser.objects.filter(email=email).exists()
-    if cur_email:
+    if FatUser.objects.filter(email=email).exists():
         raise exceptions.EmailExists()
     return email
 
@@ -324,5 +312,10 @@ def check_username(username):
     if cur_user:
         raise exceptions.UsernameExists()
     return username
+
+
+def register_user(username, email, password):
+    check_email(email)
+    return create_user_with_password(username, email, password)
 
 

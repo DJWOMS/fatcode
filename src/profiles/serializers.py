@@ -28,34 +28,45 @@ class UserUpdateSerializer(UserSerializer):
         read_only_fields = (settings.LOGIN_FIELD,)
 
 
+# class UsersCreateSerializer(UserCreatePasswordRetypeSerializer):
+#     """Serialization to create user data"""
+#     email = serializers.EmailField(required=True)
+#     # invite = serializers.CharField(max_length=50)
+#
+#     def create(self, validate_data):
+#         invite = validate_data.pop('invite', None)
+#         username = validate_data.pop('username', None)
+#         email = validate_data.pop('email', None)
+#         password = validate_data.pop('password', None)
+#         # re_password = validate_data.pop('re_password', None)
+#         return services.check_invite(invite, username, email, password)
+
+
 class UsersCreateSerializer(UserCreatePasswordRetypeSerializer):
     """Serialization to create user data"""
     email = serializers.EmailField(required=True)
-    # invite = serializers.CharField(max_length=50)
-
-    def create(self, validate_data):
-        invite = validate_data.pop('invite', None)
-        username = validate_data.pop('username', None)
-        email = validate_data.pop('email', None)
-        password = validate_data.pop('password', None)
-        # re_password = validate_data.pop('re_password', None)
-        return services.check_invite(invite, username, email, password)
-
-
-class UsersCreateInviteSerializer(UserCreatePasswordRetypeSerializer):
-    """Serialization to create user data"""
-    email = serializers.EmailField(required=True)
+    invite = serializers.CharField(max_length=50)
 
     class Meta:
         model = models.FatUser
-        fields = ('username', 'email', 'password')
+        fields = ('username', 'email', 'password', 'invite')
 
-    def create(self, validate_data):
-        invite = validate_data.pop('invite')
-        username = validate_data.pop('username')
-        email = validate_data.pop('email')
-        password = validate_data.pop('password')
-        return services.check_invite(invite, username, email, password)
+    def validate(self, attrs):
+        self.fields.pop("invite", None)
+        invite = attrs.pop('invite')
+        services.check_email(attrs.get('email'))
+        services.check_invite(invite)
+        attrs = super().validate(attrs)
+        print('attrs', attrs)
+        return attrs
+
+    # def create(self, validate_data):
+    #
+    #     return super().create(validate_data)
+        # username = validate_data.pop('username')
+        # email = validate_data.pop('email')
+        # password = validate_data.pop('password')
+        # return services.register_user(username, email, password)
 
 
 class UserSocialSerializer(serializers.ModelSerializer):
