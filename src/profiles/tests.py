@@ -8,7 +8,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 from rest_framework.authtoken.models import Token
 
-from src.profiles.models import FatUser, Social, Questionnaire, Language, Account, FatUserSocial, Social
+from src.profiles.models import FatUser, Social, Questionnaire, Language, Account, FatUserSocial, Social, Invitation
 from src.team.models import Team, TeamMember
 from src.repository.models import Category, Toolkit, Project, ProjectMember
 
@@ -26,6 +26,22 @@ user_create_data_2 = {
     'email': 'antonenique@example.com'
 }
 
+user_create_data_with_invite = {
+    'username': 'anton',
+    'password': 'V97tn7M4rU',
+    're_password': 'V97tn7M4rU',
+    'email': 'antonenique@example.com',
+    'invite': '1'
+}
+
+user_create_data_with_invite_2 = {
+    'username': 'anton_1',
+    'password': 'V97tn7M4rU',
+    're_password': 'V97tn7M4rU',
+    'email': 'antonenique@example.com',
+    'invite': '2'
+}
+
 image = io.BytesIO()
 Image.new("RGB", (100, 100)).save(image, "JPEG")
 
@@ -33,6 +49,12 @@ avatar_file = SimpleUploadedFile("avatar.jpg", image.getvalue())
 
 
 class ProfileRegTests(APITestCase):
+    def setUp(self):
+        self.invite = Invitation.objects.create(
+            code='1',
+        )
+        self.invite.save()
+
     def test_create_user(self):
         self.client.post('/api/v1/auth/users/', user_create_data, format='json')
         user = FatUser.objects.get(email='antonenique@example.com')
@@ -65,6 +87,16 @@ class ProfileRegTests(APITestCase):
     def test_create_user_unique_email(self):
         self.client.post('/api/v1/auth/users/', user_create_data, format='json')
         response = self.client.post('/api/v1/auth/users/', user_create_data_2, format='json')
+        self.assertEqual(response.status_code, 400)
+
+    def test_create_user_with_invite(self):
+        self.client.post('/api/v1/auth/users/', user_create_data_with_invite, format='json')
+        user = FatUser.objects.get(email='antonenique@example.com')
+        self.assertEqual(user.username, 'anton')
+        self.assertEqual(user.email, 'antonenique@example.com')
+
+    def test_create_user_with_invite_invalid(self):
+        response = self.client.post('/api/v1/auth/users/', user_create_data_with_invite_2, format='json')
         self.assertEqual(response.status_code, 400)
 
 

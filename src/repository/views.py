@@ -1,4 +1,3 @@
-from django.db.models import Q
 from rest_framework import generics, viewsets, permissions
 from django_filters import rest_framework as filters
 
@@ -10,6 +9,7 @@ from ..base.classes import MixedPermissionSerializer
 from ..base.permissions import IsUser
 from ..team.models import Team
 from ..dashboard.models import Board
+
 
 class CategoryListView(generics.ListAPIView):
     queryset = models.Category.objects.prefetch_related('projects').all()

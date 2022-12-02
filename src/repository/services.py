@@ -1,9 +1,10 @@
+import requests
+
 from github import Github
+
 from . import utils
 from .interfaces import Repository
 from ..team.models import Team
-from django.db.models import Q
-import requests
 from . import models
 from ..base import exceptions
 
@@ -11,11 +12,11 @@ from ..base import exceptions
 github = Github()
 
 
-def get_id(user):
+def get_github_account_id(user):
     """Поиск nik в github пользователя"""
-    try:
-        return user.user_account.filter(provider='github').first().account_id
-    except:
+    if cur_user := user.user_account.filter(provider='github').first():
+        return cur_user.account_id
+    else:
         raise exceptions.BadAccount()
 
 
@@ -31,6 +32,7 @@ def get_my_repository(repository, account_id):
 
 
 def get_nik(repository, account_id):
+    """Поиск id github пользователя"""
     cur_nik = repository.split('/')[-2]
     user_info = requests.get(f'https://api.github.com/users/{cur_nik}/repos').json()
     cur_id = user_info[0]['owner']['id']
@@ -78,10 +80,12 @@ def get_commits_count(nik, repo):
 
 
 def get_repository(repository):
+    """Получение провайдера github"""
     return github.get_repo(f'{"/".join(repository.split("/")[-2:])}')
 
 
 def get_projects_stats(projects):
+    """Получение звезд проектов"""
     for project in projects:
         repository = get_repository(project.repository)
         utils.repository_stats(project, repository)
@@ -89,12 +93,14 @@ def get_projects_stats(projects):
 
 
 def get_project_stats(project):
+    """Получение звезд проекта"""
     repository = get_repository(project.repository)
     utils.repository_stats(project, repository)
     return project
 
 
 def get_repo(repository, account_id) -> Repository:
+    """Получение звезд, форков, комментариев, последнего комментария проекта"""
     repo, nik = get_my_repository(repository, account_id)
     stars_count = get_stars_count(nik, repo)
     forks_count = get_forks_count(nik, repo)
@@ -104,6 +110,7 @@ def get_repo(repository, account_id) -> Repository:
 
 
 def check_teams(teams):
+    """Проверка, есть ли у комманды уже проект"""
     for team in teams:
         cur_team = models.Project.objects.filter(teams=team).exists()
         if cur_team:
@@ -112,6 +119,7 @@ def check_teams(teams):
 
 
 def check_my_teams(teams, user):
+    """Проверка автора команд"""
     for team in teams:
         team = Team.objects.filter(user=user, id=team.id).exists()
         if not team:
@@ -120,6 +128,7 @@ def check_my_teams(teams, user):
 
 
 def check_repo(repo):
+    """Проверка, есть ли у репозитория github уже проект"""
     project = models.Project.objects.filter(repository=repo).exists()
     if project:
         raise exceptions.RepositoryExists()
@@ -127,16 +136,19 @@ def check_repo(repo):
 
 
 def get_info_for_user(repository, teams, user):
+    """Проверка входящей информации от пользователя для создания проекта"""
     check_repo_and_teams = check_repo(repository) and check_teams(teams)
     if check_repo_and_teams and check_my_teams(teams, user):
-        return get_id(user)
+        return get_github_account_id(user)
 
 
 def check_instance_repo(pk, repository):
+    """Проверка проекта для обновления"""
     return models.Project.objects.filter(id=pk, repository=repository).exists()
 
 
 def check_instance_teams(teams, pk):
+    """Проверка команды для обновления"""
     for team in teams:
         team = models.Project.objects.filter(id=pk, teams=team).exists()
         if not team:
@@ -145,6 +157,7 @@ def check_instance_teams(teams, pk):
 
 
 def get_info_for_user_update(repository, teams, user, pk):
+    """Проверка входящей информации от пользователя для обновления проекта"""
     if check_instance_repo(pk, repository):
         return check_all_teams_to_update(teams, pk, user)
     if check_repo(repository):
@@ -152,14 +165,16 @@ def get_info_for_user_update(repository, teams, user, pk):
 
 
 def check_all_teams_to_update(teams, pk, user):
+    """Проверка всех команд пользователя для обновления проекта"""
     if check_instance_teams(teams, pk):
         if check_my_teams(teams, user):
-            return get_id(user)
+            return get_github_account_id(user)
     elif check_teams(teams) and check_my_teams(teams, user):
-        return get_id(user)
+        return get_github_account_id(user)
 
 
 def project_create(repo_info, user, repository, teams, toolkit, **validated_data):
+    """Создание проекта"""
     project = models.Project.objects.create(
         star=repo_info.stars_count,
         fork=repo_info.forks_count,
@@ -177,6 +192,7 @@ def project_create(repo_info, user, repository, teams, toolkit, **validated_data
 
 
 def project_update(instance, repo_info, teams, toolkits):
+    """Обновление проекта"""
     instance.teams.clear()
     instance.toolkit.clear()
     for team in teams:

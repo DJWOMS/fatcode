@@ -28,7 +28,6 @@ urlpatterns = [
     path('application/to_me/<int:pk>/', views.ApplicationUserGetterView.as_view({'get': 'retrieve'})),
     path('friend/', views.FriendView.as_view({'get': 'list', 'post': 'create'})),
     path('friend/<int:pk>/', views.FriendView.as_view({'delete': 'destroy'})),
-    # path('auth/users/<invite_code>/', views.RegisterInvite.as_view()),
 ]
 
 router = DefaultRouter()

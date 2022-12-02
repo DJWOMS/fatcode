@@ -1,14 +1,12 @@
 from djoser.serializers import UserSerializer, UserCreatePasswordRetypeSerializer
 from djoser.conf import settings
-
 from rest_framework import serializers
+
 # from src.courses.serializers import ListCourseSerializer
 from src.profiles import models, services
 from src.repository.models import Toolkit
 from src.profiles import models
 from src.base.validators import ImageValidator
-
-
 from src.profiles.services import add_friend
 
 
@@ -26,20 +24,6 @@ class UserUpdateSerializer(UserSerializer):
             'middle_name'
         )
         read_only_fields = (settings.LOGIN_FIELD,)
-
-
-# class UsersCreateSerializer(UserCreatePasswordRetypeSerializer):
-#     """Serialization to create user data"""
-#     email = serializers.EmailField(required=True)
-#     # invite = serializers.CharField(max_length=50)
-#
-#     def create(self, validate_data):
-#         invite = validate_data.pop('invite', None)
-#         username = validate_data.pop('username', None)
-#         email = validate_data.pop('email', None)
-#         password = validate_data.pop('password', None)
-#         # re_password = validate_data.pop('re_password', None)
-#         return services.check_invite(invite, username, email, password)
 
 
 class UsersCreateSerializer(UserCreatePasswordRetypeSerializer):

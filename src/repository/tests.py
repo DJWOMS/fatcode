@@ -13,7 +13,6 @@ from src.repository import models
 from src.team.models import Team, TeamMember
 
 
-<<<<<<< HEAD
 def temporary_image():
     bts = io.BytesIO()
     img = Image.new("RGB", (250, 250))
@@ -35,10 +34,7 @@ def temporary_image_3():
     return SimpleUploadedFile("test3.jpg", bts.getvalue())
 
 
-class RepositoryTest(APITestCase):
-=======
-class TeamTest(APITestCase):
->>>>>>> 791d98bea795b30c0af6a1c1d8ff219b8323792c
+class ProjectTest(APITestCase):
     def setUp(self):
         self.profile1 = FatUser.objects.create(
             username='username1',

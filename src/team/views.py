@@ -1,4 +1,5 @@
 from django.db.models import Count, Q
+from django_filters import rest_framework as filter
 from rest_framework import viewsets, status
 from rest_framework.exceptions import APIException
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
@@ -8,7 +9,6 @@ from src.base.classes import MixedPermissionSerializer
 from src.base.service import post_view_count
 from src.base.permissions import IsUser
 from src.team import serializers, permissions, filters, models
-from django_filters import rest_framework as filter
 
 
 class TeamView(MixedPermissionSerializer, viewsets.ModelViewSet):

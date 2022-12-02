@@ -1,7 +1,8 @@
 from datetime import date
 
-from src.team import models
 from ..base import exceptions
+
+from src.team import models
 
 
 def check_create_invitations():
