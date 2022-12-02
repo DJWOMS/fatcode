@@ -47,6 +47,12 @@ class AddGitHub(generics.GenericAPIView):
                 return Response(status.HTTP_200_OK)
 
 
+class UsersView(ReadOnlyModelViewSet):
+    queryset = models.FatUser.objects.all()
+    serializer_class = serializers.GetUserSerializer
+    permission_classes = (permissions.IsAuthenticated, )
+
+
 class UserView(ModelViewSet):
     """Internal user display"""
 
@@ -115,7 +121,7 @@ class ApplicationView(MixedPermissionSerializer, ModelViewSet):
         serializer.save(sender=self.request.user)
 
 
-class ApplicationUserGetter(ReadOnlyModelViewSet):
+class ApplicationUserGetterView(ReadOnlyModelViewSet):
     serializer_class = serializers.ApplicationListSerializer
     permissions = (permissions.IsAuthenticated, )
 
