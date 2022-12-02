@@ -32,11 +32,11 @@ class Project(models.Model):
     teams = models.ManyToManyField('team.Team', related_name='project_teams')
     avatar = models.ImageField(
         upload_to='project/avatar/',
-        default='default/project.jpg',
+        default='default/project.png',
         blank=True,
         null=True,
         validators=[
-            FileExtensionValidator(allowed_extensions=['jpg']),
+            FileExtensionValidator(allowed_extensions=['jpg', 'png']),
             ImageValidator((250, 250), 524288)
         ]
     )
