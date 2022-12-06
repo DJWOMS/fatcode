@@ -247,7 +247,6 @@ class CreateTeamSerializer(serializers.ModelSerializer):
             "name",
             "tagline",
             "user",
-            "avatar",
         )
 
 
@@ -261,15 +260,7 @@ class UpdateTeamSerializer(serializers.ModelSerializer):
             "name",
             "tagline",
             "user",
-            "avatar",
         )
-
-    def update(self, instance, validated_data):
-        if instance.avatar:
-            instance.avatar.delete()
-        instance = super().update(instance, validated_data)
-        instance.save()
-        return instance
 
 
 class TeamListSerializer(serializers.ModelSerializer):
@@ -298,3 +289,17 @@ class GetTeamSerializer(serializers.ModelSerializer):
         fields = ("id", "name")
 
 
+class AvatarSerializer(serializers.ModelSerializer):
+    """ Аватар команды """
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = models.Team
+        fields = ('avatar', 'user')
+
+    def update(self, instance, validated_data):
+        if instance.avatar:
+            instance.avatar.delete()
+        instance = super().update(instance, validated_data)
+        instance.save()
+        return instance

@@ -1,6 +1,5 @@
 
 from rest_framework import permissions
-from .models import Questionnaire
 from rest_framework.permissions import BasePermission
 
 from src.profiles import models
@@ -31,6 +30,18 @@ class IsQuestionnaireNotExists(permissions.BasePermission):
     """Для создания только одной анкеты"""
 
     def has_permission(self, request, view):
-        cur_user = Questionnaire.objects.filter(user=request.user).exists()
+        cur_user = models.Questionnaire.objects.filter(user=request.user).exists()
         if not cur_user:
             return True
+
+
+class IsAuthorUser(BasePermission):
+    """Только для автора пользователя"""
+    def has_permission(self, request, view):
+        return models.FatUser.objects.filter(username=request.user, id=view.kwargs.get('pk')).exists()
+
+
+class IsAuthorQuestionnaireUser(BasePermission):
+    """Только для автора пользователя"""
+    def has_permission(self, request, view):
+        return models.Questionnaire.objects.filter(user=request.user, id=view.kwargs.get('pk')).exists()

@@ -59,7 +59,7 @@ class FatUser(AbstractUser):
 
 class FatUserSocial(models.Model):
     """Intermediate table for the ManyToMany FatUser and Social relationship"""
-    social = models.ForeignKey(Social, on_delete=models.CASCADE)
+    social = models.ForeignKey(Social, on_delete=models.CASCADE, related_name='link_social')
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -98,7 +98,7 @@ class Questionnaire(models.Model):
     phone = models.CharField(validators=[phone_validator], max_length=13, blank=True, null=True)
     avatar = models.ImageField(
         upload_to='questionnaire/avatar/',
-        default='default/questionnaire.jpg',
+        default='default/default.jpg',
         blank=True,
         null=True,
         validators=[

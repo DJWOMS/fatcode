@@ -19,6 +19,20 @@ class CreateAnswerSerializer(serializers.ModelSerializer):
         fields = ("text", "parent", "question")
 
 
+class RecursiveSerializer(serializers.Serializer):
+    def to_representation(self, value):
+        serializer = self.parent.parent.__class__(value)
+        return serializer.data
+
+
+class RetrieveAnswerSerializer(serializers.ModelSerializer):
+    children = RecursiveSerializer(many=True)
+
+    class Meta:
+        model = models.Answer
+        fields = ("id", "text", "children", "question")
+
+
 class AnswerSerializer(serializers.ModelSerializer):
     author = GetUserSerializer(required=False)
     children_count = serializers.SerializerMethodField()

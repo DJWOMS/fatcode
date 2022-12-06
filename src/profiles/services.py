@@ -176,7 +176,7 @@ def check_account_for_auth(account_id):
 
 
 def create_user(account_id, email):
-    """Проверка и создание пользователя"""
+    """Проверка email и создание пользователя"""
     if email is not None:
         if check_email(email):
             return create_user_with_email(account_id, email)
@@ -185,7 +185,7 @@ def create_user(account_id, email):
 
 
 def create_user_and_token(account_id, email, account_name, account_url):
-    """Проверка и создание пользователя и токена"""
+    """Проверка и создание пользователя, его аккаунта и токена"""
     user = create_user(account_id, email)
     password = create_password()
     user.set_password(password)
@@ -301,6 +301,19 @@ def check_email(email):
     return email
 
 
+def check_or_update_email(instance, email, validated_data):
+    try:
+        cur_user = FatUser.objects.get(email=email)
+        if cur_user.email != instance.email:
+            raise exceptions.EmailExists()
+        instance.email = email
+        instance.middle_name = validated_data.get('middle_name', None)
+        instance.save()
+    except FatUser.DoesNotExist:
+        instance.email = email
+        instance.middle_name = validated_data.get('middle_name', None)
+        instance.save()
+    return instance
 
 
 

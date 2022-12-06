@@ -3,18 +3,14 @@ from django.shortcuts import render
 from django_filters import rest_framework as filter
 
 from rest_framework.generics import get_object_or_404
-from rest_framework import generics, status
+from rest_framework import generics, status, parsers
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
-from rest_framework import permissions, parsers
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
 
-from src.profiles import models, serializers, services, filters
+from src.profiles import models, serializers, services, filters, permissions
 from src.base.permissions import IsUser
-from .permissions import IsQuestionnaireNotExists
 from src.base.classes import MixedPermissionSerializer, MixedSerializer
-from src.profiles import models, serializers, services
-from src.profiles.permissions import IsNotApplicant, IsNotAlreadyFriend, IsNotYouGetter
 
 
 def title(request):
@@ -55,67 +51,69 @@ class AddGitHub(generics.GenericAPIView):
                 return Response(status.HTTP_200_OK)
 
 
-class UsersView(ReadOnlyModelViewSet):
-    queryset = models.FatUser.objects.all()
-    serializer_class = serializers.GetUserSerializer
-    permission_classes = (permissions.IsAuthenticated, )
+# class UsersView(ReadOnlyModelViewSet):
+#     queryset = models.FatUser.objects.all()
+#     serializer_class = serializers.GetUserSerializer
+#     permission_classes = (IsAuthenticated, )
 
 
-class UserView(ModelViewSet):
-    """Internal user display"""
+class UsersView(MixedPermissionSerializer, ModelViewSet):
+    """Представление пользователя"""
 
-    serializer_class = serializers.UserSerializer
-    permission_classes = (permissions.IsAuthenticated, )
-
-    def get_queryset(self):
-        return models.FatUser.objects.filter(id=self.request.user.id)
-
-    def get_object(self):
-        queryset = self.filter_queryset(self.get_queryset())
-        obj = get_object_or_404(queryset)
-        self.check_object_permissions(self.request, obj)
-        return obj
-
-
-class UserPublicView(ModelViewSet):
-    """Public user display"""
-
-    queryset = models.FatUser.objects.all()
-    serializer_class = serializers.UserPublicSerializer
-    permission_classes = (permissions.AllowAny, )
-
-
-class SocialView(ReadOnlyModelViewSet):
-    """List or one entry social display"""
-    queryset = models.Social.objects.all()
-    serializer_class = serializers.ListSocialSerializer
+    permission_classes_by_action = {
+        'list': (IsAuthenticated,),
+        'retrieve': (IsAuthenticated,),
+        'update': (permissions.IsAuthorUser,),
+        'destroy': (permissions.IsAuthorUser,),
+    }
+    serializer_classes_by_action = {
+        'list': serializers.UserProfileSerializer,
+        'retrieve': serializers.UserProfileSerializer,
+        'update': serializers.UserProfileUpdateSerializer,
+        'destroy': serializers.UserProfileSerializer
+    }
 
     def get_queryset(self):
-        return models.Social.objects.all()
+        return models.FatUser.objects.all()
 
 
-class UserAvatar(ModelViewSet):
-    """Create and update user avatar"""
-
-    parser_classes = (parsers.MultiPartParser, )
-    serializer_class = serializers.UserAvatarSerializer
-    permission_classes = (permissions.IsAuthenticated, )
-
-    def get_queryset(self):
-        return models.FatUser.objects.filter(id=self.request.user.id)
-
-    def get_object(self):
-        queryset = self.filter_queryset(self.get_queryset())
-        obj = get_object_or_404(queryset)
-        self.check_object_permissions(self.request, obj)
-        return obj
+# class UserPublicView(ModelViewSet):
+#     """Public user display"""
+#
+#     queryset = models.FatUser.objects.all()
+#     serializer_class = serializers.UserPublicSerializer
+#     permission_classes = (AllowAny, )
+# class SocialView(ReadOnlyModelViewSet):
+#     """List or one entry social display"""
+#     queryset = models.Social.objects.all()
+#     serializer_class = serializers.ListSocialSerializer
+#
+#     def get_queryset(self):
+#         return models.Social.objects.all()
+#
+#
+# class UserAvatar(ModelViewSet):
+#     """Create and update user avatar"""
+#
+#     parser_classes = (parsers.MultiPartParser, )
+#     serializer_class = serializers.UserAvatarSerializer
+#     permission_classes = (IsAuthenticated, )
+#
+#     def get_queryset(self):
+#         return models.FatUser.objects.filter(id=self.request.user.id)
+#
+#     def get_object(self):
+#         queryset = self.filter_queryset(self.get_queryset())
+#         obj = get_object_or_404(queryset)
+#         self.check_object_permissions(self.request, obj)
+#         return obj
 
 
 class QuestionnaireView(MixedPermissionSerializer, ModelViewSet):
     """CRUD анкеты пользователя"""
     permission_classes_by_action = {
         'list': (IsAuthenticated,),
-        'create': (IsQuestionnaireNotExists,),
+        'create': (permissions.IsQuestionnaireNotExists,),
         'retrieve': (IsAuthenticated, ),
         'update': (IsUser,),
         'destroy': (IsUser,),
@@ -150,15 +148,16 @@ class QuestionnaireView(MixedPermissionSerializer, ModelViewSet):
         instance.delete()
 
 
-class ApplicationView(MixedPermissionSerializer, ModelViewSet):
+class ApplicationView(MixedSerializer, ModelViewSet):
+    """CRD заявки"""
     serializer_classes_by_action = {
         'list': serializers.ApplicationListSerializer,
         'create': serializers.ApplicationSerializer,
         'delete': serializers.ApplicationSerializer
     }
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = (IsAuthenticated, )
     permission_classes_by_action = {
-        'create': (IsNotApplicant, IsNotYouGetter, IsNotAlreadyFriend, ),
+        'create': (permissions.IsNotApplicant, permissions.IsNotYouGetter, permissions.IsNotAlreadyFriend, ),
     }
 
     def get_queryset(self):
@@ -169,23 +168,90 @@ class ApplicationView(MixedPermissionSerializer, ModelViewSet):
 
 
 class ApplicationUserGetterView(ReadOnlyModelViewSet):
+    """Представление заявки пользователя"""
     serializer_class = serializers.ApplicationListSerializer
-    permissions = (permissions.IsAuthenticated, )
+    permissions = (IsAuthenticated, )
 
     def get_queryset(self):
         return models.Applications.objects.filter(getter=self.request.user)
 
 
 class FriendView(MixedSerializer, ModelViewSet):
+    """Друзья пользователя"""
     serializer_classes_by_action = {
         'list': serializers.FriendListSerializer,
         'create': serializers.FriendSerializer,
         'delete': serializers.FriendListSerializer
     }
-    permission_classes = (permissions.IsAuthenticated, )
+    permission_classes = (IsAuthenticated, )
 
     def get_queryset(self):
         return models.Friends.objects.filter(Q(user=self.request.user) | Q(friend=self.request.user))
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+
+class AvatarProfileView(MixedPermissionSerializer, ModelViewSet):
+    """Аватар профиля"""
+    parser_classes = (parsers.MultiPartParser,)
+    serializer_classes_by_action = serializers.AvatarProfileSerializer
+    permission_classes_by_action = {
+        'list': (IsAuthenticatedOrReadOnly,),
+        'update': (permissions.IsAuthorUser,),
+        'destroy': (permissions.IsAuthorUser,),
+    }
+
+    def get_queryset(self):
+        return models.FatUser.objects.filter(id=self.kwargs.get('pk'))
+
+    def perform_update(self, serializer):
+        serializer.save(user_id=self.kwargs.get('pk'))
+
+    def perform_destroy(self, instance):
+        instance.avatar.delete()
+        instance.avatar = ''
+
+
+class SocialProfileView(MixedPermissionSerializer, ModelViewSet):
+    """Социальные ссылки профиля"""
+    serializer_classes_by_action = {
+        'list': serializers.SocialProfileSerializer,
+        'retrieve': serializers.SocialProfileSerializer,
+        'create': serializers.SocialProfileCreateSerializer,
+        'update': serializers.SocialProfileUpdateSerializer,
+        'destroy': serializers.SocialProfileCreateSerializer
+    }
+    permission_classes_by_action = {
+        'list': (IsAuthenticated,),
+        'retrieve': (IsAuthenticated, ),
+        'create': (permissions.IsAuthorUser, ),
+        'update': (permissions.IsAuthorUser,),
+        'destroy': (permissions.IsAuthorUser,),
+    }
+    lookup_url_kwarg = 'social_pk'
+
+    def get_queryset(self):
+        social = models.FatUserSocial.objects.filter(user__id=self.kwargs.get('pk'))
+        return social
+
+
+class AvatarQuestionnaireView(MixedPermissionSerializer, ModelViewSet):
+    """Аватар анкеты"""
+    parser_classes = (parsers.MultiPartParser,)
+    serializer_classes_by_action = serializers.AvatarQuestionnaireSerializer
+    permission_classes_by_action = {
+        'list': (IsAuthenticatedOrReadOnly,),
+        'update': (permissions.IsAuthorQuestionnaireUser,),
+        'destroy': (permissions.IsAuthorQuestionnaireUser,),
+    }
+
+    def get_queryset(self):
+        return models.Questionnaire.objects.filter(id=self.kwargs.get('pk'))
+
+    def perform_update(self, serializer):
+        serializer.save(questionnaire_id=self.kwargs.get('pk'))
+
+    def perform_destroy(self, instance):
+        instance.avatar.delete()
+        instance.avatar = ''

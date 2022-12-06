@@ -18,6 +18,7 @@ class ProductView(ListAPIView):
 
 
 class InventoryView(MixedSerializer, ModelViewSet):
+    """CRU инвертаря"""
     permission_classes = (IsInventoryCatUser, )
     serializer_classes_by_action = {
         'create': serializers.CreateItemSerializer,
@@ -43,6 +44,7 @@ class HintView(CreateAPIView):
 
 
 class PhraseView(ListAPIView):
+    """Представление фраз кота"""
     queryset = models.Phrase.objects.select_related('cat').all()
     serializer_class = serializers.PhraseSerializer
     permission_classes = (IsAuthenticated, )
@@ -51,12 +53,14 @@ class PhraseView(ListAPIView):
 
 
 class CatView(ReadOnlyModelViewSet):
+    """Представление кота"""
     queryset = models.Cat.objects.select_related('user').all()
     serializer_class = serializers.CatSerializer
     permission_classes = (IsAuthenticated, )
 
 
 class CatUserView(ModelViewSet):
+    """Кот пользователя"""
     serializer_class = serializers.CatSerializer
     permission_classes = (IsAuthenticated, )
 
@@ -65,6 +69,7 @@ class CatUserView(ModelViewSet):
 
 
 class TopCatView(ListAPIView):
+    """Представление топ котов"""
     queryset = models.Cat.objects.order_by('-xp', '-level').select_related('user').all()[:100]
     serializer_class = serializers.CatSerializer
     permission_classes = (IsAuthenticated, )

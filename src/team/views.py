@@ -4,15 +4,16 @@ from rest_framework import viewsets, status
 from rest_framework.exceptions import APIException
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework import parsers
 
-from src.base.classes import MixedPermissionSerializer
+from src.base.classes import MixedPermissionSerializer, MixedSerializer
 from src.base.service import post_view_count
 from src.base.permissions import IsUser
 from src.team import serializers, permissions, filters, models
 
 
 class TeamView(MixedPermissionSerializer, viewsets.ModelViewSet):
-    """  Посмотреть/создать команду (CRUD)"""
+    """ CRUD команды """
     filterset_class = filters.TeamFilter
     filter_backends = (filter.DjangoFilterBackend,)
     queryset = models.Team.objects.prefetch_related('project_teams').select_related('user').all()
@@ -106,11 +107,7 @@ class MemberList(MixedPermissionSerializer, viewsets.ModelViewSet):
         'retrieve': (permissions.IsMemberTeam,),
         'destroy': (permissions.IsAuthorTeam,)
     }
-    serializer_classes_by_action = {
-        'list': serializers.MemberSerializer,
-        'retrieve': serializers.MemberSerializer,
-        'destroy': serializers.MemberSerializer
-    }
+    serializer_classes_by_action = serializers.MemberSerializer
     lookup_url_kwarg = 'member_pk'
 
     def get_queryset(self):
@@ -234,7 +231,7 @@ class InvitationDetailView(MixedPermissionSerializer, viewsets.ModelViewSet):
     serializer_classes_by_action = {
         'list': serializers.AcceptInvitationSerializerList,
         'retrieve': serializers.AcceptInvitationSerializerList,
-        'update': serializers.AcceptInvitationSerializer,
+        'update': serializers.AcceptInvitationSerializer
     }
 
     def get_queryset(self):
@@ -245,3 +242,23 @@ class InvitationDetailView(MixedPermissionSerializer, viewsets.ModelViewSet):
 
     def perform_update(self, serializer):
         serializer.save(user=self.request.user)
+
+
+class AvatarTeam(MixedPermissionSerializer, viewsets.ModelViewSet):
+    """Аватар команды"""
+    parser_classes = (parsers.MultiPartParser,)
+    serializer_classes_by_action = serializers.AvatarSerializer
+    permission_classes_by_action = {
+        'list': (IsAuthenticatedOrReadOnly,),
+        'update': (permissions.IsAuthorTeam,),
+        'destroy': (permissions.IsAuthorTeam,),
+    }
+
+    def get_queryset(self):
+        return models.Team.objects.select_related('user').filter(id=self.kwargs.get('pk'))
+
+    def perform_update(self, serializer):
+        serializer.save(team_id=self.kwargs.get('pk'))
+
+    def perform_destroy(self, instance):
+        instance.avatar.delete()

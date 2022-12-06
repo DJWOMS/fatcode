@@ -6,6 +6,7 @@ from .permissions import IsAuthorProject, IsMemberProject, IsAuthorBoard, IsMemb
 
 
 class BoardView(MixedPermissionSerializer, viewsets.ModelViewSet):
+    """CR доски"""
     permission_classes_by_action = {
         'create': (permissions.IsAuthenticated, IsAuthorProject),
         'retrieve': (permissions.IsAuthenticated, IsMemberProject)
@@ -37,6 +38,7 @@ class BoardView(MixedPermissionSerializer, viewsets.ModelViewSet):
 
 
 class LabelView(MixedPermission, viewsets.ModelViewSet):
+    """CRUD лэйбла"""
     queryset = models.Label.objects.all()
     permission_classes_by_action = {
         'create': (permissions.IsAuthenticated, IsAuthorBoard),
@@ -48,6 +50,7 @@ class LabelView(MixedPermission, viewsets.ModelViewSet):
 
 
 class ColumnView(MixedSerializer, viewsets.ModelViewSet):
+    """CU столбца"""
     queryset = models.Column.objects.all()
     permission_classes = (permissions.IsAuthenticated, IsAuthorBoard)
     serializer_class = serializers.SetColumnSerializer
@@ -58,6 +61,7 @@ class ColumnView(MixedSerializer, viewsets.ModelViewSet):
 
 
 class CardView(MixedSerializer, viewsets.ModelViewSet):
+    """CRU карточек"""
     queryset = models.Card.objects.select_related('listId__boardId').all()
     permission_classes = (permissions.IsAuthenticated, IsMemberBoard)
     serializer_classes_by_action = {

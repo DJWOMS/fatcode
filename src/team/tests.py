@@ -8,7 +8,8 @@ from rest_framework.test import APITestCase
 from rest_framework.authtoken.models import Token
 
 from src.profiles.models import FatUser
-from src.team.models import Post, Comment, Team, TeamMember, Invitation, SocialLink
+from src.team import models
+
 
 def temporary_image():
     bts = io.BytesIO()
@@ -64,38 +65,38 @@ class TeamTest(APITestCase):
         )
         self.profile4.save()
 
-        self.team1 = Team.objects.create(
+        self.team1 = models.Team.objects.create(
             name='team1',
             user=self.profile1,
             avatar=temporary_image()
         )
-        self.team_member1 = TeamMember.objects.create(
+        self.team_member1 = models.TeamMember.objects.create(
             team=self.team1,
             user=self.profile3
         )
-        self.team2 = Team.objects.create(
+        self.team2 = models.Team.objects.create(
             name='team2',
             user=self.profile2
         )
-        self.team3 = Team.objects.create(
+        self.team3 = models.Team.objects.create(
             name='team3',
             user=self.profile1
         )
-        self.invitation = Invitation.objects.create(
+        self.invitation = models.Invitation.objects.create(
             user=self.profile2,
             team=self.team3
         )
-        self.post1 = Post.objects.create(
+        self.post1 = models.Post.objects.create(
             text='text1',
             user=self.profile1,
             team=self.team1
         )
-        self.social_link = SocialLink.objects.create(
+        self.social_link = models.SocialLink.objects.create(
             name='test',
             link='http://test',
             team=self.team1
         )
-        self.comment1 = Comment.objects.create(
+        self.comment1 = models.Comment.objects.create(
             user=self.profile1,
             post=self.post1,
             text='text1',
@@ -118,18 +119,8 @@ class TeamTest(APITestCase):
         }
         response = self.client.post(reverse('teams'), data=data, format='multipart')
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(len(response.data), 3)
-        self.assertEqual(Team.objects.count(), 4)
-
-    def test_team_create_invalid_avatar(self):
-        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
-        data = {
-            'name': 'name1',
-            'user': self.profile1.id,
-            'avatar': temporary_image_2()
-        }
-        response = self.client.post(reverse('teams'), data=data, format='multipart')
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(len(response.data), 2)
+        self.assertEqual(models.Team.objects.count(), 4)
 
     def test_team_list(self):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
@@ -155,8 +146,7 @@ class TeamTest(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
         data = {
             'name': 'name_test',
-            'user': self.profile1.id,
-            'avatar': temporary_image_3()
+            'user': self.profile1.id
         }
         response = self.client.put(reverse('detail_teams', kwargs={'pk': self.team1.id}), data=data, format='multipart')
         self.assertEqual(response.status_code, 200)
@@ -168,18 +158,9 @@ class TeamTest(APITestCase):
             'user': self.profile2.id
         }
         response = self.client.put(reverse('detail_teams', kwargs={'pk': self.team1.id}), data=data, format='json')
-        team = Team.objects.get(id=self.team1.id)
+        team = models.Team.objects.get(id=self.team1.id)
         self.assertEqual(response.status_code, 403)
 
-    def test_team_update_invalid_avatar(self):
-        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
-        data = {
-            'name': 'name_test',
-            'user': self.profile1.id,
-            'avatar': temporary_image_2()
-        }
-        response = self.client.put(reverse('detail_teams', kwargs={'pk': self.team1.id}), data=data, format='multipart')
-        self.assertEqual(response.status_code, 400)
 
     def test_team_update_no_authorization(self):
         data = {
@@ -193,13 +174,13 @@ class TeamTest(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
         response = self.client.delete(reverse('detail_teams', kwargs={'pk': self.team1.id}))
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(Team.objects.filter(id=self.team1.id).exists(), False)
+        self.assertEqual(models.Team.objects.filter(id=self.team1.id).exists(), False)
 
     def test_team_delete_invalid(self):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile2_token.key)
         response = self.client.delete(reverse('detail_teams', kwargs={'pk': self.team1.id}))
         self.assertEqual(response.status_code, 403)
-        self.assertEqual(Team.objects.filter(id=self.team1.id).exists(), True)
+        self.assertEqual(models.Team.objects.filter(id=self.team1.id).exists(), True)
 
     def test_team_delete_no_authorization(self):
         response = self.client.delete(reverse('detail_teams', kwargs={'pk': self.team1.id}))
@@ -239,7 +220,7 @@ class TeamTest(APITestCase):
         response = self.client.post(reverse('invitation'), data=data, format='json')
         self.assertEqual(response.status_code, 201)
         self.assertEqual(len(response.data), 3)
-        self.assertEqual(Invitation.objects.count(), 2)
+        self.assertEqual(models.Invitation.objects.count(), 2)
 
     def test_invitation_create_no_authorization(self):
         data = {
@@ -258,14 +239,14 @@ class TeamTest(APITestCase):
         response = self.client.post(reverse('invitation'), data=data, format='json')
         self.assertEqual(response.status_code, 400)
         self.assertEqual(len(response.data), 1)
-        self.assertEqual(Invitation.objects.count(), 1)
+        self.assertEqual(models.Invitation.objects.count(), 1)
 
     def test_my_invitation_list(self):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile2_token.key)
         response = self.client.get(reverse('invitation'))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 4)
-        self.assertEqual(Invitation.objects.count(), 1)
+        self.assertEqual(models.Invitation.objects.count(), 1)
 
     def test_invitation_no_authorization(self):
         response = self.client.get(reverse('invitation'))
@@ -285,12 +266,12 @@ class TeamTest(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile2_token.key)
         response = self.client.delete(reverse('invitation_delete', kwargs={'pk': self.invitation.id}))
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(Invitation.objects.filter(id=self.invitation.id).exists(), False)
+        self.assertEqual(models.Invitation.objects.filter(id=self.invitation.id).exists(), False)
 
     def test_invitation_delete_no_authorization(self):
         response = self.client.delete('invitation_delete', kwargs={'pk': self.invitation.id})
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(Invitation.objects.filter(id=self.invitation.id).exists(), True)
+        self.assertEqual(models.Invitation.objects.filter(id=self.invitation.id).exists(), True)
 
     def test_invitation_list(self):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
@@ -442,7 +423,7 @@ class TeamTest(APITestCase):
                                            kwargs={'pk': self.team1.id, 'post_pk': self.post1.id})
                                    )
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(Post.objects.filter(id=self.post1.id).exists(), False)
+        self.assertEqual(models.Post.objects.filter(id=self.post1.id).exists(), False)
 
     def test_post_member_delete_invalid(self):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile3_token.key)
@@ -450,7 +431,7 @@ class TeamTest(APITestCase):
                                            kwargs={'pk': self.team1.id, 'post_pk': self.post1.id})
                                    )
         self.assertEqual(response.status_code, 403)
-        self.assertEqual(Post.objects.filter(id=self.post1.id).exists(), True)
+        self.assertEqual(models.Post.objects.filter(id=self.post1.id).exists(), True)
 
     def test_post_delete_invalid(self):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile2_token.key)
@@ -458,7 +439,7 @@ class TeamTest(APITestCase):
                                            kwargs={'pk': self.team1.id, 'post_pk': self.post1.id})
                                    )
         self.assertEqual(response.status_code, 403)
-        self.assertEqual(Post.objects.exists(), True)
+        self.assertEqual(models.Post.objects.exists(), True)
 
     def test_comment_author_list(self):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
@@ -687,7 +668,7 @@ class TeamTest(APITestCase):
                                                     'comment_pk': self.comment1.id})
                                       )
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(Comment.objects.filter(id=self.comment1.id).exists(), False)
+        self.assertEqual(models.Comment.objects.filter(id=self.comment1.id).exists(), False)
 
     def test_comment_member_delete_invalid(self):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile3_token.key)
@@ -697,7 +678,7 @@ class TeamTest(APITestCase):
                                                     'comment_pk': self.comment1.id})
                                       )
         self.assertEqual(response.status_code, 403)
-        self.assertEqual(Comment.objects.filter(id=self.comment1.id).exists(), True)
+        self.assertEqual(models.Comment.objects.filter(id=self.comment1.id).exists(), True)
 
     def test_comment_delete_invalid(self):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile2_token.key)
@@ -707,7 +688,7 @@ class TeamTest(APITestCase):
                                                     'comment_pk': self.comment1.id})
                                       )
         self.assertEqual(response.status_code, 403)
-        self.assertEqual(Comment.objects.filter(id=self.comment1.id).exists(), True)
+        self.assertEqual(models.Comment.objects.filter(id=self.comment1.id).exists(), True)
 
     def test_member_list(self):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile3_token.key)
@@ -751,7 +732,7 @@ class TeamTest(APITestCase):
                                            kwargs={'pk': self.team1.id, 'member_pk': self.team_member1.id})
                                       )
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(TeamMember.objects.filter(id=self.team_member1.id).exists(), False)
+        self.assertEqual(models.TeamMember.objects.filter(id=self.team_member1.id).exists(), False)
 
     def test_member_delete_invalid(self):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile2_token.key)
@@ -759,7 +740,7 @@ class TeamTest(APITestCase):
                                            kwargs={'pk': self.team1.id, 'member_pk': self.team_member1.id})
                                       )
         self.assertEqual(response.status_code, 403)
-        self.assertEqual(TeamMember.objects.filter(id=self.team_member1.id).exists(), True)
+        self.assertEqual(models.TeamMember.objects.filter(id=self.team_member1.id).exists(), True)
 
     def test_member_member_team_delete(self):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile3_token.key)
@@ -767,7 +748,7 @@ class TeamTest(APITestCase):
                                            kwargs={'pk': self.team1.id, 'member_pk': self.team_member1.id})
                                       )
         self.assertEqual(response.status_code, 403)
-        self.assertEqual(TeamMember.objects.filter(id=self.team_member1.id).exists(), True)
+        self.assertEqual(models.TeamMember.objects.filter(id=self.team_member1.id).exists(), True)
 
     def test_social_links_list(self):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
@@ -844,7 +825,7 @@ class TeamTest(APITestCase):
                                            kwargs={'pk': self.team1.id, 'social_pk': self.social_link.id})
                                    )
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(SocialLink.objects.filter(id=self.social_link.id).exists(), False)
+        self.assertEqual(models.SocialLink.objects.filter(id=self.social_link.id).exists(), False)
 
     def test_social_links_delete_invalid(self):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile3_token.key)
@@ -852,4 +833,53 @@ class TeamTest(APITestCase):
                                            kwargs={'pk': self.team1.id, 'social_pk': self.social_link.id})
                                    )
         self.assertEqual(response.status_code, 403)
-        self.assertEqual(SocialLink.objects.filter(id=self.social_link.id).exists(), True)
+        self.assertEqual(models.SocialLink.objects.filter(id=self.social_link.id).exists(), True)
+
+    def test_avatar_update(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile2_token.key)
+        data = {
+            'user': self.profile2.id,
+            'avatar': temporary_image_3()
+        }
+        response = self.client.put(reverse('avatar_team',
+                                            kwargs={'pk': self.team2.id}), data=data, format='multipart')
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.status_code, 200)
+
+    def test_avatar_update_invalid(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
+        data = {
+            'user': self.profile1.id,
+            'avatar': temporary_image_3()
+        }
+        response = self.client.put(reverse('avatar_team',
+                                            kwargs={'pk': self.team2.id}), data=data, format='multipart')
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.status_code, 403)
+
+    def test_avatar_update_invalid_format(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile2_token.key)
+        data = {
+            'user': self.profile2.id,
+            'avatar': temporary_image_2()
+        }
+        response = self.client.put(reverse('avatar_team',
+                                            kwargs={'pk': self.team2.id}), data=data, format='multipart')
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.status_code, 400)
+
+    def test_avatar_delete(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile2_token.key)
+        response = self.client.delete(reverse('avatar_team',
+                                            kwargs={'pk': self.team2.id}), format='multipart')
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_avatar_delete_invalid(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
+        response = self.client.delete(reverse('avatar_team',
+                                            kwargs={'pk': self.team2.id}), format='multipart')
+        self.assertEqual(response.status_code, 403)
+
+
+
+

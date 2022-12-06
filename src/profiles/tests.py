@@ -129,26 +129,26 @@ class ProfileAuthTests(APITestCase):
         self.assertTrue('email' in response.data)
 
 
-class TestSocial(APITestCase):
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-
-        Social.objects.create(title='Social 1')
-        Social.objects.create(title='Social 2')
-
-    def test_social_list(self):
-        url = reverse("social-list")
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.json().get("results")), 2)
-
-    def test_social_detail(self):
-        social = Social.objects.get(title='Social 1')
-        url = reverse("social-detail", kwargs={"pk": social.pk})
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.json().get("title"), 'Social 1')
+# class TestSocial(APITestCase):
+#     @classmethod
+#     def setUpClass(cls):
+#         super().setUpClass()
+#
+#         Social.objects.create(title='Social 1')
+#         Social.objects.create(title='Social 2')
+#
+#     def test_social_list(self):
+#         url = reverse("social-list")
+#         response = self.client.get(url)
+#         self.assertEqual(response.status_code, status.HTTP_200_OK)
+#         self.assertEqual(len(response.json().get("results")), 2)
+#
+#     def test_social_detail(self):
+#         social = Social.objects.get(title='Social 1')
+#         url = reverse("social-detail", kwargs={"pk": social.pk})
+#         response = self.client.get(url)
+#         self.assertEqual(response.status_code, status.HTTP_200_OK)
+#         self.assertEqual(response.json().get("title"), 'Social 1')
 
 
 class FatUserProfileTest(APITestCase):
@@ -166,10 +166,11 @@ class ProfileAuthTests(APITestCase):
         self.client.post('/api/v1/auth/users/', user_create_data, format='json')
         url = "/api/v1/auth/token/login/"
         user = {
-            'email': user_create_data['email'],
+            'username': user_create_data['username'],
             'password': user_create_data['password']
         }
         request = self.client.post(url, user, format='json')
+
         self.assertEqual(request.status_code, 200)
         self.assertTrue('auth_token' in request.data)
 
@@ -178,7 +179,7 @@ class ProfileAuthTests(APITestCase):
         url = reverse("user-pub", kwargs={"pk": user.pk})
         request = self.client.get(url)
         self.assertEqual(request.status_code, 200)
-        self.assertFalse('email' in request.data)
+        self.assertFalse('username' in request.data)
 
     def test_user_profile(self):
         user = FatUser.objects.get(username='anton')
@@ -186,29 +187,29 @@ class ProfileAuthTests(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {user.auth_token}')
         request = self.client.get(url)
         self.assertEqual(request.status_code, 200)
-        self.assertTrue('email' in request.data)
+        self.assertTrue('username' in request.data)
 
 
-class TestSocial(APITestCase):
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-
-        Social.objects.create(title='Social 1')
-        Social.objects.create(title='Social 2')
-
-    def test_social_list(self):
-        url = reverse("social-list")
-        request = self.client.get(url)
-        self.assertEqual(request.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(request.data), 2)
-
-    def test_social_detail(self):
-        social = Social.objects.get(title='Social 1')
-        url = reverse("social-detail", kwargs={"pk": social.pk})
-        request = self.client.get(url)
-        self.assertEqual(request.status_code, status.HTTP_200_OK)
-        self.assertEqual(request.data['title'], 'Social 1')
+# class TestSocial(APITestCase):
+#     @classmethod
+#     def setUpClass(cls):
+#         super().setUpClass()
+#
+#         Social.objects.create(title='Social 1')
+#         Social.objects.create(title='Social 2')
+#
+#     def test_social_list(self):
+#         url = reverse("social-list")
+#         request = self.client.get(url)
+#         self.assertEqual(request.status_code, status.HTTP_200_OK)
+#         self.assertEqual(len(request.data), 2)
+#
+#     def test_social_detail(self):
+#         social = Social.objects.get(title='Social 1')
+#         url = reverse("social-detail", kwargs={"pk": social.pk})
+#         request = self.client.get(url)
+#         self.assertEqual(request.status_code, status.HTTP_200_OK)
+#         self.assertEqual(request.data['title'], 'Social 1')
 
 
 class FatUserProfileTest(APITestCase):
@@ -223,47 +224,316 @@ class FatUserProfileTest(APITestCase):
 
         self.user_test1_token = Token.objects.create(user=self.user_test1)
 
-        avatar = io.BytesIO()
-        Image.new("RGB", (100, 100)).save(avatar, "JPEG")
-        self.avatar_file = SimpleUploadedFile("avatar.jpg", image.getvalue())
+        self.user_test2 = FatUser.objects.create_user(
+            username='alexey2',
+            password='pwpk3oJ*T72',
+            email='alexey2@mail.ru'
+        )
+        self.user_test2.save()
 
-    def test_user_avatar_post(self):
+        self.user_test2_token = Token.objects.create(user=self.user_test2)
+
+        self.user_test3 = FatUser.objects.create_user(
+            username='alexey3',
+            password='pwpk3oJ*T723',
+            email='alexey3@mail.ru',
+            avatar=temporary_image()
+        )
+        self.user_test3.save()
+
+        self.user_test3_token = Token.objects.create(user=self.user_test3)
+
+        self.social_1 = Social.objects.create(
+            title='vk',
+            url='https://vk.com/',
+        )
+        self.social_1.save()
+
+        self.social_2 = Social.objects.create(
+            title='vkk',
+            url='https://vkk.com/',
+        )
+        self.social_2.save()
+
+        self.social_link = FatUserSocial.objects.create(
+            user=self.user_test1,
+            social=self.social_1,
+            user_url='test'
+
+        )
+
+        # avatar = io.BytesIO()
+        # Image.new("RGB", (100, 100)).save(avatar, "JPEG")
+        # self.avatar_file = SimpleUploadedFile("avatar.jpg", image.getvalue())
+
+    # def test_user_avatar_post(self):
+    #     self.client.credentials(HTTP_AUTHORIZATION="Token " + self.user_test1_token.key)
+    #     url = reverse("user-avatar")
+    #     data = {
+    #         "id": self.user_test1.id,
+    #         "avatar": self.avatar_file,
+    #     }
+    #     response = self.client.post(url, data)
+    #     self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+    #
+    # def test_user_avatar_post_not_auth(self):
+    #     url = reverse("user-avatar")
+    #     data = {
+    #         "id": self.user_test1.id,
+    #         "avatar": self.avatar_file,
+    #     }
+    #     response = self.client.post(url, data)
+    #     self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+    #
+    # def test_user_avatar_put(self):
+    #     self.client.credentials(HTTP_AUTHORIZATION="Token " + self.user_test1_token.key)
+    #     url = reverse("user-avatar")
+    #     data = {
+    #         "id": self.user_test1.id,
+    #         "avatar": self.avatar_file,
+    #     }
+    #     response = self.client.put(url, data)
+    #     self.assertEqual(response.status_code, status.HTTP_200_OK)
+    #
+    # def test_user_avatar_put_not_auth(self):
+    #     url = reverse("user-avatar")
+    #     data = {
+    #         "id": self.user_test1.id,
+    #         "avatar": self.avatar_file,
+    #     }
+    #     response = self.client.put(url, data)
+    #     self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_avatar_update(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.user_test3_token.key)
+        data = {
+            'user': self.user_test3.id,
+            'avatar': temporary_image_profiles3()
+        }
+        response = self.client.put(reverse('profile_avatar',
+                                            kwargs={'pk': self.user_test3.id}), data=data, format='multipart')
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.status_code, 200)
+
+    def test_avatar_update_invalid(self):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.user_test1_token.key)
-        url = reverse("user-avatar")
         data = {
-            "id": self.user_test1.id,
-            "avatar": self.avatar_file,
+            'user': self.user_test1.id,
+            'avatar': temporary_image_profiles3()
         }
-        response = self.client.post(url, data)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        response = self.client.put(reverse('profile_avatar',
+                                            kwargs={'pk': self.user_test3.id}), data=data, format='multipart')
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.status_code, 403)
 
-    def test_user_avatar_post_not_auth(self):
-        url = reverse("user-avatar")
+    def test_avatar_update_invalid_format(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.user_test3_token.key)
         data = {
-            "id": self.user_test1.id,
-            "avatar": self.avatar_file,
+            'user': self.user_test3.id,
+            'avatar': temporary_image_profiles2()
         }
-        response = self.client.post(url, data)
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        response = self.client.put(reverse('profile_avatar',
+                                            kwargs={'pk': self.user_test3.id}), data=data, format='multipart')
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.status_code, 400)
 
-    def test_user_avatar_put(self):
+    def test_avatar_delete(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.user_test3_token.key)
+        response = self.client.delete(reverse('profile_avatar',
+                                            kwargs={'pk': self.user_test3.id}), format='multipart')
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_avatar_delete_invalid(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.user_test2_token.key)
+        response = self.client.delete(reverse('profile_avatar',
+                                            kwargs={'pk': self.user_test3.id}), format='multipart')
+        self.assertEqual(response.status_code, 403)
+
+    def test_social_list(self):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.user_test1_token.key)
-        url = reverse("user-avatar")
-        data = {
-            "id": self.user_test1.id,
-            "avatar": self.avatar_file,
-        }
-        response = self.client.put(url, data)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response = self.client.get(reverse('social_profile',
+                                            kwargs={'pk': self.user_test1.id}))
+        self.assertEqual(len(response.data), 4)
+        self.assertEqual(response.status_code, 200)
 
-    def test_user_avatar_put_not_auth(self):
-        url = reverse("user-avatar")
+    def test_social_list_no_authorization(self):
+        response = self.client.get(reverse('social_profile',
+                                            kwargs={'pk': self.user_test1.id}))
+        self.assertEqual(response.status_code, 401)
+
+    def test_social_create(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.user_test1_token.key)
         data = {
-            "id": self.user_test1.id,
-            "avatar": self.avatar_file,
+            'social': self.social_2.id,
+            'user': self.user_test1.id,
+            'user_url': 'test'
         }
-        response = self.client.put(url, data)
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        response = self.client.post(reverse('social_profile',
+                                            kwargs={'pk': self.user_test1.id}), data=data, format='json')
+        self.assertEqual(len(response.data), 3)
+        self.assertEqual(response.status_code, 201)
+
+    def test_social_create_invalid(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.user_test2_token.key)
+        data = {
+            'social': self.social_2.id,
+            'user': self.user_test2.id,
+            'user_url': 'test'
+        }
+        response = self.client.post(reverse('social_profile',
+                                            kwargs={'pk': self.user_test1.id}), data=data, format='json')
+        self.assertEqual(response.status_code, 403)
+
+    def test_social_create_invalid_social_exist(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.user_test1_token.key)
+        data = {
+            'social': self.social_1.id,
+            'user': self.user_test1.id,
+            'user_url': 'test'
+        }
+        response = self.client.post(reverse('social_profile', kwargs={'pk': self.user_test1.id}), data=data, format='json')
+        self.assertEqual(response.status_code, 403)
+
+    def test_social_detail(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.user_test1_token.key)
+        response = self.client.get(reverse('social_profile_detail',
+                                           kwargs={'pk': self.user_test1.id, 'social_pk': self.social_link.id}))
+        self.assertEqual(len(response.data), 3)
+        self.assertEqual(response.status_code, 200)
+
+    def test_social_user_detail(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.user_test2_token.key)
+        response = self.client.get(reverse('social_profile_detail',
+                                           kwargs={'pk': self.user_test1.id, 'social_pk': self.social_link.id}))
+        self.assertEqual(len(response.data), 3)
+        self.assertEqual(response.status_code, 200)
+
+    def test_social_update(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.user_test1_token.key)
+        data = {
+            'user': self.user_test1.id,
+            'user_url': 'test2'
+        }
+        response = self.client.put(reverse('social_profile_detail',
+                                           kwargs={'pk': self.user_test1.id, 'social_pk': self.social_link.id}),
+                                   data=data, format='json'
+                                   )
+        self.assertEqual(len(response.data), 2)
+        self.assertEqual(response.status_code, 200)
+
+    def test_social_update_invalid(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.user_test2_token.key)
+        data = {
+            'user': self.user_test2.id,
+            'user_url': 'test2'
+        }
+        response = self.client.put(reverse('social_profile_detail',
+                                           kwargs={'pk': self.user_test1.id, 'social_pk': self.social_link.id}),
+                                   data=data, format='json'
+                                   )
+        self.assertEqual(response.status_code, 403)
+
+    def test_social_delete(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.user_test1_token.key)
+        response = self.client.delete(reverse('social_profile_detail',
+                                           kwargs={'pk': self.user_test1.id, 'social_pk': self.social_link.id})
+                                   )
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(FatUserSocial.objects.filter(id=self.social_link.id).exists(), False)
+
+    def test_social_delete_invalid(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.user_test2_token.key)
+        response = self.client.delete(reverse('social_profile_detail',
+                                           kwargs={'pk': self.user_test1.id, 'social_pk': self.social_link.id})
+                                   )
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(FatUserSocial.objects.filter(id=self.social_link.id).exists(), True)
+
+    def test_users_list(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.user_test1_token.key)
+        response = self.client.get(reverse('profile'))
+        self.assertEqual(len(response.data), 4)
+        self.assertEqual(response.status_code, 200)
+
+    def test_users_list_no_authorization(self):
+        response = self.client.get(reverse('profile'))
+        self.assertEqual(response.status_code, 401)
+
+    def test_user_detail(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.user_test1_token.key)
+        response = self.client.get(reverse('detail_profile',
+                                           kwargs={'pk': self.user_test1.id}))
+        self.assertEqual(len(response.data), 4)
+        self.assertEqual(response.status_code, 200)
+
+    def test_users_detail_no_authorization(self):
+        response = self.client.get(reverse('detail_profile',
+                                           kwargs={'pk': self.user_test1.id}))
+        self.assertEqual(response.status_code, 401)
+
+    def test_user_update(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.user_test1_token.key)
+        data = {
+            'middle_name': 'test',
+            'email': 'test2@mail.ru'
+        }
+        response = self.client.put(reverse('detail_profile',
+                                           kwargs={'pk': self.user_test1.id}), data=data, format='json')
+        self.assertEqual(len(response.data), 3)
+        self.assertEqual(response.status_code, 200)
+
+    def test_user_update_invalid(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.user_test2_token.key)
+        data = {
+            'middle_name': 'test',
+            'email': 'test2@mail.ru'
+        }
+        response = self.client.put(reverse('detail_profile',
+                                           kwargs={'pk': self.user_test1.id}), data=data, format='json')
+        self.assertEqual(response.status_code, 403)
+
+    def test_user_update_invalid_email(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.user_test1_token.key)
+        data = {
+            'middle_name': 'test',
+            'email': 'alexey3@mail.ru'
+        }
+        response = self.client.put(reverse('detail_profile',
+                                           kwargs={'pk': self.user_test1.id}), data=data, format='json')
+        self.assertEqual(response.status_code, 400)
+
+    def test_user_delete(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.user_test1_token.key)
+        response = self.client.delete(reverse('detail_profile', kwargs={'pk': self.user_test1.id}))
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(FatUser.objects.filter(id=self.user_test1.id).exists(), False)
+
+    def test_user_delete_invalid(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.user_test2_token.key)
+        response = self.client.delete(reverse('detail_profile', kwargs={'pk': self.user_test1.id}))
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(FatUser.objects.filter(id=self.user_test1.id).exists(), True)
+
+
+def temporary_image_profiles():
+    bts = io.BytesIO()
+    img = Image.new("RGB", (100, 100))
+    img.save(bts, 'jpeg')
+    return SimpleUploadedFile("test.jpg", bts.getvalue())
+
+
+def temporary_image_profiles2():
+    bts = io.BytesIO()
+    img = Image.new("RGB", (200, 200))
+    img.save(bts, 'jpeg')
+    return SimpleUploadedFile("test2.jpg", bts.getvalue())
+
+
+def temporary_image_profiles3():
+    bts = io.BytesIO()
+    img = Image.new("RGB", (100, 100))
+    img.save(bts, 'jpeg')
+    return SimpleUploadedFile("test3.jpg", bts.getvalue())
 
 
 def temporary_image():
@@ -275,7 +545,7 @@ def temporary_image():
 
 def temporary_image_2():
     bts = io.BytesIO()
-    img = Image.new("RGB", (300, 300))
+    img = Image.new("RGB", (500, 500))
     img.save(bts, 'jpeg')
     return SimpleUploadedFile("test2.jpg", bts.getvalue())
 
@@ -402,7 +672,6 @@ class QuestionnaireTest(APITestCase):
             country='test',
             town='test',
             phone='+79998887766',
-            avatar=temporary_image(),
             user=self.profile2
         )
         self.questionnaire2.teams.add(self.team2)
@@ -412,7 +681,6 @@ class QuestionnaireTest(APITestCase):
         self.questionnaire2.languages.add(self.language)
         self.questionnaire2.socials.add(self.social2)
         self.project1.save()
-
 
     def test_questionnaire_list(self):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
@@ -431,7 +699,6 @@ class QuestionnaireTest(APITestCase):
             'country': 'test1',
             'town': 'test1',
             'phone': '+79998885544',
-            'avatar': temporary_image(),
             'user': self.profile1.id,
             'toolkits': [self.toolkit1.id],
             'languages': [self.language.id],
@@ -442,7 +709,7 @@ class QuestionnaireTest(APITestCase):
         }
         response = self.client.post(reverse('questionnaire'), data=data, format='multipart')
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(len(response.data), 11)
+        self.assertEqual(len(response.data), 10)
 
     def test_questionnaire_create_invalid_phone(self):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
@@ -559,7 +826,6 @@ class QuestionnaireTest(APITestCase):
             'country': 'test1',
             'town': 'test1',
             'phone': '+79998885544',
-            'avatar': temporary_image_3(),
             'user': self.profile2.id,
             'toolkits': [self.toolkit1.id],
             'languages': [self.language.id],
@@ -573,31 +839,8 @@ class QuestionnaireTest(APITestCase):
                                    data=data,
                                    format='multipart'
                                    )
-        self.assertEqual(len(response.data), 11)
+        self.assertEqual(len(response.data), 10)
         self.assertEqual(response.status_code, 200)
-
-    def test_questionnaire_update_invalid_avatar(self):
-        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile2_token.key)
-        data = {
-            'description': 'test11',
-            'country': 'test1',
-            'town': 'test1',
-            'phone': '+79998885544',
-            'avatar': temporary_image_2(),
-            'user': self.profile2.id,
-            'toolkits': [self.toolkit1.id],
-            'languages': [self.language.id],
-            'projects': [self.project2.id],
-            'teams': [self.team2.id],
-            'socials': [self.social2.id],
-            'accounts': [self.account2.id]
-        }
-        response = self.client.put(reverse('questionnaire_detail',
-                                   kwargs={'pk': self.questionnaire2.id}),
-                                   data=data,
-                                   format='multipart'
-                                   )
-        self.assertEqual(response.status_code, 400)
 
     def test_questionnaire_update_invalid_phone(self):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile2_token.key)
@@ -742,6 +985,51 @@ class QuestionnaireTest(APITestCase):
         response = self.client.delete(reverse('questionnaire_detail', kwargs={'pk': self.questionnaire2.id}))
         self.assertEqual(response.status_code, 403)
         self.assertEqual(Questionnaire.objects.filter(id=self.questionnaire2.id).exists(), True)
+
+    def test_avatar_update(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile2_token.key)
+        data = {
+            'user': self.profile2.id,
+            'avatar': temporary_image_profiles3()
+        }
+        response = self.client.put(reverse('questionnaire_avatar',
+                                            kwargs={'pk': self.questionnaire2.id}), data=data, format='multipart')
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.status_code, 200)
+
+    def test_avatar_update_invalid(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
+        data = {
+            'user': self.profile1.id,
+            'avatar': temporary_image_profiles3()
+        }
+        response = self.client.put(reverse('questionnaire_avatar',
+                                            kwargs={'pk': self.questionnaire2.id}), data=data, format='multipart')
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.status_code, 403)
+
+    def test_avatar_update_invalid_format(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile2_token.key)
+        data = {
+            'user': self.profile2.id,
+            'avatar': temporary_image_2()
+        }
+        response = self.client.put(reverse('questionnaire_avatar',
+                                            kwargs={'pk': self.questionnaire2.id}), data=data, format='multipart')
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.status_code, 400)
+
+    def test_avatar_delete(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile2_token.key)
+        response = self.client.delete(reverse('questionnaire_avatar',
+                                            kwargs={'pk': self.questionnaire2.id}), format='multipart')
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_avatar_delete_invalid(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
+        response = self.client.delete(reverse('questionnaire_avatar',
+                                            kwargs={'pk': self.questionnaire2.id}), format='multipart')
+        self.assertEqual(response.status_code, 403)
 
 
 

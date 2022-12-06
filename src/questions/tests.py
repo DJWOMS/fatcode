@@ -29,6 +29,8 @@ class QuestionApiViewTestCase(APITestCase):
         self.token = Token.objects.create(user=self.user)
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token}')
         self.question = Question.objects.create(title='title1', author=self.user, text='text')
+        self.answer = Answer.objects.create(author=self.user, text='text', question=self.question)
+        self.answer_2 = Answer.objects.create(author=self.user, text='text', question=self.question, parent=self.answer)
 
     def test_create_question(self):
         data = {
@@ -54,6 +56,13 @@ class QuestionApiViewTestCase(APITestCase):
         }
         response = self.client.post(reverse("create-answer"), data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_get_detail_answer(self):
+        url = reverse("answer", kwargs={"pk": self.answer.id})
+        response = self.client.get(url)
+        serialize = serializers.RetrieveAnswerSerializer(self.answer)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json().get("text"), serialize.data.get("text"))
 
     def test_get_detail_question(self):
         url = reverse("question", kwargs={"pk": self.question.id})
@@ -92,7 +101,7 @@ class QuestionApiViewTestCase(APITestCase):
         url = reverse("answer", kwargs={"pk": answer.id})
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(Answer.objects.exists(), False)
+        self.assertEqual(Answer.objects.filter(id=answer.id).exists(), False)
 
     def test_delete_question(self):
         url = reverse("question", kwargs={"pk": self.question.id})

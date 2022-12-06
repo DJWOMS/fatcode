@@ -179,7 +179,6 @@ class ProjectTest(APITestCase):
         data = {
             'name': 'project',
             'description': 'test1',
-            'avatar': temporary_image(),
             'toolkit': [self.toolkit1.id],
             'category': self.category.id,
             'teams': [self.team1.id],
@@ -187,21 +186,7 @@ class ProjectTest(APITestCase):
         }
         response = self.client.post(reverse('project'), data=data, format='multipart')
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(len(response.data), 8)
-
-    def test_project_invalid_avatar(self):
-        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
-        data = {
-            'name': 'project',
-            'description': 'test1',
-            'avatar': temporary_image_2(),
-            'toolkit': [self.toolkit1.id],
-            'category': self.category.id,
-            'teams': [self.team1.id],
-            'repository': 'https://github.com/veraandrianova/drf_git'
-        }
-        response = self.client.post(reverse('project'), data=data, format='multipart')
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(len(response.data), 7)
 
     def test_project_create_invalid_repo(self):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
@@ -287,7 +272,6 @@ class ProjectTest(APITestCase):
         data = {
             'name': 'test',
             'description': 'test1',
-            'avatar': temporary_image_3(),
             'toolkit': [self.toolkit1.id],
             'category': self.category.id,
             'teams': [self.team1.id],
@@ -298,26 +282,8 @@ class ProjectTest(APITestCase):
                                    data=data,
                                    format='multipart'
                                    )
-        self.assertEqual(len(response.data), 8)
+        self.assertEqual(len(response.data), 7)
         self.assertEqual(response.status_code, 200)
-
-    def test_project_update_invalide_avatar(self):
-        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
-        data = {
-            'name': 'test',
-            'description': 'test1',
-            'avatar': temporary_image_2(),
-            'toolkit': [self.toolkit1.id],
-            'category': self.category.id,
-            'teams': [self.team1.id],
-            'repository': 'https://github.com/veraandrianova/drf_git'
-        }
-        response = self.client.put(reverse('project_detail',
-                                           kwargs={'pk': self.project1.id}),
-                                   data=data,
-                                   format='multipart'
-                                   )
-        self.assertEqual(response.status_code, 400)
 
     def test_project_update_invalid_repo_not_found(self):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
@@ -449,4 +415,49 @@ class ProjectTest(APITestCase):
     def test_project_board_invalid(self):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile3_token.key)
         response = self.client.get(reverse('project_board', kwargs={'pk': self.project1.id}))
+        self.assertEqual(response.status_code, 403)
+
+    def test_avatar_update(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
+        data = {
+            'user': self.profile1.id,
+            'avatar': temporary_image_3()
+        }
+        response = self.client.put(reverse('project_avatar',
+                                            kwargs={'pk': self.project1.id}), data=data, format='multipart')
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.status_code, 200)
+
+    def test_avatar_update_invalid(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile2_token.key)
+        data = {
+            'user': self.profile2.id,
+            'avatar': temporary_image_3()
+        }
+        response = self.client.put(reverse('project_avatar',
+                                            kwargs={'pk': self.project1.id}), data=data, format='multipart')
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.status_code, 403)
+
+    def test_avatar_update_invalid_format(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
+        data = {
+            'user': self.profile1.id,
+            'avatar': temporary_image_2()
+        }
+        response = self.client.put(reverse('project_avatar',
+                                            kwargs={'pk': self.project1.id}), data=data, format='multipart')
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.status_code, 400)
+
+    def test_avatar_delete(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
+        response = self.client.delete(reverse('project_avatar',
+                                            kwargs={'pk': self.project1.id}), format='multipart')
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_avatar_delete_invalid(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile2_token.key)
+        response = self.client.delete(reverse('project_avatar',
+                                            kwargs={'pk': self.project1.id}), format='multipart')
         self.assertEqual(response.status_code, 403)

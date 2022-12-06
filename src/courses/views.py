@@ -11,6 +11,7 @@ from .filters import CourseFilter
 
 
 class CategoryView(ReadOnlyModelViewSet):
+    """Представление категорий"""
     serializer_class = serializers.CategoryChildrenSerializer
 
     def get_queryset(self):
@@ -18,11 +19,13 @@ class CategoryView(ReadOnlyModelViewSet):
 
 
 class TagView(ReadOnlyModelViewSet):
+    """Представлениетегов"""
     queryset = models.Tag.objects.all()
     serializer_class = serializers.TagSerializer
 
 
 class CourseView(classes.MixedPermissionSerializer, ModelViewSet):
+    """CRUD курсов"""
     filter_backends = [DjangoFilterBackend]
     filterset_class = CourseFilter
     serializer_classes_by_action = {
@@ -50,6 +53,7 @@ class CourseView(classes.MixedPermissionSerializer, ModelViewSet):
 
 
 class LessonView(classes.MixedPermissionSerializer, ModelViewSet):
+    """CRUD уроков"""
     queryset = models.Lesson.objects.select_related('course').all()
     serializer_classes_by_action = {
         "create": serializers.LessonDetailSerializer,
@@ -68,12 +72,14 @@ class LessonView(classes.MixedPermissionSerializer, ModelViewSet):
 
 
 class StudentWorkView(CreateAPIView):
+    """Создание студентов"""
     queryset = models.StudentWork.objects.all()
     permission_classes = (IsAuthenticated, )
     serializer_class = serializers.StudentWorkSerializer
 
 
 class HelpUserView(CreateAPIView):
+    """Помощь пользователям"""
     queryset = models.HelpUser
     permission_classes = (IsAuthenticated, )
     serializer_class = serializers.HelpUserSerializer

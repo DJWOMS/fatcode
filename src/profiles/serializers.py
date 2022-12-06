@@ -1,3 +1,5 @@
+import os
+
 from djoser.serializers import UserSerializer, UserCreatePasswordRetypeSerializer
 from djoser.conf import settings
 from rest_framework import serializers
@@ -8,7 +10,7 @@ from src.repository.models import Toolkit
 from src.profiles import models
 from src.base.validators import ImageValidator
 from src.profiles.services import add_friend
-
+from src.base import exceptions
 
 
 class UserUpdateSerializer(UserSerializer):
@@ -41,16 +43,7 @@ class UsersCreateSerializer(UserCreatePasswordRetypeSerializer):
         services.check_email(attrs.get('email'))
         services.check_invite(invite)
         attrs = super().validate(attrs)
-        print('attrs', attrs)
         return attrs
-
-    # def create(self, validate_data):
-    #
-    #     return super().create(validate_data)
-        # username = validate_data.pop('username')
-        # email = validate_data.pop('email')
-        # password = validate_data.pop('password')
-        # return services.register_user(username, email, password)
 
 
 class UserSocialSerializer(serializers.ModelSerializer):
@@ -204,7 +197,6 @@ class QuestionnaireSerializer(serializers.ModelSerializer):
             "country",
             "town",
             "phone",
-            "avatar",
             "user",
             "toolkits",
             "teams",
@@ -243,8 +235,6 @@ class QuestionnaireSerializer(serializers.ModelSerializer):
         languages = validated_data.pop('languages', None)
         socials = validated_data.pop('socials', None)
         services.check_profile(user, teams, projects, accounts, socials)
-        if instance.avatar:
-            instance.avatar.delete()
         instance = super().update(instance, validated_data)
         instance = services.questionnaire_update(instance, teams, toolkits, projects, accounts, languages, socials)
         instance.save()
@@ -306,4 +296,104 @@ class FriendSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         return add_friend(friend=validated_data['friend'], user=validated_data['user'])
+
+
+class AvatarProfileSerializer(serializers.ModelSerializer):
+    """ Аватар профиля """
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = models.FatUser
+        fields = ('avatar', 'user')
+
+    def update(self, instance, validated_data):
+        if instance.avatar:
+            instance.avatar.delete()
+        instance.avatar = validated_data.get('avatar', None)
+        instance.save()
+        return instance
+
+
+class AvatarQuestionnaireSerializer(serializers.ModelSerializer):
+    """ Аватар анкеты """
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = models.Questionnaire
+        fields = ('avatar', 'user')
+
+    def update(self, instance, validated_data):
+        if instance.avatar:
+            instance.avatar.delete()
+        instance.avatar = validated_data.get('avatar', None)
+        instance.save()
+        return instance
+
+
+class SocialSerializer(serializers.ModelSerializer):
+    """Социальные ссылки"""
+
+    class Meta:
+        model = models.Social
+        fields = ('title', )
+
+
+class SocialProfileSerializer(serializers.ModelSerializer):
+    """ Просмотр социальных ссылок профиля """
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    social = SocialSerializer()
+
+    class Meta:
+        model = models.FatUserSocial
+        fields = ('id', 'social', 'user', 'user_url')
+
+
+class SocialProfileCreateSerializer(serializers.ModelSerializer):
+    """ Create социальных ссылок профиля """
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = models.FatUserSocial
+        fields = ('id', 'social', 'user', 'user_url')
+
+    def create(self, validated_data):
+        user = validated_data.pop('user')
+        social_link = validated_data.pop('social')
+        user_url = validated_data.pop('user_url')
+        cur_social = models.FatUserSocial.objects.filter(social=social_link, user=user).exists()
+        if cur_social:
+            raise exceptions.SocialExists()
+        social = models.FatUserSocial.objects.create(social=social_link, user=user, user_url=user_url)
+        return social
+
+
+class SocialProfileUpdateSerializer(serializers.ModelSerializer):
+    """ Update социальных ссылок профиля """
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = models.FatUserSocial
+        fields = ('id', 'user', 'user_url')
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    """ Представление профиля """
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = models.FatUser
+        fields = ('id', 'avatar', 'middle_name', 'email', 'user')
+
+
+class UserProfileUpdateSerializer(serializers.ModelSerializer):
+    """ RUDE профиля """
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = models.FatUser
+        fields = ('id', 'middle_name', 'email', 'user')
+
+    def update(self, instance, validated_data):
+        email = validated_data.pop('email')
+        return services.check_or_update_email(instance, email, validated_data)
 

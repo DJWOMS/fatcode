@@ -120,3 +120,9 @@ class AccountIdExists(APIException):
     status_code = status.HTTP_403_FORBIDDEN
     default_detail = 'Аккаунт уже привязан'
     default_code = 'error'
+
+
+class SocialExists(APIException):
+    status_code = status.HTTP_403_FORBIDDEN
+    default_detail = 'Ссылка на эту социальную сеть сущетсвует'
+    default_code = 'error'
