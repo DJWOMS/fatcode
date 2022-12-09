@@ -104,8 +104,7 @@ class AvatarView(MixedPermissionSerializer, viewsets.ModelViewSet):
     serializer_classes_by_action = serializers.AvatarProjectSerializer
     permission_classes_by_action = {
         'list': (IsAuthenticated,),
-        'update': (IsAuthorProject,),
-        'destroy': (IsAuthorProject,),
+        'update': (IsAuthorProject,)
     }
 
     def get_queryset(self):
@@ -113,6 +112,3 @@ class AvatarView(MixedPermissionSerializer, viewsets.ModelViewSet):
 
     def perform_update(self, serializer):
         serializer.save(project_id=self.kwargs.get('pk'))
-
-    def perform_destroy(self, instance):
-        instance.avatar.delete()

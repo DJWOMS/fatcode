@@ -2,7 +2,6 @@ from django.db.models import Q
 from django.shortcuts import render
 from django_filters import rest_framework as filter
 
-from rest_framework.generics import get_object_or_404
 from rest_framework import generics, status, parsers
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
@@ -198,8 +197,7 @@ class AvatarProfileView(MixedPermissionSerializer, ModelViewSet):
     serializer_classes_by_action = serializers.AvatarProfileSerializer
     permission_classes_by_action = {
         'list': (IsAuthenticatedOrReadOnly,),
-        'update': (permissions.IsAuthorUser,),
-        'destroy': (permissions.IsAuthorUser,),
+        'update': (permissions.IsAuthorUser,)
     }
 
     def get_queryset(self):
@@ -207,10 +205,6 @@ class AvatarProfileView(MixedPermissionSerializer, ModelViewSet):
 
     def perform_update(self, serializer):
         serializer.save(user_id=self.kwargs.get('pk'))
-
-    def perform_destroy(self, instance):
-        instance.avatar.delete()
-        instance.avatar = ''
 
 
 class SocialProfileView(MixedPermissionSerializer, ModelViewSet):
@@ -232,7 +226,7 @@ class SocialProfileView(MixedPermissionSerializer, ModelViewSet):
     lookup_url_kwarg = 'social_pk'
 
     def get_queryset(self):
-        social = models.FatUserSocial.objects.filter(user__id=self.kwargs.get('pk'))
+        social = models.FatUserSocial.objects.filter(user__id=self.kwargs.get('pk')).select_related('user', 'social')
         return social
 
 
@@ -242,8 +236,7 @@ class AvatarQuestionnaireView(MixedPermissionSerializer, ModelViewSet):
     serializer_classes_by_action = serializers.AvatarQuestionnaireSerializer
     permission_classes_by_action = {
         'list': (IsAuthenticatedOrReadOnly,),
-        'update': (permissions.IsAuthorQuestionnaireUser,),
-        'destroy': (permissions.IsAuthorQuestionnaireUser,),
+        'update': (permissions.IsAuthorQuestionnaireUser,)
     }
 
     def get_queryset(self):
@@ -252,6 +245,8 @@ class AvatarQuestionnaireView(MixedPermissionSerializer, ModelViewSet):
     def perform_update(self, serializer):
         serializer.save(questionnaire_id=self.kwargs.get('pk'))
 
-    def perform_destroy(self, instance):
-        instance.avatar.delete()
-        instance.avatar = ''
+
+class SocialView(generics.ListAPIView):
+    """Представление ссоциальных сетей"""
+    queryset = models.Social.objects.all()
+    serializer_class = serializers.SocialListSerializer

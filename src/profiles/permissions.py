@@ -30,7 +30,7 @@ class IsQuestionnaireNotExists(permissions.BasePermission):
     """Для создания только одной анкеты"""
 
     def has_permission(self, request, view):
-        cur_user = models.Questionnaire.objects.filter(user=request.user).exists()
+        cur_user = models.Questionnaire.objects.select_related('user').filter(user=request.user).exists()
         if not cur_user:
             return True
 
@@ -44,4 +44,4 @@ class IsAuthorUser(BasePermission):
 class IsAuthorQuestionnaireUser(BasePermission):
     """Только для автора пользователя"""
     def has_permission(self, request, view):
-        return models.Questionnaire.objects.filter(user=request.user, id=view.kwargs.get('pk')).exists()
+        return models.Questionnaire.objects.select_related('user').filter(user=request.user, id=view.kwargs.get('pk')).exists()

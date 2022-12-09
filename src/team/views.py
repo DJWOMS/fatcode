@@ -251,7 +251,6 @@ class AvatarTeam(MixedPermissionSerializer, viewsets.ModelViewSet):
     permission_classes_by_action = {
         'list': (IsAuthenticatedOrReadOnly,),
         'update': (permissions.IsAuthorTeam,),
-        'destroy': (permissions.IsAuthorTeam,),
     }
 
     def get_queryset(self):
@@ -259,6 +258,3 @@ class AvatarTeam(MixedPermissionSerializer, viewsets.ModelViewSet):
 
     def perform_update(self, serializer):
         serializer.save(team_id=self.kwargs.get('pk'))
-
-    def perform_destroy(self, instance):
-        instance.avatar.delete()

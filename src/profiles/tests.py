@@ -190,26 +190,19 @@ class ProfileAuthTests(APITestCase):
         self.assertTrue('username' in request.data)
 
 
-# class TestSocial(APITestCase):
-#     @classmethod
-#     def setUpClass(cls):
-#         super().setUpClass()
-#
-#         Social.objects.create(title='Social 1')
-#         Social.objects.create(title='Social 2')
-#
-#     def test_social_list(self):
-#         url = reverse("social-list")
-#         request = self.client.get(url)
-#         self.assertEqual(request.status_code, status.HTTP_200_OK)
-#         self.assertEqual(len(request.data), 2)
-#
-#     def test_social_detail(self):
-#         social = Social.objects.get(title='Social 1')
-#         url = reverse("social-detail", kwargs={"pk": social.pk})
-#         request = self.client.get(url)
-#         self.assertEqual(request.status_code, status.HTTP_200_OK)
-#         self.assertEqual(request.data['title'], 'Social 1')
+class TestSocial(APITestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+
+        Social.objects.create(title='Social 1')
+        Social.objects.create(title='Social 2')
+
+    def test_social_list(self):
+        url = reverse("social")
+        request = self.client.get(url)
+        self.assertEqual(request.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(request.data), 4)
 
 
 class FatUserProfileTest(APITestCase):
@@ -336,18 +329,6 @@ class FatUserProfileTest(APITestCase):
                                             kwargs={'pk': self.user_test3.id}), data=data, format='multipart')
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.status_code, 400)
-
-    def test_avatar_delete(self):
-        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.user_test3_token.key)
-        response = self.client.delete(reverse('profile_avatar',
-                                            kwargs={'pk': self.user_test3.id}), format='multipart')
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-
-    def test_avatar_delete_invalid(self):
-        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.user_test2_token.key)
-        response = self.client.delete(reverse('profile_avatar',
-                                            kwargs={'pk': self.user_test3.id}), format='multipart')
-        self.assertEqual(response.status_code, 403)
 
     def test_social_list(self):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.user_test1_token.key)
@@ -1019,17 +1000,6 @@ class QuestionnaireTest(APITestCase):
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.status_code, 400)
 
-    def test_avatar_delete(self):
-        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile2_token.key)
-        response = self.client.delete(reverse('questionnaire_avatar',
-                                            kwargs={'pk': self.questionnaire2.id}), format='multipart')
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-
-    def test_avatar_delete_invalid(self):
-        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
-        response = self.client.delete(reverse('questionnaire_avatar',
-                                            kwargs={'pk': self.questionnaire2.id}), format='multipart')
-        self.assertEqual(response.status_code, 403)
 
 
 

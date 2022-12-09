@@ -85,8 +85,7 @@ member_detail = views.MemberList.as_view({
 
 avatar_team = views.AvatarTeam.as_view({
     'get': 'list',
-    'put': 'update',
-    'delete': 'destroy'
+    'put': 'update'
 })
 
 urlpatterns = ([

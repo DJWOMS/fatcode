@@ -449,15 +449,3 @@ class ProjectTest(APITestCase):
                                             kwargs={'pk': self.project1.id}), data=data, format='multipart')
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.status_code, 400)
-
-    def test_avatar_delete(self):
-        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
-        response = self.client.delete(reverse('project_avatar',
-                                            kwargs={'pk': self.project1.id}), format='multipart')
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-
-    def test_avatar_delete_invalid(self):
-        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile2_token.key)
-        response = self.client.delete(reverse('project_avatar',
-                                            kwargs={'pk': self.project1.id}), format='multipart')
-        self.assertEqual(response.status_code, 403)

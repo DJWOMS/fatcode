@@ -16,9 +16,9 @@ urlpatterns = [
     path('questionnaire/<int:pk>/', views.QuestionnaireView.as_view(
         {"get": "retrieve", "put": "update", "delete": "destroy"}), name='questionnaire_detail'),
     path('questionnaire/<int:pk>/avatar/', views.AvatarQuestionnaireView.as_view(
-        {"get": "list", "put": "update", "delete": "destroy"}), name='questionnaire_avatar'),
+        {"get": "list", "put": "update"}), name='questionnaire_avatar'),
     path('users/<int:pk>/avatar/', views.AvatarProfileView.as_view(
-        {"get": "list", "put": "update", "delete": "destroy"}), name='profile_avatar'),
+        {"get": "list", "put": "update"}), name='profile_avatar'),
     path('users/<int:pk>/social/', views.SocialProfileView.as_view(
         {"get": "list", "post": "create"}), name='social_profile'),
     path('users/<int:pk>/social/<int:social_pk>/', views.SocialProfileView.as_view(
@@ -35,6 +35,7 @@ urlpatterns = [
     path('application/to_me/<int:pk>/', views.ApplicationUserGetterView.as_view({'get': 'retrieve'})),
     path('friend/', views.FriendView.as_view({'get': 'list', 'post': 'create'})),
     path('friend/<int:pk>/', views.FriendView.as_view({'delete': 'destroy'})),
+    path('social/', views.SocialView.as_view(), name='social')
 ]
 
 router = DefaultRouter()

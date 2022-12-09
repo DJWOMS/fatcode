@@ -397,3 +397,11 @@ class UserProfileUpdateSerializer(serializers.ModelSerializer):
         email = validated_data.pop('email')
         return services.check_or_update_email(instance, email, validated_data)
 
+
+class SocialListSerializer(serializers.ModelSerializer):
+    """Просмотр социальных сетей"""
+
+    class Meta:
+        model = models.Social
+        fields = ('title', 'logo', 'url')
+

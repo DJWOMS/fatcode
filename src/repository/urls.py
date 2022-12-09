@@ -9,7 +9,7 @@ urlpatterns = [
     path('project/<int:pk>/', views.ProjectsView.as_view(
         {"get": "retrieve", "put": "update", "delete": "destroy"}), name='project_detail'),
     path('project/<int:pk>/avatar/', views.AvatarView.as_view(
-        {"get": "list", "put": "update", "delete": "destroy"}), name='project_avatar'),
+        {"get": "list", "put": "update"}), name='project_avatar'),
     path('project/<int:pk>/teams/', views.MemberProjectTeamsView.as_view({"get": "list"}), name='project_teams'),
     path('project/<int:pk>/board/', views.MemberProjectBoardView.as_view({"get": "list"}), name='project_board'),
     path('my_projects/', views.UserProjectsView.as_view({"get": "list"}), name='my_projects'),
