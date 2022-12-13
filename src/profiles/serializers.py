@@ -1,16 +1,13 @@
-import os
-
 from djoser.serializers import UserSerializer, UserCreatePasswordRetypeSerializer
 from djoser.conf import settings
 from rest_framework import serializers
 
-# from src.courses.serializers import ListCourseSerializer
+from src.base.validators import ImageValidator
+from src.base import exceptions
+
 from src.profiles import models, services
 from src.repository.models import Toolkit
-from src.profiles import models
-from src.base.validators import ImageValidator
 from src.profiles.services import add_friend
-from src.base import exceptions
 
 
 class UserUpdateSerializer(UserSerializer):
@@ -66,10 +63,7 @@ class UserAvatarSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.FatUser
-        fields = [
-            "id",
-            "avatar"
-        ]
+        fields = ("id", "avatar")
 
 
 class AccountSerializer(serializers.ModelSerializer):
@@ -77,7 +71,7 @@ class AccountSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Account
-        fields = ("account_url", )
+        fields = ("account_url",)
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -110,15 +104,14 @@ class UserSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
     def update_user_social(self, instance, user_social):
-        for soc in user_social:
-            entry_fatUserSocial = instance.user_social.filter(
-                social=soc['social']).first()
+        for social in user_social:
+            entry_fatUserSocial = instance.user_social.filter(social=social['social']).first()
 
             if entry_fatUserSocial is not None:
-                entry_fatUserSocial.user_url = soc['user_url']
+                entry_fatUserSocial.user_url = social['user_url']
                 entry_fatUserSocial.save()
             else:
-                instance.user_social.create(social=soc['social'], user_url=soc['user_url'])
+                instance.user_social.create(social=social['social'], user_url=social['user_url'])
 
 
 class UserPublicSerializer(serializers.ModelSerializer):
@@ -127,6 +120,7 @@ class UserPublicSerializer(serializers.ModelSerializer):
     avatar = serializers.ImageField(read_only=True)
     user_social = UserSocialSerializer(many=True)
     socials = ListSocialSerializer(many=True)
+
     # courses = ListCourseSerializer(many=True)
 
     class Meta:
@@ -167,13 +161,13 @@ class DashboardUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.FatUser
         fields = (
-                'coins',
-                'experience',
-                'username',
-                'id',
-                'started_courses_count',
-                'finished_courses_count'
-            )
+            'coins',
+            'experience',
+            'username',
+            'id',
+            'started_courses_count',
+            'finished_courses_count'
+        )
 
         def get_started_courses_count(self, instance):
             return instance.courses.filter(progress=0).count()
@@ -187,7 +181,7 @@ class GitHubAddSerializer(serializers.Serializer):
 
 
 class QuestionnaireSerializer(serializers.ModelSerializer):
-    """ Анкета пользователя """
+    """Анкета пользователя"""
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
@@ -203,7 +197,7 @@ class QuestionnaireSerializer(serializers.ModelSerializer):
             "projects",
             "accounts",
             "socials",
-            "languages"
+            "languages",
         )
 
     def create(self, validated_data):
@@ -236,7 +230,9 @@ class QuestionnaireSerializer(serializers.ModelSerializer):
         socials = validated_data.pop('socials', None)
         services.check_profile(user, teams, projects, accounts, socials)
         instance = super().update(instance, validated_data)
-        instance = services.questionnaire_update(instance, teams, toolkits, projects, accounts, languages, socials)
+        instance = services.questionnaire_update(
+            instance, teams, toolkits, projects, accounts, languages, socials
+        )
         instance.save()
         return instance
 
@@ -246,7 +242,7 @@ class GetToolkitForUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Toolkit
-        fields = ('name', )
+        fields = ('name',)
 
 
 class QuestionnaireListSerializer(serializers.ModelSerializer):
@@ -269,21 +265,21 @@ class ApplicationListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Application
-        fields = ('id', 'getter', )
+        fields = ('id', 'getter',)
 
 
 class ApplicationSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Application
-        fields = ('id', 'getter', )
+        fields = ('id', 'getter',)
 
 
 class FriendListSerializer(serializers.ModelSerializer):
     friend = GetUserSerializer()
 
     class Meta:
-        model = models.Friends
-        fields = ('id', 'friend', )
+        model = models.Friend
+        fields = ('id', 'friend',)
 
     def create(self, validated_data):
         return add_friend(friend=validated_data['friend'], user=validated_data['user'])
@@ -291,15 +287,15 @@ class FriendListSerializer(serializers.ModelSerializer):
 
 class FriendSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.Friends
-        fields = ('id', 'friend', )
+        model = models.Friend
+        fields = ('id', 'friend',)
 
     def create(self, validated_data):
         return add_friend(friend=validated_data['friend'], user=validated_data['user'])
 
 
 class AvatarProfileSerializer(serializers.ModelSerializer):
-    """ Аватар профиля """
+    """Аватар профиля"""
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
@@ -315,7 +311,7 @@ class AvatarProfileSerializer(serializers.ModelSerializer):
 
 
 class AvatarQuestionnaireSerializer(serializers.ModelSerializer):
-    """ Аватар анкеты """
+    """Аватар анкеты"""
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
@@ -335,11 +331,11 @@ class SocialSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Social
-        fields = ('title', )
+        fields = ('title',)
 
 
 class SocialProfileSerializer(serializers.ModelSerializer):
-    """ Просмотр социальных ссылок профиля """
+    """Просмотр социальных ссылок профиля"""
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
     social = SocialSerializer()
 
@@ -349,7 +345,7 @@ class SocialProfileSerializer(serializers.ModelSerializer):
 
 
 class SocialProfileCreateSerializer(serializers.ModelSerializer):
-    """ Create социальных ссылок профиля """
+    """Create социальных ссылок профиля"""
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
@@ -363,12 +359,12 @@ class SocialProfileCreateSerializer(serializers.ModelSerializer):
         cur_social = models.FatUserSocial.objects.filter(social=social_link, user=user).exists()
         if cur_social:
             raise exceptions.SocialExists()
-        social = models.FatUserSocial.objects.create(social=social_link, user=user, user_url=user_url)
+        social = models.FatUserSocial.objects.create(social=social_link, user=user, ser_url=user_url)
         return social
 
 
 class SocialProfileUpdateSerializer(serializers.ModelSerializer):
-    """ Update социальных ссылок профиля """
+    """Update социальных ссылок профиля"""
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
@@ -377,7 +373,7 @@ class SocialProfileUpdateSerializer(serializers.ModelSerializer):
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
-    """ Представление профиля """
+    """Представление профиля"""
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
@@ -386,7 +382,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 
 class UserProfileUpdateSerializer(serializers.ModelSerializer):
-    """ RUDE профиля """
+    """RUDE профиля"""
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
@@ -404,4 +400,3 @@ class SocialListSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Social
         fields = ('title', 'logo', 'url')
-
