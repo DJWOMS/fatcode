@@ -8,7 +8,7 @@ from rest_framework.authtoken.models import Token
 
 from src.team.models import TeamMember
 from src.repository.models import ProjectMember
-from src.profiles.models import FatUser, Account, Friends, Applications, Invitation
+from src.profiles.models import FatUser, Account, Friends, Application, Invitation
 from ..base import exceptions
 from .models import Questionnaire, FatUserSocial
 
@@ -142,8 +142,8 @@ def create_account(user, account_name, account_url, account_id):
 
 
 def add_friend(friend, user):
-    if Applications.objects.filter(getter=friend, sender=user):
-        Applications.objects.filter(getter=friend, sender=user).delete()
+    if Application.objects.filter(getter=friend, sender=user):
+        Application.objects.filter(getter=friend, sender=user).delete()
         return Friends.objects.create(friend=friend, user=user)
     else:
         raise ValueError("you have not application")

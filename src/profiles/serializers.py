@@ -268,13 +268,13 @@ class ApplicationListSerializer(serializers.ModelSerializer):
     getter = GetUserSerializer()
 
     class Meta:
-        model = models.Applications
+        model = models.Application
         fields = ('id', 'getter', )
 
 
 class ApplicationSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.Applications
+        model = models.Application
         fields = ('id', 'getter', )
 
 

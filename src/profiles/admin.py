@@ -72,7 +72,7 @@ admin.site.register(models.Account, AccountAdmin)
 admin.site.register(models.Questionnaire, QuestionnaireAdmin)
 admin.site.register(models.Language, LanguageAdmin)
 admin.site.register(models.FatUserSocial, FatUserSocialAdmin)
-admin.site.register(models.Applications)
+admin.site.register(models.Application)
 admin.site.register(models.Friends)
 admin.site.register(models.Invitation, InvitationAdmin)
 
