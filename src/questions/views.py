@@ -10,6 +10,7 @@ from . import serializers
 
 
 class QuestionView(MixedPermissionSerializer, ModelViewSet):
+    """CRUD вопроса"""
     serializer_classes_by_action = {
         "list": serializers.ListQuestionSerializer,
         "retrieve": serializers.RetrieveQuestionSerializer,
@@ -40,6 +41,7 @@ class QuestionView(MixedPermissionSerializer, ModelViewSet):
 
 
 class AnswerView(MixedPermissionSerializer, ModelViewSet):
+    """CRUD ответа"""
     queryset = Answer.objects.all()
     permission_classes = (IsAuthor,)
     permission_classes_by_action = {
@@ -47,6 +49,7 @@ class AnswerView(MixedPermissionSerializer, ModelViewSet):
     }
     serializer_classes_by_action = {
         "create": serializers.CreateAnswerSerializer,
+        "retrieve": serializers.RetrieveAnswerSerializer,
         "update": serializers.UpdateAnswerSerializer,
         "destroy": serializers.CreateAnswerSerializer,
         "partial_update": serializers.UpdateAnswerSerializer,
@@ -57,24 +60,28 @@ class AnswerView(MixedPermissionSerializer, ModelViewSet):
 
 
 class CreateQuestionReview(ModelViewSet):
+    """Создать вопрос"""
     serializer_class = serializers.QuestionReviewSerializer
     permission_classes = (IsAuthenticated,)
     queryset = QuestionReview.objects.all()
 
 
 class CreateAnswerReview(ModelViewSet):
+    """Создать ответ"""
     serializer_class = serializers.AnswerReviewSerializer
     permission_classes = (IsAuthenticated,)
     queryset = AnswerReview.objects.all()
 
 
 class UpdateAnswerAccept(ModelViewSet):
+    """Обновить ответ"""
     serializer_class = serializers.UpdateAcceptAnswerSerializer
     permission_classes = (IsAuthenticated,)
     queryset = Answer.objects.select_related('author', 'question', 'parent').all()
 
 
 class QuestionFollower(MixedPermission, ModelViewSet):
+    """Представление подписчиков на вопрос"""
     serializer_class = serializers.FollowerQuestionSerializer
     permission_classes = (IsAuthenticated,)
     permission_classes_by_action = {

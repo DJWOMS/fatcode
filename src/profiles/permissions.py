@@ -1,3 +1,5 @@
+
+from rest_framework import permissions
 from rest_framework.permissions import BasePermission
 
 from src.profiles import models
@@ -22,3 +24,24 @@ class IsNotYouGetter(BasePermission):
 
     def has_permission(self, request, view):
         return request.data['getter'] == request.user.id
+
+
+class IsQuestionnaireNotExists(permissions.BasePermission):
+    """Для создания только одной анкеты"""
+
+    def has_permission(self, request, view):
+        cur_user = models.Questionnaire.objects.select_related('user').filter(user=request.user).exists()
+        if not cur_user:
+            return True
+
+
+class IsAuthorUser(BasePermission):
+    """Только для автора пользователя"""
+    def has_permission(self, request, view):
+        return models.FatUser.objects.filter(username=request.user, id=view.kwargs.get('pk')).exists()
+
+
+class IsAuthorQuestionnaireUser(BasePermission):
+    """Только для автора пользователя"""
+    def has_permission(self, request, view):
+        return models.Questionnaire.objects.select_related('user').filter(user=request.user, id=view.kwargs.get('pk')).exists()

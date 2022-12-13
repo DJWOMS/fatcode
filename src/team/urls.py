@@ -1,6 +1,7 @@
 from django.urls import path
-from . import views
 from rest_framework.urlpatterns import format_suffix_patterns
+
+from . import views
 
 teams = views.TeamView.as_view({
     'get': 'list',
@@ -82,7 +83,12 @@ member_detail = views.MemberList.as_view({
     'delete': 'destroy'
 })
 
-urlpatterns = format_suffix_patterns([
+avatar_team = views.AvatarTeam.as_view({
+    'get': 'list',
+    'put': 'update'
+})
+
+urlpatterns = ([
     path('my_team/', my_team, name='my_team'),
     path('team_member/', team_member, name='team_member'),
     path('invitation/', invitation, name='invitation'),
@@ -97,6 +103,7 @@ urlpatterns = format_suffix_patterns([
     path('<int:pk>/post/<int:post_pk>/', update_or_delete_post, name='update_or_delete_post'),
     path('<int:pk>/post/<int:post_pk>/comment/', comment, name='comment'),
     path('<int:pk>/post/<int:post_pk>/comment/<int:comment_pk>', comment_detail, name='comment_detail'),
+    path('<int:pk>/avatar/', avatar_team, name='avatar_team'),
     path('<int:pk>/', detail_teams, name='detail_teams'),
     path('', teams, name='teams'),
 ])

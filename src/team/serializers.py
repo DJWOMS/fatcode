@@ -1,19 +1,17 @@
-from django.db.models import Q
-from rest_framework import serializers, status
-from rest_framework.exceptions import APIException
+from rest_framework import serializers
 
-from ..base.exceptions import CustomException
-from ..base.serializers import FilterCommentListSerializer
-from .models import Post, Comment, Team, TeamMember, Invitation, SocialLink
 from ..profiles.serializers import GetUserSerializer
 from src.repository.models import Project
+
+from . import models
+from . import services
 
 
 class TeamNameView(serializers.ModelSerializer):
     """Вывод команды при добавлении социальной ссылки"""
 
     class Meta:
-        model = Team
+        model = models.Team
         fields = ('name',)
 
 
@@ -22,7 +20,7 @@ class ListSocialLinkSerializer(serializers.ModelSerializer):
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
-        model = SocialLink
+        model = models.SocialLink
         fields = ('id', 'name', 'link', 'user')
 
 
@@ -32,7 +30,7 @@ class UpdateSocialLinkSerializer(serializers.ModelSerializer):
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
-        model = SocialLink
+        model = models.SocialLink
         fields = ('name', 'link', 'user')
 
 
@@ -41,13 +39,13 @@ class CreateSocialLinkSerializer(serializers.ModelSerializer):
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
-        model = SocialLink
+        model = models.SocialLink
         fields = ('name', 'link', 'user')
 
     def create(self, validated_data):
         user = validated_data.pop('user')
         team_id = validated_data.pop('team_id')
-        social_link = SocialLink.objects.create(
+        social_link = models.SocialLink.objects.create(
             team_id=team_id,
             **validated_data
         )
@@ -58,7 +56,7 @@ class SocialLinkSerializer(serializers.ModelSerializer):
     """Вывод социальных сетей"""
 
     class Meta:
-        model = SocialLink
+        model = models.SocialLink
         fields = ('name', 'link')
 
 
@@ -67,7 +65,7 @@ class InvitationSerializer(serializers.ModelSerializer):
     team = TeamNameView()
 
     class Meta:
-        model = Invitation
+        model = models.Invitation
         fields = ("id", "team", "user", "create_date", "order_status")
 
 
@@ -76,20 +74,13 @@ class InvitationAskingSerializer(serializers.ModelSerializer):
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
-        model = Invitation
+        model = models.Invitation
         fields = ("id", "team", "create_date", "user")
 
     def create(self, validated_data):
         team = validated_data.pop('team')
         cur_user = validated_data.pop('user')
-        user = Team.objects.filter(Q(user=cur_user.id) & Q(id=team.id)).exists()
-        member = TeamMember.objects.filter(Q(user=cur_user) & Q(team=team)).exists()
-        invitation = Invitation.objects.filter(team=team, user=cur_user, order_status='Waiting').exists()
-        if user or member or invitation:
-            raise CustomException()
-        else:
-            invitation = Invitation.objects.create(team=team, user=cur_user)
-            return invitation
+        return services.check_and_create_invitation(team, cur_user)
 
 
 class RetrieveDeleteMember(serializers.ModelSerializer):
@@ -97,7 +88,7 @@ class RetrieveDeleteMember(serializers.ModelSerializer):
     user = GetUserSerializer()
 
     class Meta:
-        model = Invitation
+        model = models.Invitation
         fields = ("id", "create_date", "user")
 
 
@@ -107,7 +98,7 @@ class AcceptInvitationSerializerList(serializers.ModelSerializer):
     team = TeamNameView()
 
     class Meta:
-        model = Invitation
+        model = models.Invitation
         fields = ("id", "team", "create_date", "order_status", "user")
 
 
@@ -116,19 +107,11 @@ class AcceptInvitationSerializer(serializers.ModelSerializer):
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
-        model = Invitation
+        model = models.Invitation
         fields = ("order_status", "user")
 
     def update(self, instance, validated_data):
-        try:
-            TeamMember.objects.get(Q(user=instance.user) & Q(team=instance.team))
-            raise APIException(
-                detail='Участником одной команды можно стать один раз',
-                code=status.HTTP_400_BAD_REQUEST
-            )
-        except TeamMember.DoesNotExist:
-            if instance.order_status == 'Approved':
-                TeamMember.objects.create(user=instance.user, team=instance.team)
+        services.check_and_create_team_member(instance)
         instance.order_status = validated_data.get('order_status', None)
         instance.save()
         return instance
@@ -140,7 +123,7 @@ class CommentListSerializer(serializers.ModelSerializer):
     comments_count = serializers.IntegerField()
 
     class Meta:
-        model = Comment
+        model = models.Comment
         fields = ("id", "user", "text", "create_date", "comments_count")
 
 
@@ -149,23 +132,13 @@ class CommentCreateSerializer(serializers.ModelSerializer):
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
-        model = Comment
+        model = models.Comment
         fields = ("text", "user", "id", "parent")
 
     def create(self, validated_data):
         post_id = validated_data.pop('post_id')
-        if validated_data.get('parent') is not None:
-            try:
-                post = Post.objects.get(id=validated_data.get('parent').post.id)
-            except Post.DoesNotExist:
-                raise APIException(
-                    detail='Нет доступа для написания комментариев', code=status.HTTP_400_BAD_REQUEST
-                )
-            if post.id != post_id:
-                raise APIException(
-                    detail='Нет доступа для написания комментариев', code=status.HTTP_400_BAD_REQUEST
-                )
-        comment = Comment.objects.create(
+        services.check_post(post_id, **validated_data)
+        comment = models.Comment.objects.create(
             post_id=post_id,
             **validated_data
             )
@@ -177,7 +150,7 @@ class TeamCommentUpdateSerializer(serializers.ModelSerializer):
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
-        model = Comment
+        model = models.Comment
         fields = ("text", "user", "id")
 
 
@@ -195,7 +168,7 @@ class PostSerializer(serializers.ModelSerializer):
     comments_count = serializers.IntegerField()
 
     class Meta:
-        model = Post
+        model = models.Post
         fields = (
             "id",
             "create_date",
@@ -210,7 +183,7 @@ class PostCreateSerializer(serializers.ModelSerializer):
     """ CUD поста """
 
     class Meta:
-        model = Post
+        model = models.Post
         fields = ("text",)
 
 
@@ -219,7 +192,7 @@ class TeamMemberSerializer(serializers.ModelSerializer):
     user = GetUserSerializer()
 
     class Meta:
-        model = TeamMember
+        model = models.TeamMember
         fields = ("user",)
 
 
@@ -237,7 +210,7 @@ class TeamSerializer(serializers.ModelSerializer):
     project_teams = ProjectSerializers(read_only=True, many=True)
 
     class Meta:
-        model = Team
+        model = models.Team
         fields = (
             "id",
             "name",
@@ -254,7 +227,7 @@ class DetailTeamSerializer(serializers.ModelSerializer):
     social_links = SocialLinkSerializer(many=True)
 
     class Meta:
-        model = Team
+        model = models.Team
         fields = (
             "name",
             "tagline",
@@ -269,12 +242,11 @@ class CreateTeamSerializer(serializers.ModelSerializer):
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
-        model = Team
+        model = models.Team
         fields = (
             "name",
             "tagline",
             "user",
-            "avatar",
         )
 
 
@@ -283,20 +255,12 @@ class UpdateTeamSerializer(serializers.ModelSerializer):
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
-        model = Team
+        model = models.Team
         fields = (
             "name",
             "tagline",
             "user",
-            "avatar",
         )
-
-    def update(self, instance, validated_data):
-        if instance.avatar:
-            instance.avatar.delete()
-        instance = super().update(instance, validated_data)
-        instance.save()
-        return instance
 
 
 class TeamListSerializer(serializers.ModelSerializer):
@@ -304,7 +268,7 @@ class TeamListSerializer(serializers.ModelSerializer):
     social_links = SocialLinkSerializer(many=True)
 
     class Meta:
-        model = Team
+        model = models.Team
         fields = ("id", "name", "avatar", "tagline", "social_links")
 
 
@@ -313,7 +277,7 @@ class MemberSerializer(serializers.ModelSerializer):
     user = GetUserSerializer()
 
     class Meta:
-        model = TeamMember
+        model = models.TeamMember
         fields = ("id", "user")
 
 
@@ -321,7 +285,21 @@ class GetTeamSerializer(serializers.ModelSerializer):
     """Team serializer for other app"""
 
     class Meta:
-        model = Team
+        model = models.Team
         fields = ("id", "name")
 
 
+class AvatarSerializer(serializers.ModelSerializer):
+    """ Аватар команды """
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = models.Team
+        fields = ('avatar', 'user')
+
+    def update(self, instance, validated_data):
+        if instance.avatar:
+            instance.avatar.delete()
+        instance = super().update(instance, validated_data)
+        instance.save()
+        return instance

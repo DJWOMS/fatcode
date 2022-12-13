@@ -9,11 +9,13 @@ from .models import Report, Category
 
 
 class CategoryView(ReadOnlyModelViewSet):
+    """Категории"""
     queryset = Category.objects.all()
     serializer_class = serializers.CategorySerializer
 
 
 class ReportView(MixedSerializer, ModelViewSet):
+    """CR отчета"""
     parser_classes = (parsers.MultiPartParser,)
     permission_classes = (IsUser,)
     serializer_classes_by_action = {

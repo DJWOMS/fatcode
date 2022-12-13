@@ -15,8 +15,11 @@ from .filters import UsersFilter, HelpUserFilter
 from src.team.models import Team
 from src.repository.models import Project
 
+from ..base.classes import MixedPermission
+
 
 class UserView(ListAPIView):
+    """Просмотр пользователей"""
     queryset = FatUser.objects.annotate(Count('courses')).all()
     permission_classes = (IsAdminUser, )
     # pagination_class = UserPaginationInfo
@@ -26,6 +29,7 @@ class UserView(ListAPIView):
 
 
 class HelpMentorView(ListAPIView):
+    """Помощь наставника"""
     queryset = HelpUser.objects.all()
     permission_classes = (IsAdminUser, )
     filter_backends = (DjangoFilterBackend, )
@@ -33,7 +37,9 @@ class HelpMentorView(ListAPIView):
     serializer_class = HelpUserSerializer
 
 
+##TODO  'TeamProjectCountView' should either include a `serializer_class` attribute, or override the `get_serializer_class()` method.
 class TeamProjectCountView(ListAPIView):
+    """Команды проектов"""
     permission_classes = (IsAdminUser, )
 
     def list(self, request, *args, **kwargs):

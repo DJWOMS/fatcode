@@ -122,8 +122,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE': 10,
-    'DATETIME_FORMAT': "%m/%d/%Y %H:%M:%S",
+    'PAGE_SIZE': 10
 }
 
 DJOSER = {
@@ -134,7 +133,7 @@ DJOSER = {
     'LOGIN_FIELD': 'username',
     'SERIALIZERS': {
         'current_user': 'src.profiles.serializers.UserUpdateSerializer',
-        'user_create_password_retype': 'src.profiles.serializers.UsersCreateSerializer',
+        'user_create': 'src.profiles.serializers.UsersCreateSerializer',
     },
 }
 
@@ -162,7 +161,7 @@ CORS_ALLOWED_ORIGINS = os.environ.get("CORS_ALLOWED_HOSTS", "http://127.0.0.1:80
 
 CELERY_BROKER_URL = 'redis://redis:6379/0'
 CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
-# CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
 CLINENT_ID = '11eac0936dc86e03a233'
 CLIENT_SECRET = '8b7793d919a4d9541c9856309c949cd5bc512b2c'

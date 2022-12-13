@@ -4,7 +4,7 @@ from . import views
 urlpatterns = [
     path("answer/", views.AnswerView.as_view({"post": "create"}), name="create-answer"),
     path("answer/<int:pk>/", views.AnswerView.as_view(
-        {"patch": "update", "delete": "destroy"}), name="answer"
+        {"get": "retrieve", "patch": "update", "delete": "destroy"}), name="answer"
     ),
     path("review/", views.CreateQuestionReview.as_view({"post": "create"}), name="question-review"),
     path("answer_review/", views.CreateAnswerReview.as_view(

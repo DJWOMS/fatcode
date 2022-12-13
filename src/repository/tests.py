@@ -1,13 +1,40 @@
+import io
+from PIL import Image
+
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 from rest_framework.authtoken.models import Token
+
+
 from src.profiles.models import FatUser, Account
 from src.repository import models
 from src.team.models import Team, TeamMember
 
 
-class TeamTest(APITestCase):
+def temporary_image():
+    bts = io.BytesIO()
+    img = Image.new("RGB", (250, 250))
+    img.save(bts, 'jpeg')
+    return SimpleUploadedFile("test.jpg", bts.getvalue())
+
+
+def temporary_image_2():
+    bts = io.BytesIO()
+    img = Image.new("RGB", (300, 300))
+    img.save(bts, 'jpeg')
+    return SimpleUploadedFile("test2.jpg", bts.getvalue())
+
+
+def temporary_image_3():
+    bts = io.BytesIO()
+    img = Image.new("RGB", (250, 250))
+    img.save(bts, 'jpeg')
+    return SimpleUploadedFile("test3.jpg", bts.getvalue())
+
+
+class ProjectTest(APITestCase):
     def setUp(self):
         self.profile1 = FatUser.objects.create(
             username='username1',
@@ -95,6 +122,7 @@ class TeamTest(APITestCase):
         self.project1 = models.Project.objects.create(
             name='project1',
             description='test1',
+            avatar=temporary_image(),
             user=self.profile1,
             category=self.category,
             repository='https://github.com/veraandrianova/oop_1'
@@ -156,9 +184,9 @@ class TeamTest(APITestCase):
             'teams': [self.team1.id],
             'repository': 'https://github.com/veraandrianova/drf_git'
         }
-        response = self.client.post(reverse('project'), data=data, format='json')
+        response = self.client.post(reverse('project'), data=data, format='multipart')
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(len(response.data), 8)
+        self.assertEqual(len(response.data), 7)
 
     def test_project_create_invalid_repo(self):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
@@ -250,11 +278,11 @@ class TeamTest(APITestCase):
             'repository': 'https://github.com/veraandrianova/drf_git'
         }
         response = self.client.put(reverse('project_detail',
-                                   kwargs={'pk': self.project1.id}),
+                                           kwargs={'pk': self.project1.id}),
                                    data=data,
-                                   format='json'
+                                   format='multipart'
                                    )
-        self.assertEqual(len(response.data), 8)
+        self.assertEqual(len(response.data), 7)
         self.assertEqual(response.status_code, 200)
 
     def test_project_update_invalid_repo_not_found(self):
@@ -268,7 +296,7 @@ class TeamTest(APITestCase):
             'repository': 'https://github.com/veraandrianova/123'
         }
         response = self.client.put(reverse('project_detail',
-                                   kwargs={'pk': self.project1.id}),
+                                           kwargs={'pk': self.project1.id}),
                                    data=data,
                                    format='json'
                                    )
@@ -286,7 +314,7 @@ class TeamTest(APITestCase):
             'repository': 'https://github.com/veraandrianova/flask'
         }
         response = self.client.put(reverse('project_detail',
-                                   kwargs={'pk': self.project1.id}),
+                                           kwargs={'pk': self.project1.id}),
                                    data=data,
                                    format='json'
                                    )
@@ -304,10 +332,10 @@ class TeamTest(APITestCase):
             'repository': 'https://github.com/veraandrianova/123'
         }
         response = self.client.put(reverse('project_detail',
-                                            kwargs={'pk': self.project1.id}),
-                                            data=data,
-                                            format='json'
-                                            )
+                                           kwargs={'pk': self.project1.id}),
+                                   data=data,
+                                   format='json'
+                                   )
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.status_code, 400)
 
@@ -322,9 +350,9 @@ class TeamTest(APITestCase):
             'repository': 'https://github.com/veraandrianova/123'
         }
         response = self.client.put(reverse('project_detail',
-                                            kwargs={'pk': self.project1.id}),
-                                            data=data,
-                                            format='json')
+                                           kwargs={'pk': self.project1.id}),
+                                   data=data,
+                                   format='json')
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.status_code, 400)
 
@@ -338,9 +366,9 @@ class TeamTest(APITestCase):
             'repository': 'https://github.com/veraandrianova/123'
         }
         response = self.client.put(reverse('project_detail',
-                                            kwargs={'pk': self.project1.id}),
-                                            data=data,
-                                            format='json')
+                                           kwargs={'pk': self.project1.id}),
+                                   data=data,
+                                   format='json')
         self.assertEqual(response.status_code, 401)
 
     def test_project_delete(self):
@@ -388,3 +416,36 @@ class TeamTest(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile3_token.key)
         response = self.client.get(reverse('project_board', kwargs={'pk': self.project1.id}))
         self.assertEqual(response.status_code, 403)
+
+    def test_avatar_update(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
+        data = {
+            'user': self.profile1.id,
+            'avatar': temporary_image_3()
+        }
+        response = self.client.put(reverse('project_avatar',
+                                            kwargs={'pk': self.project1.id}), data=data, format='multipart')
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.status_code, 200)
+
+    def test_avatar_update_invalid(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile2_token.key)
+        data = {
+            'user': self.profile2.id,
+            'avatar': temporary_image_3()
+        }
+        response = self.client.put(reverse('project_avatar',
+                                            kwargs={'pk': self.project1.id}), data=data, format='multipart')
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.status_code, 403)
+
+    def test_avatar_update_invalid_format(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
+        data = {
+            'user': self.profile1.id,
+            'avatar': temporary_image_2()
+        }
+        response = self.client.put(reverse('project_avatar',
+                                            kwargs={'pk': self.project1.id}), data=data, format='multipart')
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.status_code, 400)

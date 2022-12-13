@@ -9,16 +9,19 @@ from .filters import ArticleFilter
 
 
 class CategoryView(ModelViewSet):
+    """Представление категорий"""
     queryset = models.Category.objects.all()
     serializer_class = serializers.CategorySerializer
 
 
 class TagListView(ListAPIView):
+    """Представление тегов"""
     queryset = models.Tag.objects.all()
     serializer_class = serializers.TagSerializer
 
 
 class ArticleView(MixedSerializer, ModelViewSet):
+    """Представление просмотра статей"""
     queryset = (
         models.Article.objects
         .filter(published=True)
@@ -36,11 +39,13 @@ class ArticleView(MixedSerializer, ModelViewSet):
 
 
 class GlossaryLetterListView(ListAPIView):
+    """Представление оглавлений"""
     queryset = models.Glossary.objects.all()
     serializer_class = serializers.GlossaryLetterSerializer
 
 
 class GlossaryArticleListView(ListAPIView):
+    """Предаставление списка статей"""
     serializer_class = serializers.GlossaryArticleSerializer
 
     def get_queryset(self):

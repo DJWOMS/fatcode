@@ -49,7 +49,6 @@ class ProjectSerializer(serializers.ModelSerializer):
             'id',
             'name',
             'description',
-            'avatar',
             'toolkit',
             'category',
             'teams',
@@ -75,8 +74,6 @@ class ProjectSerializer(serializers.ModelSerializer):
         toolkits = validated_data.pop('toolkit', None)
         account_id = services.get_info_for_user_update(repository, teams, user, pk)
         repo_info = services.get_repo(repository, account_id)
-        if instance.avatar:
-            instance.avatar.delete()
         instance = super().update(instance, validated_data)
         instance = services.project_update(instance, repo_info, teams, toolkits)
         instance.save()
@@ -84,7 +81,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 
 
 class ProjectUserListSerializer(serializers.ModelSerializer):
-    """Список проектов пользователя"""
+    """Список проектов"""
     category = CategorySerializer()
     toolkit = ToolkitSerializer(many=True)
     teams = GetTeamSerializer(many=True)
@@ -100,27 +97,6 @@ class ProjectUserListSerializer(serializers.ModelSerializer):
             'category',
             'teams',
             'repository'
-        )
-
-
-class ProjectListSerializer(serializers.ModelSerializer):
-    """Список проектов"""
-    category = CategorySerializer()
-    toolkit = ToolkitSerializer(many=True)
-
-    class Meta:
-        model = models.Project
-        fields = (
-            'id',
-            'name',
-            'description',
-            'create_date',
-            'toolkit',
-            'category',
-            'star',
-            'fork',
-            'commit',
-            'last_commit'
         )
 
 
@@ -171,3 +147,19 @@ class ProjectBoardSerializer(serializers.ModelSerializer):
             'title',
             'user'
         )
+
+
+class AvatarProjectSerializer(serializers.ModelSerializer):
+    """ Аватар проекта """
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = models.Project
+        fields = ('avatar', 'user')
+
+    def update(self, instance, validated_data):
+        if instance.avatar:
+            instance.avatar.delete()
+        instance = super().update(instance, validated_data)
+        instance.save()
+        return instance

@@ -1,9 +1,7 @@
-from celery import shared_task
-
 from fatcode.celery import app
 from src.team.services import check_create_invitations
 
 
 @app.task
-def check_invintations():
+def check_invitations():
     check_create_invitations()

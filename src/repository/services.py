@@ -1,27 +1,24 @@
+import requests
+
 from github import Github
+
 from . import utils
 from .interfaces import Repository
 from ..team.models import Team
-from django.db.models import Q
-from rest_framework import status
-from rest_framework.exceptions import APIException
-import requests
 from . import models
 from ..base import exceptions
 
+
 github = Github()
 
-def get_id(user):
+
+def get_github_account_id(user):
     """Поиск nik в github пользователя"""
-    try:
-        account_id = user.user_account.filter(provider='github').first().account_id
-        return account_id
-    except:
+    if cur_user := user.user_account.filter(provider='github').first():
+        return cur_user.account_id
+    else:
         raise exceptions.BadAccount()
-        # raise APIException(
-        #     detail='Добавить репозиторий возможно только для аккаунтов привязанных к github',
-        #     code=status.HTTP_400_BAD_REQUEST
-        # )
+
 
 def get_my_repository(repository, account_id):
     """Поиск репозитория пользователя"""
@@ -33,18 +30,16 @@ def get_my_repository(repository, account_id):
     else:
         raise exceptions.BadAccountAuthor()
 
+
 def get_nik(repository, account_id):
+    """Поиск id github пользователя"""
     cur_nik = repository.split('/')[-2]
     user_info = requests.get(f'https://api.github.com/users/{cur_nik}/repos').json()
     cur_id = user_info[0]['owner']['id']
     if str(cur_id) == account_id:
         return cur_nik
-    else:
-        # raise APIException(
-        #     detail='Bad account_id',
-        #     code=status.HTTP_400_BAD_REQUEST
-        # )
-        raise exceptions.BadAccountId()
+    raise exceptions.BadAccountId()
+
 
 def get_user_repos(nik):
     """Поиск всех репозиториев пользователя"""
@@ -55,23 +50,24 @@ def get_user_repos(nik):
         user_repos.append(repo.get('name'))
     return user_repos
 
+
 def get_stars_count(nik, repo):
     """Получение колличества звезд репозитория"""
     repo_info = requests.get('https://api.github.com/repos/' + nik + '/' + repo)
-    stars = repo_info.json()['stargazers_count']
-    return stars
+    return repo_info.json()['stargazers_count']
+
 
 def get_forks_count(nik, repo):
     """Получение колличества форков репозитория"""
     repo_info = requests.get('https://api.github.com/repos/' + nik + '/' + repo)
-    forks_count = repo_info.json()['forks_count']
-    return forks_count
+    return repo_info.json()['forks_count']
+
 
 def get_last_commit(nik, repo):
     """Получение даты последнего комментария репозитория"""
     repo_info = requests.get(f'https://api.github.com/repos/{nik}/{repo}/commits')
-    last_commit = repo_info.json()[0]['commit']['author']['date']
-    return last_commit
+    return repo_info.json()[0]['commit']['author']['date']
+
 
 def get_commits_count(nik, repo):
     """Получение даты последнего комментария репозитория"""
@@ -82,21 +78,29 @@ def get_commits_count(nik, repo):
         commits_count += 1
     return commits_count
 
+
 def get_repository(repository):
+    """Получение провайдера github"""
     return github.get_repo(f'{"/".join(repository.split("/")[-2:])}')
 
+
 def get_projects_stats(projects):
+    """Получение звезд проектов"""
     for project in projects:
         repository = get_repository(project.repository)
         utils.repository_stats(project, repository)
     return projects
 
+
 def get_project_stats(project):
+    """Получение звезд проекта"""
     repository = get_repository(project.repository)
     utils.repository_stats(project, repository)
     return project
 
+
 def get_repo(repository, account_id) -> Repository:
+    """Получение звезд, форков, комментариев, последнего комментария проекта"""
     repo, nik = get_my_repository(repository, account_id)
     stars_count = get_stars_count(nik, repo)
     forks_count = get_forks_count(nik, repo)
@@ -104,74 +108,73 @@ def get_repo(repository, account_id) -> Repository:
     last_commit = get_last_commit(nik, repo)
     return Repository(stars_count, forks_count, commits_count, last_commit)
 
+
 def check_teams(teams):
+    """Проверка, есть ли у комманды уже проект"""
     for team in teams:
         cur_team = models.Project.objects.filter(teams=team).exists()
         if cur_team:
             raise exceptions.TeamExists()
-            # raise APIException(
-            #     detail='Для данной команды есть проект',
-            #     code=status.HTTP_400_BAD_REQUEST
-            #     )
     return teams
 
+
 def check_my_teams(teams, user):
-    try:
-        for team in teams:
-            team = Team.objects.get(
-                Q(user=user) &
-                Q(id=team.id)
-            )
-        return True
-    except Team.DoesNotExist:
-        raise exceptions.TeamAuthor()
-        # raise APIException(
-        #     detail='Создать возможно только для своей команды',
-        #     code=status.HTTP_400_BAD_REQUEST
-        # )
+    """Проверка автора команд"""
+    for team in teams:
+        team = Team.objects.filter(user=user, id=team.id).exists()
+        if not team:
+            raise exceptions.TeamAuthor()
+    return teams
+
 
 def check_repo(repo):
-    try:
-        repository = models.Project.objects.get(repository=repo)
+    """Проверка, есть ли у репозитория github уже проект"""
+    project = models.Project.objects.filter(repository=repo).exists()
+    if project:
         raise exceptions.RepositoryExists()
-        # raise APIException(
-        #     detail='Для данного репозитория уже есть проект',
-        #     code=status.HTTP_400_BAD_REQUEST
-        # )
-    except models.Project.DoesNotExist:
-        return True
+    return True
+
 
 def get_info_for_user(repository, teams, user):
-    if check_repo(repository) and check_teams(teams) and check_my_teams(teams, user):
-        return get_id(user)
+    """Проверка входящей информации от пользователя для создания проекта"""
+    check_repo_and_teams = check_repo(repository) and check_teams(teams)
+    if check_repo_and_teams and check_my_teams(teams, user):
+        return get_github_account_id(user)
+
 
 def check_instance_repo(pk, repository):
-    repo = models.Project.objects.filter(id=pk, repository=repository).exists()
-    return repo
+    """Проверка проекта для обновления"""
+    return models.Project.objects.filter(id=pk, repository=repository).exists()
+
 
 def check_instance_teams(teams, pk):
+    """Проверка команды для обновления"""
     for team in teams:
         team = models.Project.objects.filter(id=pk, teams=team).exists()
         if not team:
             return False
     return teams
 
+
 def get_info_for_user_update(repository, teams, user, pk):
+    """Проверка входящей информации от пользователя для обновления проекта"""
     if check_instance_repo(pk, repository):
         return check_all_teams_to_update(teams, pk, user)
     if check_repo(repository):
         return check_all_teams_to_update(teams, pk, user)
 
+
 def check_all_teams_to_update(teams, pk, user):
+    """Проверка всех команд пользователя для обновления проекта"""
     if check_instance_teams(teams, pk):
         if check_my_teams(teams, user):
-            cur_user = get_id(user)
-            return cur_user
-    else:
-        if check_teams(teams) and check_my_teams(teams, user):
-            return get_id(user)
+            return get_github_account_id(user)
+    elif check_teams(teams) and check_my_teams(teams, user):
+        return get_github_account_id(user)
+
 
 def project_create(repo_info, user, repository, teams, toolkit, **validated_data):
+    """Создание проекта"""
     project = models.Project.objects.create(
         star=repo_info.stars_count,
         fork=repo_info.forks_count,
@@ -187,7 +190,9 @@ def project_create(repo_info, user, repository, teams, toolkit, **validated_data
         project.toolkit.add(toolkit)
     return project
 
+
 def project_update(instance, repo_info, teams, toolkits):
+    """Обновление проекта"""
     instance.teams.clear()
     instance.toolkit.clear()
     for team in teams:

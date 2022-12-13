@@ -1,0 +1,9 @@
+{% extends 'admin/change_list.html' %}
+{% block object-tools %}
+  <form action="make_invitation/" method="POST">
+    {% csrf_token %}
+
+    <input type="submit" value="Создать приглашения" />
+  </form>
+    {{ block.super }}
+{% endblock %}
