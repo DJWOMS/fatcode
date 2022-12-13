@@ -74,7 +74,11 @@ class FatUserSocial(models.Model):
 
 class Account(models.Model):
     """Модель аккаунтов привязанных к пользователю"""
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='user_account')
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='user_account'
+    )
     provider = models.CharField(max_length=25, default='')
     account_id = models.CharField(max_length=150, blank=True, null=True)
     account_url = models.CharField(max_length=250, default='')
@@ -108,9 +112,17 @@ class Questionnaire(models.Model):
         ]
     )
     user = models.OneToOneField(FatUser, on_delete=models.CASCADE, related_name='questionnaire')
-    toolkits = models.ManyToManyField('repository.Toolkit', related_name="questionnaire_projects", blank=True)
+    toolkits = models.ManyToManyField(
+        'repository.Toolkit',
+        related_name="questionnaire_projects",
+        blank=True
+    )
     teams = models.ManyToManyField('team.Team', related_name='questionnaire_teams', blank=True)
-    projects = models.ManyToManyField('repository.Project', related_name='questionnaire_projects', blank=True)
+    projects = models.ManyToManyField(
+        'repository.Project',
+        related_name='questionnaire_projects',
+        blank=True
+    )
     accounts = models.ManyToManyField(Account, related_name='questionnaire_accounts', blank=True)
     languages = models.ManyToManyField(Language, related_name="questionnaire_language", blank=True)
     socials = models.ManyToManyField(FatUserSocial, related_name="questionnaire_social", blank=True)
@@ -121,7 +133,7 @@ class Questionnaire(models.Model):
         return f'{self.id}'
 
 
-class Applications(models.Model):
+class Application(models.Model):
     sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="sender")
     getter = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="getter")
 
