@@ -30,7 +30,9 @@ class QuestionApiViewTestCase(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token}')
         self.question = Question.objects.create(title='title1', author=self.user, text='text')
         self.answer = Answer.objects.create(author=self.user, text='text', question=self.question)
-        self.answer_2 = Answer.objects.create(author=self.user, text='text', question=self.question, parent=self.answer)
+        self.answer_2 = Answer.objects.create(
+            author=self.user, text='text', question=self.question, parent=self.answer
+        )
 
     def test_create_question(self):
         data = {
