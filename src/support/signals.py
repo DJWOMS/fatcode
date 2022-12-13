@@ -7,7 +7,7 @@ from django.dispatch import receiver
 
 @receiver(post_save, sender=Report)
 def send_telegram_message(sender, instance, created, **kwargs):
-    if settings.DEBUG:
+    if not settings.DEBUG:
         message = f'Жалоба от {instance.user}, Проблема: {instance.text}'
         telegram_settings = settings.TELEGRAM
         bot = telegram.Bot(token=telegram_settings['bot_token'])
