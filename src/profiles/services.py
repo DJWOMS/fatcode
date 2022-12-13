@@ -35,6 +35,19 @@ class CoinService:
         raise ValueError('Недостаточно средств')
 
 
+class ReputationService:
+    def __init__(self, user: FatUser):
+        self.user = user
+
+    def increase_reputation(self, count: int, action: str):
+        if action == "inc":
+            self.user.reputation += count
+            self.user.save()
+        elif action == "dcr":
+            self.user.reputation -= count
+            self.user.save()
+
+
 def check_token_add(code):
     """Проверка кода с github на добавление аккаунта"""
     url_token = 'https://github.com/login/oauth/access_token'

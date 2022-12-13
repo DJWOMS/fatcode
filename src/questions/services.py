@@ -1,4 +1,7 @@
+from django.db.models import Q, Count
+
 from . import models
+from ..profiles.services import ReputationService
 
 
 class QuestionService:
@@ -12,9 +15,13 @@ class QuestionService:
     def correct_answers_count(self):
         return self.question.answers.filter(accepted=True).count()
 
-    def update_rating(self):
-        self.question.rating += models.QuestionReview.objects.filter(question=self, grade=True).count()
-        self.question.rating -= models.QuestionReview.objects.filter(question=self, grade=False).count()
+    def update_rating(self, grade):
+        if grade:
+            self.question.rating += 1
+            ReputationService(self.question.author).increase_reputation(15, 'inc')
+        else:
+            self.question.rating -= 1
+            ReputationService(self.question.author).increase_reputation(15, 'dcr')
         return self.question.save()
 
     def update_tags(self, tags):
@@ -35,15 +42,19 @@ class AnswerService:
     def __init__(self, answer: models.Answer):
         self.answer = answer
 
-    def update_rating(self):
-        # TODO что здесь происходит?
-        self.answer.rating += self.answer.review.objects.filter(answer=self, grade=True).count()
-        self.answer.rating -= self.answer.review.objects.filter(answer=self, grade=False).count()
-        return super().save()
+    def update_rating(self, grade):
+        if grade:
+            self.answer.rating += 1
+            ReputationService(self.answer.author).increase_reputation(15, 'inc')
+        else:
+            self.answer.rating -= 1
+            ReputationService(self.answer.author).increase_reputation(15, 'dcr')
+        return self.answer.save()
 
     def update_accept(self):
         self.answer.accepted = not self.answer.accepted
-        return self.answer
+        ReputationService(self.answer.author).increase_reputation(20, 'inc')
+        return self.answer.save()
 
 
 def create_follow(question, follower):

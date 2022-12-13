@@ -51,6 +51,7 @@ class FatUser(AbstractUser):
     middle_name = models.CharField(max_length=200, null=True, blank=True)
     socials = models.ManyToManyField(Social, through='FatUserSocial')
     experience = models.IntegerField(default=0)
+    reputation = models.IntegerField(default=0)
     email = models.EmailField(_("email address"), unique=True, blank=True, null=True)
     coins = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 

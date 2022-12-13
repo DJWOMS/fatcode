@@ -4,6 +4,7 @@ from ..profiles.serializers import GetUserSerializer
 from . import models
 from .services import QuestionService, AnswerService, create_follow
 from .validators import QuestionValidator
+from ..profiles.services import ReputationService
 
 
 class TagsSerializer(serializers.ModelSerializer):
@@ -95,6 +96,7 @@ class ListQuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Question
         fields = (
+            "id",
             "title",
             "rating",
             "author",
@@ -121,6 +123,11 @@ class QuestionReviewSerializer(serializers.ModelSerializer):
         QuestionValidator().check_review(data)
         return data
 
+    def create(self, validated_data):
+        review = self.Meta.model.objects.create(**validated_data)
+        QuestionService(validated_data["question"]).update_rating(validated_data['grade'])
+        return review
+
 
 class AnswerReviewSerializer(serializers.ModelSerializer):
     class Meta:
@@ -134,7 +141,7 @@ class AnswerReviewSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         review = self.Meta.model.objects.create(**validated_data)
-        validated_data["answer"].update_rating()
+        AnswerService(validated_data["answer"]).update_rating(validated_data['grade'])
         return review
 
 
