@@ -43,7 +43,10 @@ class UsersCreateSerializer(UserCreatePasswordRetypeSerializer):
         services.check_email(attrs.get('email'))
         services.check_invite(invite)
         attrs = super().validate(attrs)
-        return attrs
+        if attrs:
+            services.delete_invite(invite)
+            return attrs
+        raise exceptions.AuthExists()
 
 
 class UserSocialSerializer(serializers.ModelSerializer):

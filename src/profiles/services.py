@@ -285,13 +285,18 @@ def questionnaire_update(instance, teams, toolkits, projects, accounts, language
 def check_invite(invite):
     """Проверка приглашения"""
     if invite:
-        cur_invite = Invitation.objects.filter(code=invite)
-        if cur_invite:
-            cur_invite.delete()
-            return True
-        else:
+        cur_invite = Invitation.objects.filter(code=invite).exists()
+        if not cur_invite:
             raise exceptions.InvitationNotExists()
+        return invite
     raise exceptions.InvitationNotExists()
+
+
+def delete_invite(invite):
+    """Удаление приглашения"""
+    cur_invite = Invitation.objects.filter(code=invite)
+    cur_invite.delete()
+    return True
 
 
 def check_email(email):
