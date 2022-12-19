@@ -207,7 +207,7 @@ class ProjectSerializers(serializers.ModelSerializer):
 class TeamSerializer(serializers.ModelSerializer):
     """Просмотр всех команд"""
     user = GetUserSerializer()
-    project_teams = ProjectSerializers(read_only=True, many=True)
+    projects_count = serializers.IntegerField()
 
     class Meta:
         model = models.Team
@@ -217,7 +217,7 @@ class TeamSerializer(serializers.ModelSerializer):
             "tagline",
             "user",
             "avatar",
-            "project_teams"
+            "projects_count"
         )
 
 
@@ -225,6 +225,8 @@ class DetailTeamSerializer(serializers.ModelSerializer):
     """ Просмотр деталей одной команды"""
     user = GetUserSerializer()
     social_links = SocialLinkSerializer(many=True)
+    projects_count = serializers.IntegerField()
+    members_count = serializers.IntegerField()
 
     class Meta:
         model = models.Team
@@ -234,6 +236,8 @@ class DetailTeamSerializer(serializers.ModelSerializer):
             "user",
             "avatar",
             "social_links",
+            "projects_count",
+            "members_count"
         )
 
 

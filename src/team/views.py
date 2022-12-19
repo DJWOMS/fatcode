@@ -16,7 +16,7 @@ class TeamView(MixedPermissionSerializer, viewsets.ModelViewSet):
     """ CRUD команды """
     filterset_class = filters.TeamFilter
     filter_backends = (filter.DjangoFilterBackend,)
-    queryset = models.Team.objects.prefetch_related('project_teams').select_related('user').all()
+    # queryset = models.Team.objects.prefetch_related('project_teams').select_related('user').all()
     permission_classes_by_action = {
         'list': (IsAuthenticatedOrReadOnly,),
         'create': (IsAuthenticated,),
@@ -31,6 +31,12 @@ class TeamView(MixedPermissionSerializer, viewsets.ModelViewSet):
         'update': serializers.UpdateTeamSerializer,
         'destroy': serializers.UpdateTeamSerializer
     }
+
+    def get_queryset(self):
+        return models.Team.objects.prefetch_related('project_teams').select_related('user').all().annotate(
+            projects_count=Count("project_teams", distinct=True),
+            members_count=Count("members", distinct=True)
+        )
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
