@@ -31,8 +31,8 @@ class ProjectsView(MixedPermissionSerializer, viewsets.ModelViewSet):
         'list': (permissions.IsAuthenticated,),
         'retrieve': (permissions.IsAuthenticated,),
         'create': (permissions.IsAuthenticated,),
-        'update': (IsUser,),
-        'destroy': (IsUser,)
+        'update': (permissions.IsAuthenticated, IsUser,),
+        'destroy': (permissions.IsAuthenticated, IsUser,)
     }
     filterset_class = ProjectFilter
     filter_backends = (filters.DjangoFilterBackend,)
@@ -75,7 +75,7 @@ class UserProjectsView(MixedPermissionSerializer, viewsets.ModelViewSet):
 class MemberProjectTeamsView(MixedPermissionSerializer, viewsets.ModelViewSet):
     """Список команд проекта, если ты участник команды"""
     permission_classes_by_action = {
-        'list': (IsMemberTeam,)
+        'list': (permissions.IsAuthenticated, IsMemberTeam,)
     }
     serializer_classes_by_action = {
         'list': serializers.ProjectTeamsSerializer
@@ -88,7 +88,7 @@ class MemberProjectTeamsView(MixedPermissionSerializer, viewsets.ModelViewSet):
 class MemberProjectBoardView(MixedPermissionSerializer, viewsets.ModelViewSet):
     """Доска задач проекта, если ты участник команды"""
     permission_classes_by_action = {
-        'list': (IsMemberTeam,)
+        'list': (permissions.IsAuthenticated, IsMemberTeam,)
     }
     serializer_classes_by_action = {
         'list': serializers.ProjectTeamsSerializer
@@ -104,7 +104,7 @@ class AvatarView(MixedPermissionSerializer, viewsets.ModelViewSet):
     serializer_classes_by_action = serializers.AvatarProjectSerializer
     permission_classes_by_action = {
         'list': (IsAuthenticated,),
-        'update': (IsAuthorProject,)
+        'update': (permissions.IsAuthenticated, IsAuthorProject,)
     }
 
     def get_queryset(self):

@@ -62,8 +62,8 @@ class UsersView(MixedPermissionSerializer, ModelViewSet):
     permission_classes_by_action = {
         'list': (IsAuthenticated,),
         'retrieve': (IsAuthenticated,),
-        'update': (permissions.IsAuthorUser,),
-        'destroy': (permissions.IsAuthorUser,),
+        'update': (IsAuthenticated, permissions.IsAuthorUser,),
+        'destroy': (IsAuthenticated, permissions.IsAuthorUser,),
     }
     serializer_classes_by_action = {
         'list': serializers.UserProfileSerializer,
@@ -112,10 +112,10 @@ class QuestionnaireView(MixedPermissionSerializer, ModelViewSet):
     """CRUD анкеты пользователя"""
     permission_classes_by_action = {
         'list': (IsAuthenticated,),
-        'create': (permissions.IsQuestionnaireNotExists,),
+        'create': (IsAuthenticated, permissions.IsQuestionnaireNotExists,),
         'retrieve': (IsAuthenticated, ),
-        'update': (IsUser,),
-        'destroy': (IsUser,),
+        'update': (IsAuthenticated, IsUser,),
+        'destroy': (IsAuthenticated, IsUser,),
     }
     serializer_classes_by_action = {
         'list': serializers.QuestionnaireListSerializer,
@@ -197,7 +197,7 @@ class AvatarProfileView(MixedPermissionSerializer, ModelViewSet):
     serializer_classes_by_action = serializers.AvatarProfileSerializer
     permission_classes_by_action = {
         'list': (IsAuthenticatedOrReadOnly,),
-        'update': (permissions.IsAuthorUser,)
+        'update': (IsAuthenticated, permissions.IsAuthorUser,)
     }
 
     def get_queryset(self):
@@ -219,9 +219,9 @@ class SocialProfileView(MixedPermissionSerializer, ModelViewSet):
     permission_classes_by_action = {
         'list': (IsAuthenticated,),
         'retrieve': (IsAuthenticated, ),
-        'create': (permissions.IsAuthorUser, ),
-        'update': (permissions.IsAuthorUser,),
-        'destroy': (permissions.IsAuthorUser,),
+        'create': (IsAuthenticated, permissions.IsAuthorUser, ),
+        'update': (IsAuthenticated, permissions.IsAuthorUser,),
+        'destroy': (IsAuthenticated, permissions.IsAuthorUser,),
     }
     lookup_url_kwarg = 'social_pk'
 
@@ -236,7 +236,7 @@ class AvatarQuestionnaireView(MixedPermissionSerializer, ModelViewSet):
     serializer_classes_by_action = serializers.AvatarQuestionnaireSerializer
     permission_classes_by_action = {
         'list': (IsAuthenticatedOrReadOnly,),
-        'update': (permissions.IsAuthorQuestionnaireUser,)
+        'update': (IsAuthenticated, permissions.IsAuthorQuestionnaireUser,)
     }
 
     def get_queryset(self):
