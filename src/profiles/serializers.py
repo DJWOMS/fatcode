@@ -1,12 +1,11 @@
-import os
-
 from djoser.serializers import UserSerializer, UserCreatePasswordRetypeSerializer
 from djoser.conf import settings
 from rest_framework import serializers
 
 # from src.courses.serializers import ListCourseSerializer
 from src.profiles import models, services
-from src.repository.models import Toolkit
+from src.repository.models import Toolkit, Project
+from src.team.models import Team
 from src.profiles import models
 from src.base.validators import ImageValidator
 from src.profiles.services import add_friend
@@ -47,103 +46,6 @@ class UsersCreateSerializer(UserCreatePasswordRetypeSerializer):
             services.delete_invite(invite)
             return attrs
         raise exceptions.AuthExists()
-
-
-class UserSocialSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.FatUserSocial
-        fields = '__all__'
-
-
-class ListSocialSerializer(serializers.ModelSerializer):
-    logo = serializers.ImageField(read_only=True)
-
-    class Meta:
-        model = models.Social
-        fields = '__all__'
-
-
-class UserAvatarSerializer(serializers.ModelSerializer):
-    """Update user avatar"""
-    avatar = serializers.ImageField(validators=[ImageValidator((100, 100), 1048576)])
-
-    class Meta:
-        model = models.FatUser
-        fields = [
-            "id",
-            "avatar"
-        ]
-
-
-class AccountSerializer(serializers.ModelSerializer):
-    """Serialization for user's git_hub account"""
-
-    class Meta:
-        model = models.Account
-        fields = ("account_url", )
-
-
-class UserSerializer(serializers.ModelSerializer):
-    """Serialization for user's internal display"""
-    email = serializers.EmailField(read_only=True)
-    avatar = serializers.ImageField(validators=[ImageValidator((100, 100), 1048576)])
-    user_social = UserSocialSerializer(many=True)
-    socials = ListSocialSerializer(many=True)
-    # courses = serializers.ListCourseSerializer(many=True)
-    user_account = AccountSerializer(read_only=True, many=True)
-
-    class Meta:
-        model = models.FatUser
-        exclude = (
-            "password",
-            "last_login",
-            "is_active",
-            "is_staff",
-            "is_superuser",
-            "groups",
-            "user_permissions"
-        )
-        ref_name = "Fat user"
-
-    def update(self, instance, validated_data):
-        if validated_data.get('user_social', None):
-            user_social = validated_data.pop('user_social')
-            self.update_user_social(instance, user_social)
-
-        return super().update(instance, validated_data)
-
-    def update_user_social(self, instance, user_social):
-        for soc in user_social:
-            entry_fatUserSocial = instance.user_social.filter(
-                social=soc['social']).first()
-
-            if entry_fatUserSocial is not None:
-                entry_fatUserSocial.user_url = soc['user_url']
-                entry_fatUserSocial.save()
-            else:
-                instance.user_social.create(social=soc['social'], user_url=soc['user_url'])
-
-
-class UserPublicSerializer(serializers.ModelSerializer):
-    """Serialization for public user display"""
-
-    avatar = serializers.ImageField(read_only=True)
-    user_social = UserSocialSerializer(many=True)
-    socials = ListSocialSerializer(many=True)
-    # courses = ListCourseSerializer(many=True)
-
-    class Meta:
-        model = models.FatUser
-        exclude = (
-            "email",
-            "password",
-            "last_login",
-            "is_active",
-            "is_staff",
-            "is_superuser",
-            "groups",
-            "user_permissions",
-        )
 
 
 class GetUserSerializer(serializers.ModelSerializer):
@@ -189,8 +91,103 @@ class GitHubAddSerializer(serializers.Serializer):
     code = serializers.CharField(max_length=25)
 
 
-class QuestionnaireSerializer(serializers.ModelSerializer):
-    """ Анкета пользователя """
+class ProjectsSerializer(serializers.ModelSerializer):
+    """Сериалайзер проектов пользователя"""
+
+    class Meta:
+        model = Project
+        fields = ('id', 'name')
+
+
+class ToolkitSerializer(serializers.ModelSerializer):
+    """Сериалайзер инструментов пользователя"""
+
+    class Meta:
+        model = Toolkit
+        fields = ('name',)
+
+
+class TeamsSerializer(serializers.ModelSerializer):
+    """Сериалайзер команд пользователя"""
+
+    class Meta:
+        model = Team
+        fields = ('name',)
+
+
+class AccountsSerializer(serializers.ModelSerializer):
+    """Сериалайзер аккаунтов пользователя"""
+
+    class Meta:
+        model = models.Account
+        fields = ('provider', 'account_url')
+
+
+class LanguagesSerializer(serializers.ModelSerializer):
+    """Сериализатор языков"""
+
+    class Meta:
+        model = models.Language
+        fields = ('name',)
+
+
+class SocialsSerializer(serializers.ModelSerializer):
+    """Сериализатор социальных ссылок пользователя"""
+
+    class Meta:
+        model = models.FatUserSocial
+        fields = ('full_social_link', )
+
+
+class UserFieldsSerializer(serializers.ModelSerializer):
+    """Сериализатор информации пользователя для анкеты"""
+
+    class Meta:
+        model = models.FatUser
+        fields = ('username', 'full_name', 'email')
+
+
+class QuestionnaireListSerializer(serializers.ModelSerializer):
+    """Сериализатор списка анкет"""
+    user = GetUserSerializer()
+    toolkits = ToolkitSerializer(many=True)
+
+    class Meta:
+        model = models.Questionnaire
+        fields = ('id', 'user', 'toolkits')
+
+
+class QuestionnaireDetailSerializer(serializers.ModelSerializer):
+    """Сериализатор анкеты пользователя"""
+    projects = ProjectsSerializer(many=True)
+    toolkits = ToolkitSerializer(many=True)
+    teams = TeamsSerializer(many=True)
+    accounts = AccountsSerializer(many=True)
+    languages = LanguagesSerializer(many=True)
+    socials = SocialsSerializer(many=True)
+    user = UserFieldsSerializer()
+
+    class Meta:
+        model = models.Questionnaire
+        fields = (
+            "user",
+            "avatar",
+            "description",
+            "country",
+            "town",
+            "phone",
+            "birthday",
+            "toolkits",
+            "teams",
+            "projects",
+            "accounts",
+            "socials",
+            "languages"
+        )
+
+
+class CUDQuestionnaireSerializer(serializers.ModelSerializer):
+    """CUD анкеты пользователя"""
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
@@ -200,6 +197,7 @@ class QuestionnaireSerializer(serializers.ModelSerializer):
             "country",
             "town",
             "phone",
+            "birthday",
             "user",
             "toolkits",
             "teams",
@@ -229,42 +227,133 @@ class QuestionnaireSerializer(serializers.ModelSerializer):
             **validated_data
         )
 
+    # def update(self, instance, validated_data):
+    #     teams = validated_data.pop('teams', None)
+    #     toolkits = validated_data.pop('toolkits', None)
+    #     projects = validated_data.pop('projects', None)
+    #     accounts = validated_data.pop('accounts', None)
+    #     user = validated_data.pop('user')
+    #     languages = validated_data.pop('languages', None)
+    #     socials = validated_data.pop('socials', None)
+    #     services.check_profile(user, teams, projects, accounts, socials)
+    #     instance = super().update(instance, validated_data)
+    #     instance = services.questionnaire_update(instance, teams, toolkits, projects, accounts, languages, socials)
+    #     instance.save()
+    #     return instance
+
+
+class UDQuestionnaireSerializer(serializers.ModelSerializer):
+    """UD анкеты пользователя"""
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = models.Questionnaire
+        fields = (
+            "description",
+            "country",
+            "town",
+            "phone",
+            "birthday",
+            "user",
+            "toolkits",
+            "socials",
+            "languages"
+        )
+
     def update(self, instance, validated_data):
-        teams = validated_data.pop('teams', None)
+        # teams = validated_data.pop('teams', None)
         toolkits = validated_data.pop('toolkits', None)
-        projects = validated_data.pop('projects', None)
-        accounts = validated_data.pop('accounts', None)
+        # projects = validated_data.pop('projects', None)
+        # accounts = validated_data.pop('accounts', None)
         user = validated_data.pop('user')
         languages = validated_data.pop('languages', None)
         socials = validated_data.pop('socials', None)
-        services.check_profile(user, teams, projects, accounts, socials)
+        services.check_socials(user, socials)
         instance = super().update(instance, validated_data)
-        instance = services.questionnaire_update(instance, teams, toolkits, projects, accounts, languages, socials)
+        instance = services.questionnaire_update(instance, toolkits, languages, socials)
         instance.save()
         return instance
 
 
-class GetToolkitForUserSerializer(serializers.ModelSerializer):
-    """Инструментарий"""
-
-    class Meta:
-        model = Toolkit
-        fields = ('name', )
-
-
-class QuestionnaireListSerializer(serializers.ModelSerializer):
-    """Список анкет"""
-    user = GetUserSerializer()
-    toolkits = GetToolkitForUserSerializer(many=True)
+class TeamsListQuestionnaireSerializer(serializers.ModelSerializer):
+    """Сериалайзей вывода команд для анкеты пользователя"""
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    teams = TeamsSerializer(many=True)
 
     class Meta:
         model = models.Questionnaire
-        fields = ('id', 'user', 'toolkits')
+        fields = ("teams", "user")
 
 
-class TokenSerializer(serializers.Serializer):
-    """Сериализатор Токена"""
-    auth_token = serializers.CharField(max_length=255)
+class UTeamsQuestionnaireSerializer(serializers.ModelSerializer):
+    """Update команд для анкеты пользователя"""
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = models.Questionnaire
+        fields = ("teams", "user")
+
+    def update(self, instance, validated_data):
+        teams = validated_data.pop('teams', None)
+        user = validated_data.pop('user')
+        services.check_teams(teams, user)
+        instance = services.questionnaire_update_teams(instance, teams)
+        instance.save()
+        return instance
+
+
+class ProjectsListQuestionnaireSerializer(serializers.ModelSerializer):
+    """Сериалайзей вывода проектов для анкеты пользователя"""
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    projects = ProjectsSerializer(many=True)
+
+    class Meta:
+        model = models.Questionnaire
+        fields = ("projects", "user")
+
+
+class UProjectsQuestionnaireSerializer(serializers.ModelSerializer):
+    """Update проектов для анкеты пользователя"""
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = models.Questionnaire
+        fields = ("projects", "user")
+
+    def update(self, instance, validated_data):
+        projects = validated_data.pop('projects', None)
+        user = validated_data.pop('user')
+        services.check_projects(projects, user)
+        instance = services.questionnaire_update_projects(instance, projects)
+        instance.save()
+        return instance
+
+
+class AccountsListQuestionnaireSerializer(serializers.ModelSerializer):
+    """Сериалайзей вывода аккаунтов для анкеты пользователя"""
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    accounts = AccountsSerializer(many=True)
+
+    class Meta:
+        model = models.Questionnaire
+        fields = ("accounts", "user")
+
+
+class UAccountsQuestionnaireSerializer(serializers.ModelSerializer):
+    """Update аккаунтов для анкеты пользователя"""
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = models.Questionnaire
+        fields = ("accounts", "user")
+
+    def update(self, instance, validated_data):
+        accounts = validated_data.pop('accounts', None)
+        user = validated_data.pop('user')
+        services.check_account(accounts, user)
+        instance = services.questionnaire_update_accounts(instance, accounts)
+        instance.save()
+        return instance
 
 
 class ApplicationListSerializer(serializers.ModelSerializer):
@@ -302,7 +391,7 @@ class FriendSerializer(serializers.ModelSerializer):
 
 
 class AvatarProfileSerializer(serializers.ModelSerializer):
-    """ Аватар профиля """
+    """Сериализатор аватара профиля"""
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
@@ -318,7 +407,7 @@ class AvatarProfileSerializer(serializers.ModelSerializer):
 
 
 class AvatarQuestionnaireSerializer(serializers.ModelSerializer):
-    """ Аватар анкеты """
+    """Сериализатор аватара анкеты"""
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
@@ -333,26 +422,17 @@ class AvatarQuestionnaireSerializer(serializers.ModelSerializer):
         return instance
 
 
-class SocialSerializer(serializers.ModelSerializer):
-    """Социальные ссылки"""
-
-    class Meta:
-        model = models.Social
-        fields = ('title', )
-
-
 class SocialProfileSerializer(serializers.ModelSerializer):
-    """ Просмотр социальных ссылок профиля """
+    """Сериализатор социальных ссылок профиля"""
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
-    social = SocialSerializer()
 
     class Meta:
         model = models.FatUserSocial
-        fields = ('id', 'social', 'user', 'user_url')
+        fields = ('id', 'full_social_link', 'user')
 
 
 class SocialProfileCreateSerializer(serializers.ModelSerializer):
-    """ Create социальных ссылок профиля """
+    """Create социальных ссылок профиля"""
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
@@ -363,29 +443,38 @@ class SocialProfileCreateSerializer(serializers.ModelSerializer):
         user = validated_data.pop('user')
         social_link = validated_data.pop('social')
         user_url = validated_data.pop('user_url')
-        cur_social = models.FatUserSocial.objects.filter(social=social_link, user=user).exists()
-        if cur_social:
-            raise exceptions.SocialExists()
-        social = models.FatUserSocial.objects.create(social=social_link, user=user, user_url=user_url)
-        return social
+        return services.create_social(user, social_link, user_url)
 
 
 class SocialProfileUpdateSerializer(serializers.ModelSerializer):
-    """ Update социальных ссылок профиля """
+    """Update социальных ссылок профиля"""
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
         model = models.FatUserSocial
         fields = ('id', 'user', 'user_url')
 
+    def update(self, instance, validated_data):
+        user_url = validated_data.pop('user_url')
+        return services.check_or_update_social(instance, user_url)
+
 
 class UserProfileSerializer(serializers.ModelSerializer):
-    """ Представление профиля """
+    """Сериализатор представления профиля """
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    user_social = SocialProfileSerializer(many=True)
 
     class Meta:
         model = models.FatUser
-        fields = ('id', 'avatar', 'middle_name', 'email', 'user')
+        fields = ('id', 'username', 'avatar', 'full_name', 'email', 'user', 'user_social')
+
+
+class UserProfileListSerializer(serializers.ModelSerializer):
+    """Сериализатор представления пользователей """
+
+    class Meta:
+        model = models.FatUser
+        fields = ('id', 'username', 'avatar', 'full_name', 'email')
 
 
 class UserProfileUpdateSerializer(serializers.ModelSerializer):
@@ -397,14 +486,138 @@ class UserProfileUpdateSerializer(serializers.ModelSerializer):
         fields = ('id', 'middle_name', 'email', 'user')
 
     def update(self, instance, validated_data):
-        email = validated_data.pop('email')
-        return services.check_or_update_email(instance, email, validated_data)
+        email = validated_data.pop('email', None)
+        pk = validated_data.pop('pk')
+        middle_name = validated_data.pop('middle_name', None)
+        return services.check_or_update_email(instance, email, pk, middle_name)
+
+
+class UserMeProfileSerializer(serializers.ModelSerializer):
+    """Сериалайзер профиля для user_me"""
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = models.FatUser
+        fields = ('id', 'username', 'avatar', 'full_name', 'email', 'user', 'experience', 'coins')
+
+
+class AdditionallyProfileSerializer(serializers.ModelSerializer):
+    """ Представление профиля для автора"""
+    toolkits = ToolkitSerializer(many=True)
+    languages = LanguagesSerializer(many=True)
+    user = GetUserForProjectSerializer()
+
+    class Meta:
+        model = models.Questionnaire
+        fields = ('user', 'description', 'country', 'town', 'phone', 'birthday', 'avatar', 'toolkits', 'languages')
 
 
 class SocialListSerializer(serializers.ModelSerializer):
-    """Просмотр социальных сетей"""
+    """Сериалайзер социальных сетей"""
 
     class Meta:
         model = models.Social
         fields = ('title', 'logo', 'url')
+
+
+
+# class UserSocialSerializer(serializers.ModelSerializer):
+#     """Сериализатор социальных ссылок пользователя"""
+#     class Meta:
+#         model = models.FatUserSocial
+#         fields = '__all__'
+
+#
+# class ListSocialSerializer(serializers.ModelSerializer):
+#     """Сериализатор социальных ссылок"""
+#     logo = serializers.ImageField(read_only=True)
+#
+#     class Meta:
+#         model = models.Social
+#         fields = '__all__'
+#
+#
+# class UserAvatarSerializer(serializers.ModelSerializer):
+#     """Update user avatar"""
+#     avatar = serializers.ImageField(validators=[ImageValidator((100, 100), 1048576)])
+#
+#     class Meta:
+#         model = models.FatUser
+#         fields = [
+#             "id",
+#             "avatar"
+#         ]
+#
+#
+# class AccountSerializer(serializers.ModelSerializer):
+#     """Serialization for user's git_hub account"""
+#
+#     class Meta:
+#         model = models.Account
+#         fields = ("account_url", )
+#
+#
+# class UserSerializer(serializers.ModelSerializer):
+#     """Serialization for user's internal display"""
+#     email = serializers.EmailField(read_only=True)
+#     avatar = serializers.ImageField(validators=[ImageValidator((100, 100), 1048576)])
+#     user_social = UserSocialSerializer(many=True)
+#     socials = ListSocialSerializer(many=True)
+#     # courses = serializers.ListCourseSerializer(many=True)
+#     user_account = AccountSerializer(read_only=True, many=True)
+#
+#     class Meta:
+#         model = models.FatUser
+#         exclude = (
+#             "password",
+#             "last_login",
+#             "is_active",
+#             "is_staff",
+#             "is_superuser",
+#             "groups",
+#             "user_permissions"
+#         )
+#         ref_name = "Fat user"
+#
+#     def update(self, instance, validated_data):
+#         if validated_data.get('user_social', None):
+#             user_social = validated_data.pop('user_social')
+#             self.update_user_social(instance, user_social)
+#
+#         return super().update(instance, validated_data)
+#
+#     def update_user_social(self, instance, user_social):
+#         for soc in user_social:
+#             entry_fatUserSocial = instance.user_social.filter(
+#                 social=soc['social']).first()
+#
+#             if entry_fatUserSocial is not None:
+#                 entry_fatUserSocial.user_url = soc['user_url']
+#                 entry_fatUserSocial.save()
+#             else:
+#                 instance.user_social.create(social=soc['social'], user_url=soc['user_url'])
+
+#
+# class UserPublicSerializer(serializers.ModelSerializer):
+#     """Serialization for public user display"""
+#
+#     avatar = serializers.ImageField(read_only=True)
+#     user_social = UserSocialSerializer(many=True)
+#     socials = ListSocialSerializer(many=True)
+#     # courses = ListCourseSerializer(many=True)
+#
+#     class Meta:
+#         model = models.FatUser
+#         exclude = (
+#             "email",
+#             "password",
+#             "last_login",
+#             "is_active",
+#             "is_staff",
+#             "is_superuser",
+#             "groups",
+#             "user_permissions",
+#         )
+
+
 

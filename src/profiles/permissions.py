@@ -44,4 +44,12 @@ class IsAuthorUser(BasePermission):
 class IsAuthorQuestionnaireUser(BasePermission):
     """Только для автора пользователя"""
     def has_permission(self, request, view):
-        return models.Questionnaire.objects.select_related('user').filter(user=request.user, id=view.kwargs.get('pk')).exists()
+        return models.Questionnaire.objects.select_related('user').filter(
+            user=request.user, id=view.kwargs.get('pk')
+        ).exists()
+
+
+class IsMeAuthor(BasePermission):
+    """Только для автора профиля"""
+    def has_permission(self, request, view):
+        return models.FatUser.objects.filter(username=request.user).exists()

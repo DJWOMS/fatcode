@@ -259,24 +259,48 @@ def check_profile(user, teams, projects, accounts, socials):
         return user
 
 
-def questionnaire_update(instance, teams, toolkits, projects, accounts, languages, socials):
-    """Обновление анкеты пользователя"""
+def questionnaire_update_teams(instance, teams):
+    """Обновление команд в анкету пользователя"""
     instance.teams.clear()
-    instance.toolkits.clear()
-    instance.accounts.clear()
-    instance.projects.clear()
-    instance.languages.clear()
-    instance.socials.clear()
     for team in teams:
         instance.teams.add(team)
-    for toolkit in toolkits:
-        instance.toolkits.add(toolkit)
+    return instance
+
+
+def questionnaire_update_projects(instance, projects):
+    """Обновление проектов в анкету пользователя"""
+    instance.projects.clear()
     for project in projects:
         instance.projects.add(project)
-    for language in languages:
-        instance.languages.add(language)
+    return instance
+
+
+def questionnaire_update_accounts(instance, accounts):
+    """Обновление проектов в анкету пользователя"""
+    instance.accounts.clear()
     for account in accounts:
         instance.accounts.add(account)
+    return instance
+
+
+def questionnaire_update(instance, toolkits, languages, socials):
+    """Обновление анкеты пользователя"""
+    # instance.teams.clear()
+    instance.toolkits.clear()
+    # instance.accounts.clear()
+    # instance.projects.clear()
+    instance.languages.clear()
+    instance.socials.clear()
+    # for team in teams:
+    #     instance.teams.add(team)
+    for toolkit in toolkits:
+        instance.toolkits.add(toolkit)
+    # for project in projects:
+    #     instance.projects.add(project)
+    for language in languages:
+        instance.languages.add(language)
+    # for account in accounts:
+    #     instance.accounts.add(account)
     for social in socials:
         instance.socials.add(social)
     return instance
@@ -306,19 +330,48 @@ def check_email(email):
     return email
 
 
-def check_or_update_email(instance, email, validated_data):
-    try:
-        cur_user = FatUser.objects.get(email=email)
-        if cur_user.email != instance.email:
-            raise exceptions.EmailExists()
-        instance.email = email
-        instance.middle_name = validated_data.get('middle_name', None)
+def check_or_update_email(instance, email, pk, middle_name):
+    """Проверка на изменение mail профиля"""
+    if email != '':
+        try:
+            cur_user = FatUser.objects.get(email=email)
+            if cur_user.email != instance.email:
+                raise exceptions.EmailExists()
+            instance.email = email
+            instance.save()
+        except FatUser.DoesNotExist:
+            instance.email = email
+            instance.save()
+        return instance
+    if middle_name != '':
+        instance.middle_name = middle_name
         instance.save()
-    except FatUser.DoesNotExist:
-        instance.email = email
-        instance.middle_name = validated_data.get('middle_name', None)
+        return instance
+
+
+def create_social(user, social_link, user_url):
+    """Проверка социальных совпадения сетей пользователя"""
+    cur_social = FatUserSocial.objects.filter(social=social_link, user=user).exists()
+    if cur_social:
+        raise exceptions.SocialExists()
+    try:
+        current_user_url = user_url.split('/')[-1]
+        return FatUserSocial.objects.create(social=social_link, user=user, user_url=current_user_url)
+    except:
+        return FatUserSocial.objects.create(social=social_link, user=user, user_url=user_url)
+
+
+def check_or_update_social(instance, user_url):
+    """Проверка на изменение mail профиля"""
+    try:
+        current_user_url = user_url.split('/')[-1]
+        instance.user_url = current_user_url
+        instance.save()
+    except:
+        instance.user_url = user_url
         instance.save()
     return instance
+
 
 
 

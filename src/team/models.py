@@ -29,7 +29,7 @@ class Team(models.Model):
 
 
 class TeamMember(models.Model):
-    '''Модель промежуточная пользователь команда'''
+    """Модель промежуточная пользователь команда"""
     user = models.ForeignKey('profiles.FatUser', on_delete=models.CASCADE, related_name='team_members')
     team = models.ForeignKey(Team, related_name="members", on_delete=models.CASCADE)
     create_date = models.DateTimeField(auto_now_add=True)

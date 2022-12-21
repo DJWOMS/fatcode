@@ -22,6 +22,7 @@ def check_create_invitations():
 
 
 def check_and_create_invitation(team, cur_user):
+    """Проверка и создание заявки"""
     user = models.Team.objects.filter(user=cur_user.id, id=team.id).exists()
     member = models.TeamMember.objects.filter(user=cur_user, team=team).exists()
     invitation = models.Invitation.objects.filter(team=team, user=cur_user, order_status='Waiting').exists()
@@ -33,6 +34,7 @@ def check_and_create_invitation(team, cur_user):
 
 
 def check_and_create_team_member(instance):
+    """Проверка и создание участника команды"""
     cur_member = models.TeamMember.objects.filter(user=instance.user, team=instance.team).exists()
     if cur_member:
         raise exceptions.TeamMemberException()
@@ -41,6 +43,7 @@ def check_and_create_team_member(instance):
 
 
 def check_post(post_id, **validated_data):
+    """Проверка поста"""
     parent = validated_data.get('parent')
     if parent is not None:
         try:
