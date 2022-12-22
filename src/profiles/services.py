@@ -159,11 +159,11 @@ def check_account_for_add(user, account_id):
 def check_or_create_token(user):
     """Проверка и создание токена пользователя"""
     try:
-        cur_token = Token.objects.get(user=user)
-        return {'auth_token': cur_token.key}
+        current_token = Token.objects.get(user=user)
+        return {'auth_token': current_token.key}
     except Token.DoesNotExist:
-        cur_token = Token.objects.create(user=user)
-        return {'auth_token': cur_token}
+        current_token = Token.objects.create(user=user)
+        return {'auth_token': current_token}
 
 
 def check_account_for_auth(account_id):
@@ -245,8 +245,8 @@ def check_socials(user, socials):
     """Проверка социальных сетей пользователя"""
     if socials is not None:
         for social in socials:
-            cur_social = FatUserSocial.objects.filter(user=user, user_url=social).exists()
-            if not cur_social:
+            current_social = FatUserSocial.objects.filter(user=user, user_url=social).exists()
+            if not current_social:
                 raise exceptions.SocialUserNotExists()
     return socials
 
@@ -309,8 +309,8 @@ def questionnaire_update(instance, toolkits, languages, socials):
 def check_invite(invite):
     """Проверка приглашения"""
     if invite:
-        cur_invite = Invitation.objects.filter(code=invite).exists()
-        if not cur_invite:
+        current_invite = Invitation.objects.filter(code=invite).exists()
+        if not current_invite:
             raise exceptions.InvitationNotExists()
         return invite
     raise exceptions.InvitationNotExists()
@@ -318,8 +318,8 @@ def check_invite(invite):
 
 def delete_invite(invite):
     """Удаление приглашения"""
-    cur_invite = Invitation.objects.filter(code=invite)
-    cur_invite.delete()
+    current_invite = Invitation.objects.filter(code=invite)
+    current_invite.delete()
     return True
 
 
@@ -334,8 +334,8 @@ def check_or_update_email(instance, email, pk, middle_name):
     """Проверка на изменение mail профиля"""
     if email != '':
         try:
-            cur_user = FatUser.objects.get(email=email)
-            if cur_user.email != instance.email:
+            current_user = FatUser.objects.get(email=email)
+            if current_user.email != instance.email:
                 raise exceptions.EmailExists()
             instance.email = email
             instance.save()
@@ -351,8 +351,8 @@ def check_or_update_email(instance, email, pk, middle_name):
 
 def create_social(user, social_link, user_url):
     """Проверка социальных совпадения сетей пользователя"""
-    cur_social = FatUserSocial.objects.filter(social=social_link, user=user).exists()
-    if cur_social:
+    current_social = FatUserSocial.objects.filter(social=social_link, user=user).exists()
+    if current_social:
         raise exceptions.SocialExists()
     try:
         current_user_url = user_url.split('/')[-1]

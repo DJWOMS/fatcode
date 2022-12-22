@@ -35,8 +35,8 @@ def check_and_create_invitation(team, cur_user):
 
 def check_and_create_team_member(instance):
     """Проверка и создание участника команды"""
-    cur_member = models.TeamMember.objects.filter(user=instance.user, team=instance.team).exists()
-    if cur_member:
+    current_member = models.TeamMember.objects.filter(user=instance.user, team=instance.team).exists()
+    if current_member:
         raise exceptions.TeamMemberException()
     if instance.order_status == 'Approved':
         return models.TeamMember.objects.create(user=instance.user, team=instance.team)

@@ -14,8 +14,8 @@ github = Github()
 
 def get_github_account_id(user):
     """Поиск nik в github пользователя"""
-    if cur_user := user.user_account.filter(provider='github').first():
-        return cur_user.account_id
+    if current_user := user.user_account.filter(provider='github').first():
+        return current_user.account_id
     else:
         raise exceptions.BadAccount()
 
@@ -24,20 +24,20 @@ def get_my_repository(repository, account_id):
     """Поиск репозитория пользователя"""
     nik = get_nik(repository, account_id)
     user_repos = get_user_repos(nik)
-    cur_repo = repository.split('/')[-1]
-    if cur_repo in user_repos:
-        return cur_repo, nik
+    current_repo = repository.split('/')[-1]
+    if current_repo in user_repos:
+        return current_repo, nik
     else:
         raise exceptions.BadAccountAuthor()
 
 
 def get_nik(repository, account_id):
     """Поиск id github пользователя"""
-    cur_nik = repository.split('/')[-2]
-    user_info = requests.get(f'https://api.github.com/users/{cur_nik}/repos').json()
-    cur_id = user_info[0]['owner']['id']
-    if str(cur_id) == account_id:
-        return cur_nik
+    current_nik = repository.split('/')[-2]
+    user_info = requests.get(f'https://api.github.com/users/{current_nik}/repos').json()
+    current_id = user_info[0]['owner']['id']
+    if str(current_id) == account_id:
+        return current_nik
     raise exceptions.BadAccountId()
 
 
@@ -112,8 +112,8 @@ def get_repo(repository, account_id) -> Repository:
 def check_teams(teams):
     """Проверка, есть ли у комманды уже проект"""
     for team in teams:
-        cur_team = models.Project.objects.filter(teams=team).exists()
-        if cur_team:
+        current_team = models.Project.objects.filter(teams=team).exists()
+        if current_team:
             raise exceptions.TeamExists()
     return teams
 
