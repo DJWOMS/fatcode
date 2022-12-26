@@ -307,3 +307,4 @@ class AvatarSerializer(serializers.ModelSerializer):
         instance = super().update(instance, validated_data)
         instance.save()
         return instance
+

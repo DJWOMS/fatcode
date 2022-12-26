@@ -55,4 +55,25 @@ def check_post(post_id, **validated_data):
         return parent
 
 
+def check_teams(teams, user):
+    """Проверка является ли пользователь участником команды"""
+    if teams is not None:
+        for team in teams:
+            if not models.TeamMember.objects.filter(user=user, team=team).exists():
+                raise exceptions.TeamMemberExists()
+    return teams
+
+
+def check_my_teams(teams, user):
+    """Проверка автора команд"""
+    for team in teams:
+        team = models.Team.objects.filter(user=user, id=team.id).exists()
+        if not team:
+            raise exceptions.TeamAuthor()
+    return teams
+
+
+
+
+
 

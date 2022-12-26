@@ -8,6 +8,8 @@ from ..team.models import Team
 from . import models
 from ..base import exceptions
 
+from src.team import services as services_team
+
 
 github = Github()
 
@@ -117,14 +119,14 @@ def check_teams(teams):
             raise exceptions.TeamExists()
     return teams
 
-
-def check_my_teams(teams, user):
-    """Проверка автора команд"""
-    for team in teams:
-        team = Team.objects.filter(user=user, id=team.id).exists()
-        if not team:
-            raise exceptions.TeamAuthor()
-    return teams
+#
+# def check_my_teams(teams, user):
+#     """Проверка автора команд"""
+#     for team in teams:
+#         team = Team.objects.filter(user=user, id=team.id).exists()
+#         if not team:
+#             raise exceptions.TeamAuthor()
+#     return teams
 
 
 def check_repo(repo):
@@ -138,7 +140,7 @@ def check_repo(repo):
 def get_info_for_user(repository, teams, user):
     """Проверка входящей информации от пользователя для создания проекта"""
     check_repo_and_teams = check_repo(repository) and check_teams(teams)
-    if check_repo_and_teams and check_my_teams(teams, user):
+    if check_repo_and_teams and services_team.check_my_teams(teams, user):
         return get_github_account_id(user)
 
 
@@ -167,9 +169,9 @@ def get_info_for_user_update(repository, teams, user, pk):
 def check_all_teams_to_update(teams, pk, user):
     """Проверка всех команд пользователя для обновления проекта"""
     if check_instance_teams(teams, pk):
-        if check_my_teams(teams, user):
+        if services_team.check_my_teams(teams, user):
             return get_github_account_id(user)
-    elif check_teams(teams) and check_my_teams(teams, user):
+    elif check_teams(teams) and services_team.check_my_teams(teams, user):
         return get_github_account_id(user)
 
 
@@ -204,3 +206,13 @@ def project_update(instance, repo_info, teams, toolkits):
     instance.commits_count = repo_info.commits_count
     instance.last_commit = repo_info.last_commit
     return instance
+
+
+def check_projects(projects, user):
+    """Проверка проектов пользователя"""
+    if projects is not None:
+        for project in projects:
+            cur_project = models.ProjectMember.objects.filter(user=user, project=project).exists()
+            if not cur_project:
+                raise exceptions.ProjectMemberExists()
+    return projects

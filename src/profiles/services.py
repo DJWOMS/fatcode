@@ -9,6 +9,8 @@ from rest_framework.authtoken.models import Token
 from src.team.models import TeamMember
 from src.repository.models import ProjectMember
 from src.profiles.models import FatUser, Account, Friends, Applications, Invitation
+from src.team import services as services_team
+from src.repository import services as services_rep
 from ..base import exceptions
 from .models import Questionnaire, FatUserSocial
 
@@ -194,23 +196,23 @@ def create_user_and_token(account_id, email, account_name, account_url):
     return check_or_create_token(user)
 
 
-def check_teams(teams, user):
-    """Проверка является ли пользователь участником команды"""
-    if teams is not None:
-        for team in teams:
-            if not TeamMember.objects.filter(user=user, team=team).exists():
-                raise exceptions.TeamMemberExists()
-    return teams
+# def check_teams(teams, user):
+#     """Проверка является ли пользователь участником команды"""
+#     if teams is not None:
+#         for team in teams:
+#             if not TeamMember.objects.filter(user=user, team=team).exists():
+#                 raise exceptions.TeamMemberExists()
+#     return teams
 
 
-def check_projects(projects, user):
-    """Проверка проектов пользователя"""
-    if projects is not None:
-        for project in projects:
-            cur_project = ProjectMember.objects.filter(user=user, project=project).exists()
-            if not cur_project:
-                raise exceptions.ProjectMemberExists()
-    return projects
+# def check_projects(projects, user):
+#     """Проверка проектов пользователя"""
+#     if projects is not None:
+#         for project in projects:
+#             cur_project = ProjectMember.objects.filter(user=user, project=project).exists()
+#             if not cur_project:
+#                 raise exceptions.ProjectMemberExists()
+#     return projects
 
 
 def check_account(accounts, user):
@@ -253,7 +255,7 @@ def check_socials(user, socials):
 
 def check_profile(user, teams, projects, accounts, socials):
     """Проверка пользователя"""
-    check_teams_and_projects = check_teams(teams, user) and check_projects(projects, user)
+    check_teams_and_projects = services_team.check_teams(teams, user) and services_rep.check_projects(projects, user)
     check_accounts_and_socials = check_account(accounts, user) and check_socials(user, socials)
     if check_teams_and_projects and check_accounts_and_socials:
         return user

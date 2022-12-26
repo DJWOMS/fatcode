@@ -7,6 +7,8 @@ from src.profiles import models, services
 from src.repository.models import Toolkit, Project
 from src.team.models import Team
 from src.profiles import models
+from src.team import services as services_team
+from src.repository import services as services_rep
 from src.base.validators import ImageValidator
 from src.profiles.services import add_friend
 from src.base import exceptions
@@ -296,7 +298,7 @@ class UTeamsQuestionnaireSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         teams = validated_data.pop('teams', None)
         user = validated_data.pop('user')
-        services.check_teams(teams, user)
+        services_team.check_teams(teams, user)
         instance = services.questionnaire_update_teams(instance, teams)
         instance.save()
         return instance
@@ -323,7 +325,7 @@ class UProjectsQuestionnaireSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         projects = validated_data.pop('projects', None)
         user = validated_data.pop('user')
-        services.check_projects(projects, user)
+        services_rep.check_projects(projects, user)
         instance = services.questionnaire_update_projects(instance, projects)
         instance.save()
         return instance
