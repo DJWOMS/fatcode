@@ -196,31 +196,11 @@ def create_user_and_token(account_id, email, account_name, account_url):
     return check_or_create_token(user)
 
 
-# def check_teams(teams, user):
-#     """Проверка является ли пользователь участником команды"""
-#     if teams is not None:
-#         for team in teams:
-#             if not TeamMember.objects.filter(user=user, team=team).exists():
-#                 raise exceptions.TeamMemberExists()
-#     return teams
-
-
-# def check_projects(projects, user):
-#     """Проверка проектов пользователя"""
-#     if projects is not None:
-#         for project in projects:
-#             cur_project = ProjectMember.objects.filter(user=user, project=project).exists()
-#             if not cur_project:
-#                 raise exceptions.ProjectMemberExists()
-#     return projects
-
-
 def check_account(accounts, user):
     """Проверка привязанных аккаунтов пользователя"""
     if accounts is not None:
         for account in accounts:
-            cur_account = Account.objects.filter(user=user, account_url=account).exists()
-            if not cur_account:
+            if not Account.objects.filter(user=user, account_url=account).exists():
                 raise exceptions.AccountMemberExists()
     return accounts
 
@@ -247,14 +227,13 @@ def check_socials(user, socials):
     """Проверка социальных сетей пользователя"""
     if socials is not None:
         for social in socials:
-            current_social = FatUserSocial.objects.filter(user=user, user_url=social).exists()
-            if not current_social:
+            if not FatUserSocial.objects.filter(user=user, user_url=social).exists():
                 raise exceptions.SocialUserNotExists()
     return socials
 
 
 def check_profile(user, teams, projects, accounts, socials):
-    """Проверка пользователя"""
+    """Проверка пользователя для создания анкеты"""
     check_teams_and_projects = services_team.check_teams(teams, user) and services_rep.check_projects(projects, user)
     check_accounts_and_socials = check_account(accounts, user) and check_socials(user, socials)
     if check_teams_and_projects and check_accounts_and_socials:
@@ -262,7 +241,7 @@ def check_profile(user, teams, projects, accounts, socials):
 
 
 def questionnaire_update_teams(instance, teams):
-    """Обновление команд в анкету пользователя"""
+    """Обновление команд в анкете пользователя"""
     instance.teams.clear()
     for team in teams:
         instance.teams.add(team)
@@ -270,7 +249,7 @@ def questionnaire_update_teams(instance, teams):
 
 
 def questionnaire_update_projects(instance, projects):
-    """Обновление проектов в анкету пользователя"""
+    """Обновление проектов в анкете пользователя"""
     instance.projects.clear()
     for project in projects:
         instance.projects.add(project)
@@ -278,7 +257,7 @@ def questionnaire_update_projects(instance, projects):
 
 
 def questionnaire_update_accounts(instance, accounts):
-    """Обновление проектов в анкету пользователя"""
+    """Обновление аккаунтов в анкете пользователя"""
     instance.accounts.clear()
     for account in accounts:
         instance.accounts.add(account)
@@ -311,8 +290,7 @@ def questionnaire_update(instance, toolkits, languages, socials):
 def check_invite(invite):
     """Проверка приглашения"""
     if invite:
-        current_invite = Invitation.objects.filter(code=invite).exists()
-        if not current_invite:
+        if not Invitation.objects.filter(code=invite).exists():
             raise exceptions.InvitationNotExists()
         return invite
     raise exceptions.InvitationNotExists()
@@ -333,28 +311,22 @@ def check_email(email):
 
 
 def check_or_update_email(instance, email, pk, middle_name):
-    """Проверка на изменение mail профиля"""
+    """Проверка значений на изменение email профиля"""
     if email != '':
-        try:
-            current_user = FatUser.objects.get(email=email)
-            if current_user.email != instance.email:
-                raise exceptions.EmailExists()
+        if FatUser.objects.filter(email=email).exclude(email=instance.email).exists():
+            raise exceptions.EmailExists()
+        else:
             instance.email = email
             instance.save()
-        except FatUser.DoesNotExist:
-            instance.email = email
-            instance.save()
-        return instance
     if middle_name != '':
         instance.middle_name = middle_name
         instance.save()
-        return instance
+    return instance
 
 
 def create_social(user, social_link, user_url):
-    """Проверка социальных совпадения сетей пользователя"""
-    current_social = FatUserSocial.objects.filter(social=social_link, user=user).exists()
-    if current_social:
+    """Проверка социальных ссылок пользователя"""
+    if FatUserSocial.objects.filter(social=social_link, user=user).exists():
         raise exceptions.SocialExists()
     try:
         current_user_url = user_url.split('/')[-1]
@@ -364,7 +336,7 @@ def create_social(user, social_link, user_url):
 
 
 def check_or_update_social(instance, user_url):
-    """Проверка на изменение mail профиля"""
+    """Проверка социальных ссылок профиля для обновления"""
     try:
         current_user_url = user_url.split('/')[-1]
         instance.user_url = current_user_url

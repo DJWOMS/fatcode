@@ -119,15 +119,6 @@ def check_teams(teams):
             raise exceptions.TeamExists()
     return teams
 
-#
-# def check_my_teams(teams, user):
-#     """Проверка автора команд"""
-#     for team in teams:
-#         team = Team.objects.filter(user=user, id=team.id).exists()
-#         if not team:
-#             raise exceptions.TeamAuthor()
-#     return teams
-
 
 def check_repo(repo):
     """Проверка, есть ли у репозитория github уже проект"""

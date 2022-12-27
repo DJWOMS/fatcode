@@ -94,7 +94,7 @@ class GitHubAddSerializer(serializers.Serializer):
 
 
 class ProjectsSerializer(serializers.ModelSerializer):
-    """Сериалайзер проектов пользователя"""
+    """Сериализатор проектов пользователя"""
 
     class Meta:
         model = Project
@@ -102,7 +102,7 @@ class ProjectsSerializer(serializers.ModelSerializer):
 
 
 class ToolkitSerializer(serializers.ModelSerializer):
-    """Сериалайзер инструментов пользователя"""
+    """Сериализатор инструментов пользователя"""
 
     class Meta:
         model = Toolkit
@@ -110,7 +110,7 @@ class ToolkitSerializer(serializers.ModelSerializer):
 
 
 class TeamsSerializer(serializers.ModelSerializer):
-    """Сериалайзер команд пользователя"""
+    """Сериализатор команд пользователя"""
 
     class Meta:
         model = Team
@@ -118,7 +118,7 @@ class TeamsSerializer(serializers.ModelSerializer):
 
 
 class AccountsSerializer(serializers.ModelSerializer):
-    """Сериалайзер аккаунтов пользователя"""
+    """Сериализатор аккаунтов пользователя"""
 
     class Meta:
         model = models.Account
@@ -189,7 +189,7 @@ class QuestionnaireDetailSerializer(serializers.ModelSerializer):
 
 
 class CUDQuestionnaireSerializer(serializers.ModelSerializer):
-    """CUD анкеты пользователя"""
+    """Сериализатор создания анкеты пользователя"""
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
@@ -245,7 +245,7 @@ class CUDQuestionnaireSerializer(serializers.ModelSerializer):
 
 
 class UDQuestionnaireSerializer(serializers.ModelSerializer):
-    """UD анкеты пользователя"""
+    """Сериализатор UD анкеты пользователя"""
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
@@ -278,7 +278,7 @@ class UDQuestionnaireSerializer(serializers.ModelSerializer):
 
 
 class TeamsListQuestionnaireSerializer(serializers.ModelSerializer):
-    """Сериалайзей вывода команд для анкеты пользователя"""
+    """Сериализатор вывода команд для анкеты пользователя"""
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
     teams = TeamsSerializer(many=True)
 
@@ -288,7 +288,7 @@ class TeamsListQuestionnaireSerializer(serializers.ModelSerializer):
 
 
 class UTeamsQuestionnaireSerializer(serializers.ModelSerializer):
-    """Update команд для анкеты пользователя"""
+    """Сериализатор обновления команд для анкеты пользователя"""
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
@@ -305,7 +305,7 @@ class UTeamsQuestionnaireSerializer(serializers.ModelSerializer):
 
 
 class ProjectsListQuestionnaireSerializer(serializers.ModelSerializer):
-    """Сериалайзей вывода проектов для анкеты пользователя"""
+    """Сериализатор вывода проектов для анкеты пользователя"""
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
     projects = ProjectsSerializer(many=True)
 
@@ -315,7 +315,7 @@ class ProjectsListQuestionnaireSerializer(serializers.ModelSerializer):
 
 
 class UProjectsQuestionnaireSerializer(serializers.ModelSerializer):
-    """Update проектов для анкеты пользователя"""
+    """Сериализатор обновления проектов для анкеты пользователя"""
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
@@ -332,7 +332,7 @@ class UProjectsQuestionnaireSerializer(serializers.ModelSerializer):
 
 
 class AccountsListQuestionnaireSerializer(serializers.ModelSerializer):
-    """Сериалайзей вывода аккаунтов для анкеты пользователя"""
+    """Сериализатор вывода аккаунтов для анкеты пользователя"""
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
     accounts = AccountsSerializer(many=True)
 
@@ -342,7 +342,7 @@ class AccountsListQuestionnaireSerializer(serializers.ModelSerializer):
 
 
 class UAccountsQuestionnaireSerializer(serializers.ModelSerializer):
-    """Update аккаунтов для анкеты пользователя"""
+    """Сериализатор обновления аккаунтов для анкеты пользователя"""
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
@@ -434,7 +434,7 @@ class SocialProfileSerializer(serializers.ModelSerializer):
 
 
 class SocialProfileCreateSerializer(serializers.ModelSerializer):
-    """Create социальных ссылок профиля"""
+    """Сериализатор создания социальных ссылок профиля"""
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
@@ -449,7 +449,7 @@ class SocialProfileCreateSerializer(serializers.ModelSerializer):
 
 
 class SocialProfileUpdateSerializer(serializers.ModelSerializer):
-    """Update социальных ссылок профиля"""
+    """Сериализатор обновления социальных ссылок профиля"""
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
@@ -480,7 +480,7 @@ class UserProfileListSerializer(serializers.ModelSerializer):
 
 
 class UserProfileUpdateSerializer(serializers.ModelSerializer):
-    """ RUDE профиля """
+    """Сериализатор RUDE профиля"""
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
@@ -495,7 +495,7 @@ class UserProfileUpdateSerializer(serializers.ModelSerializer):
 
 
 class UserMeProfileSerializer(serializers.ModelSerializer):
-    """Сериалайзер профиля для user_me"""
+    """Сериализатор профиля для user_me"""
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
@@ -504,7 +504,7 @@ class UserMeProfileSerializer(serializers.ModelSerializer):
 
 
 class AdditionallyProfileSerializer(serializers.ModelSerializer):
-    """ Представление профиля для автора"""
+    """Сериализатор представление профиля для автора"""
     toolkits = ToolkitSerializer(many=True)
     languages = LanguagesSerializer(many=True)
     user = GetUserForProjectSerializer()
@@ -515,7 +515,7 @@ class AdditionallyProfileSerializer(serializers.ModelSerializer):
 
 
 class SocialListSerializer(serializers.ModelSerializer):
-    """Сериалайзер социальных сетей"""
+    """Сериализатор социальных сетей"""
 
     class Meta:
         model = models.Social

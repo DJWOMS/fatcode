@@ -57,7 +57,7 @@ class LanguageListView(generics.ListAPIView):
 
 
 class SocialView(generics.ListAPIView):
-    """Представление ссоциальных сетей"""
+    """Представление социальных сетей"""
     queryset = models.Social.objects.all()
     serializer_class = serializers.SocialListSerializer
 
@@ -79,7 +79,7 @@ class UsersView(MixedPermissionSerializer, ModelViewSet):
 
 
 class AdditionallyProfileView(MixedSerializer, ModelViewSet):
-    """Представление дополнительных данных профиля"""
+    """Представление данных профиля с анкеты пользователя"""
 
     serializer_classes_by_action = serializers.AdditionallyProfileSerializer
     permission_classes_by_action = (IsAuthenticated,)
@@ -131,7 +131,7 @@ class AvatarProfileView(MixedPermissionSerializer, ModelViewSet):
 
 
 class SocialProfileView(MixedSerializer, ModelViewSet):
-    """Социальные ссылки профиля"""
+    """CRUD социальных ссылок профиля"""
     serializer_classes_by_action = {
         'list': serializers.SocialProfileSerializer,
         'retrieve': serializers.SocialProfileSerializer,
