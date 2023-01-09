@@ -8,6 +8,7 @@ from rest_framework.authtoken.models import Token
 
 from src.team.models import TeamMember
 from src.repository.models import ProjectMember
+
 from src.profiles.models import FatUser, Account, Friends, Applications, Invitation
 from src.team import services as services_team
 from src.repository import services as services_rep
@@ -35,6 +36,19 @@ class CoinService:
             self.user.save()
             return self.user
         raise ValueError('Недостаточно средств')
+
+
+class ReputationService:
+    def __init__(self, user: FatUser):
+        self.user = user
+
+    def increase_reputation(self, count: int, action: str):
+        if action == "inc":
+            self.user.reputation += count
+            self.user.save()
+        elif action == "dcr":
+            self.user.reputation -= count
+            self.user.save()
 
 
 def check_token_add(code):
@@ -131,9 +145,9 @@ def create_account(user, account_name, account_url, account_id):
 
 
 def add_friend(friend, user):
-    if Applications.objects.filter(getter=friend, sender=user):
-        Applications.objects.filter(getter=friend, sender=user).delete()
-        return Friends.objects.create(friend=friend, user=user)
+    if Application.objects.filter(getter=friend, sender=user):
+        Application.objects.filter(getter=friend, sender=user).delete()
+        return Friend.objects.create(friend=friend, user=user)
     else:
         raise ValueError("you have not application")
 

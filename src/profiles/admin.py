@@ -30,25 +30,30 @@ class FatUserAdmin(UserAdmin):
     )
 
 
+@admin.register(models.Account)
 class AccountAdmin(admin.ModelAdmin):
     list_display = ("user", "account_id", "account_url", "account_name")
     search_fields = ("user", "account_id", "account_url", "account_name")
 
 
+@admin.register(models.Questionnaire)
 class QuestionnaireAdmin(admin.ModelAdmin):
     list_display = ('user', 'description')
     search_fields = ('user', )
 
 
+@admin.register(models.Language)
 class LanguageAdmin(admin.ModelAdmin):
     list_display = ('name', )
     search_fields = ('name', )
 
 
+@admin.register(models.FatUserSocial)
 class FatUserSocialAdmin(admin.ModelAdmin):
     list_display = ('social', 'user', 'user_url')
 
 
+@admin.register(models.Invitation)
 class InvitationAdmin(admin.ModelAdmin):
     list_display = ('code', )
     change_list_template = "admin/invite.html"
@@ -68,11 +73,6 @@ class InvitationAdmin(admin.ModelAdmin):
 
 admin.site.register(models.FatUser, FatUserAdmin)
 admin.site.register(models.Social)
-admin.site.register(models.Account, AccountAdmin)
-admin.site.register(models.Questionnaire, QuestionnaireAdmin)
-admin.site.register(models.Language, LanguageAdmin)
-admin.site.register(models.FatUserSocial, FatUserSocialAdmin)
-admin.site.register(models.Applications)
-admin.site.register(models.Friends)
-admin.site.register(models.Invitation, InvitationAdmin)
+admin.site.register(models.Application)
+admin.site.register(models.Friend)
 

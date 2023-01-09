@@ -2,8 +2,11 @@ from djoser.serializers import UserSerializer, UserCreatePasswordRetypeSerialize
 from djoser.conf import settings
 from rest_framework import serializers
 
-# from src.courses.serializers import ListCourseSerializer
+from src.base.validators import ImageValidator
+from src.base import exceptions
+
 from src.profiles import models, services
+
 from src.repository.models import Toolkit, Project
 from src.team.models import Team
 from src.profiles import models
@@ -11,7 +14,6 @@ from src.team import services as services_team
 from src.repository import services as services_rep
 from src.base.validators import ImageValidator
 from src.profiles.services import add_friend
-from src.base import exceptions
 
 
 class UserUpdateSerializer(UserSerializer):
@@ -89,6 +91,7 @@ class DashboardUserSerializer(serializers.ModelSerializer):
             return instance.courses.filter(progress=100).count()
 
 
+
 class GitHubAddSerializer(serializers.Serializer):
     code = serializers.CharField(max_length=25)
 
@@ -107,6 +110,7 @@ class ToolkitSerializer(serializers.ModelSerializer):
     class Meta:
         model = Toolkit
         fields = ('name',)
+
 
 
 class TeamsSerializer(serializers.ModelSerializer):
@@ -206,7 +210,7 @@ class CUDQuestionnaireSerializer(serializers.ModelSerializer):
             "projects",
             "accounts",
             "socials",
-            "languages"
+            "languages",
         )
 
     def create(self, validated_data):
@@ -362,22 +366,22 @@ class ApplicationListSerializer(serializers.ModelSerializer):
     getter = GetUserSerializer()
 
     class Meta:
-        model = models.Applications
-        fields = ('id', 'getter', )
+        model = models.Application
+        fields = ('id', 'getter',)
 
 
 class ApplicationSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.Applications
-        fields = ('id', 'getter', )
+        model = models.Application
+        fields = ('id', 'getter',)
 
 
 class FriendListSerializer(serializers.ModelSerializer):
     friend = GetUserSerializer()
 
     class Meta:
-        model = models.Friends
-        fields = ('id', 'friend', )
+        model = models.Friend
+        fields = ('id', 'friend',)
 
     def create(self, validated_data):
         return add_friend(friend=validated_data['friend'], user=validated_data['user'])
@@ -385,8 +389,8 @@ class FriendListSerializer(serializers.ModelSerializer):
 
 class FriendSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.Friends
-        fields = ('id', 'friend', )
+        model = models.Friend
+        fields = ('id', 'friend',)
 
     def create(self, validated_data):
         return add_friend(friend=validated_data['friend'], user=validated_data['user'])
@@ -426,6 +430,15 @@ class AvatarQuestionnaireSerializer(serializers.ModelSerializer):
 
 class SocialProfileSerializer(serializers.ModelSerializer):
     """Сериализатор социальных ссылок профиля"""
+
+    class Meta:
+        model = models.Social
+        fields = ('title',)
+
+
+class SocialProfileSerializer(serializers.ModelSerializer):
+    """Просмотр социальных ссылок профиля"""
+
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
@@ -520,6 +533,7 @@ class SocialListSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Social
         fields = ('title', 'logo', 'url')
+
 
 
 
@@ -620,6 +634,5 @@ class SocialListSerializer(serializers.ModelSerializer):
 #             "groups",
 #             "user_permissions",
 #         )
-
 
 
