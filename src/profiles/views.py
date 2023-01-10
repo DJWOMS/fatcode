@@ -75,7 +75,7 @@ class UsersView(MixedPermissionSerializer, ModelViewSet):
     }
 
     def get_queryset(self):
-        return models.FatUser.objects.all().prefetch_related('user_social')
+        return models.FatUser.objects.prefetch_related('user_social').all()
 
 
 class AdditionallyProfileView(MixedSerializer, ModelViewSet):
@@ -85,15 +85,15 @@ class AdditionallyProfileView(MixedSerializer, ModelViewSet):
     permission_classes_by_action = (IsAuthenticated,)
 
     def get_queryset(self):
-        return models.Questionnaire.objects.select_related('user').filter(user_id=self.kwargs.get('pk'))
+        return models.Questionnaire.objects.filter(user_id=self.kwargs.get('pk')).select_related('user')
 
 
 class UserMeView(MixedPermissionSerializer, ModelViewSet):
     """Представление пользователя только для владельца аккаунта"""
     permission_classes_by_action = {
-        'list': (IsAuthenticated, permissions.IsMeAuthor,),
-        'update': (IsAuthenticated, permissions.IsMeAuthor,),
-        'destroy': (IsAuthenticated, permissions.IsMeAuthor,),
+        'list': (IsAuthenticated, permissions.IsMeAuthor),
+        'update': (IsAuthenticated, permissions.IsMeAuthor),
+        'destroy': (IsAuthenticated, permissions.IsMeAuthor),
     }
     serializer_classes_by_action = {
         'list': serializers.UserMeProfileSerializer,
@@ -121,10 +121,10 @@ class AvatarProfileView(MixedPermissionSerializer, ModelViewSet):
     }
 
     def get_queryset(self):
-        return models.FatUser.objects.select_related('questionnaire').filter(username=self.request.user)
+        return models.FatUser.objects.filter(username=self.request.user).select_related('questionnaire')
 
     def get_object(self):
-        return models.FatUser.objects.select_related('questionnaire').get(username=self.request.user)
+        return models.FatUser.objects.get(username=self.request.user).select_related('questionnaire')
 
     def perform_update(self, serializer):
         serializer.save(user_id=self.request.user.id)
@@ -141,9 +141,9 @@ class SocialProfileView(MixedSerializer, ModelViewSet):
     }
     permission_classes = (IsAuthenticated,)
     permission_classes_by_action = {
-        'create': (IsAuthenticated, permissions.IsMeAuthor, ),
-        'update': (IsAuthenticated, permissions.IsMeAuthor,),
-        'destroy': (IsAuthenticated, permissions.IsMeAuthor,),
+        'create': (IsAuthenticated, permissions.IsMeAuthor),
+        'update': (IsAuthenticated, permissions.IsMeAuthor),
+        'destroy': (IsAuthenticated, permissions.IsMeAuthor),
     }
     lookup_url_kwarg = 'social_pk'
 
@@ -155,10 +155,10 @@ class QuestionnaireView(MixedPermissionSerializer, ModelViewSet):
     """CRUD анкеты пользователя"""
     permission_classes_by_action = {
         'list': (IsAuthenticated,),
-        'create': (IsAuthenticated, permissions.IsQuestionnaireNotExists,),
+        'create': (IsAuthenticated, permissions.IsQuestionnaireNotExists),
         'retrieve': (IsAuthenticated, ),
-        'update': (IsAuthenticated, IsUser,),
-        'destroy': (IsAuthenticated, IsUser,),
+        'update': (IsAuthenticated, IsUser),
+        'destroy': (IsAuthenticated, IsUser),
     }
     serializer_classes_by_action = {
         'list': serializers.QuestionnaireListSerializer,
@@ -171,11 +171,11 @@ class QuestionnaireView(MixedPermissionSerializer, ModelViewSet):
     filterset_class = filters.ToolkitFilter
 
     def get_queryset(self):
-        return models.Questionnaire.objects.all().select_related('user').prefetch_related(
+        return models.Questionnaire.objects.select_related('user').prefetch_related(
             'toolkits',
             'languages',
             'socials'
-        )
+        ).all()
 
     def perform_create(self, serializer):
         serializer.save()
@@ -191,7 +191,7 @@ class QuestionnaireTeamsView(MixedPermissionSerializer, ModelViewSet):
     """RD  команд в анкете пользователя"""
     permission_classes_by_action = {
         'list': (IsAuthenticated,),
-        'update': (IsAuthenticated, IsUser,)
+        'update': (IsAuthenticated, IsUser)
     }
     serializer_classes_by_action = {
         'list': serializers.TeamsListQuestionnaireSerializer,
@@ -199,7 +199,7 @@ class QuestionnaireTeamsView(MixedPermissionSerializer, ModelViewSet):
     }
 
     def get_queryset(self):
-        return models.Questionnaire.objects.all().select_related('user').prefetch_related('teams')
+        return models.Questionnaire.objects.select_related('user').prefetch_related('teams').all()
 
     def perform_update(self, serializer):
         serializer.save()
@@ -209,7 +209,7 @@ class QuestionnaireProjectsView(MixedPermissionSerializer, ModelViewSet):
     """RU репозиториев в анкете пользователя"""
     permission_classes_by_action = {
         'list': (IsAuthenticated,),
-        'update': (IsAuthenticated, IsUser,)
+        'update': (IsAuthenticated, IsUser)
     }
     serializer_classes_by_action = {
         'list': serializers.ProjectsListQuestionnaireSerializer,
@@ -217,7 +217,7 @@ class QuestionnaireProjectsView(MixedPermissionSerializer, ModelViewSet):
     }
 
     def get_queryset(self):
-        return models.Questionnaire.objects.all().select_related('user').prefetch_related('projects')
+        return models.Questionnaire.objects.select_related('user').prefetch_related('projects').all()
 
     def perform_update(self, serializer):
         serializer.save()
@@ -227,7 +227,7 @@ class QuestionnaireAccountsView(MixedPermissionSerializer, ModelViewSet):
     """RU аккаунтов в анкете пользователя"""
     permission_classes_by_action = {
         'list': (IsAuthenticated,),
-        'update': (IsAuthenticated, IsUser,)
+        'update': (IsAuthenticated, IsUser)
     }
     serializer_classes_by_action = {
         'list': serializers.AccountsListQuestionnaireSerializer,
@@ -250,7 +250,7 @@ class AvatarQuestionnaireView(MixedPermissionSerializer, ModelViewSet):
     serializer_classes_by_action = serializers.AvatarQuestionnaireSerializer
     permission_classes_by_action = {
         'list': (IsAuthenticated,),
-        'update': (IsAuthenticated, permissions.IsAuthorQuestionnaireUser,)
+        'update': (IsAuthenticated, permissions.IsAuthorQuestionnaireUser)
     }
 
     def get_queryset(self):
@@ -269,7 +269,7 @@ class ApplicationView(MixedSerializer, ModelViewSet):
     }
     permission_classes = (IsAuthenticated, )
     permission_classes_by_action = {
-        'create': (permissions.IsNotApplicant, permissions.IsNotYouGetter, permissions.IsNotAlreadyFriend, ),
+        'create': (permissions.IsNotApplicant, permissions.IsNotYouGetter, permissions.IsNotAlreadyFriend),
     }
 
     def get_queryset(self):

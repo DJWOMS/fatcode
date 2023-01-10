@@ -9,7 +9,7 @@ from rest_framework.authtoken.models import Token
 from src.team.models import TeamMember
 from src.repository.models import ProjectMember
 
-from src.profiles.models import FatUser, Account, Friends, Applications, Invitation
+from src.profiles.models import FatUser, Account, Friend, Application, Invitation
 from src.team import services as services_team
 from src.repository import services as services_rep
 from ..base import exceptions

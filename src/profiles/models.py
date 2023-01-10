@@ -139,19 +139,34 @@ class Questionnaire(models.Model):
         return f'{self.id}'
 
 
-class Applications(models.Model):
+class Application(models.Model):
     """Модель заявок в друзья"""
-    sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="sender")
-    getter = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="getter")
+    sender = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="sender"
+    )
+    getter = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="getter"
+    )
 
     def __str__(self):
         return f'{self.sender} wants to be friends with {self.getter}'
 
 
-class Friends(models.Model):
-    """Модель друзей"""
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="user")
-    friend = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="friend")
+class Friend(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="user"
+    )
+    friend = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="friend"
+    )
 
     def __str__(self):
         return f'{self.friend} is friends with {self.user}'
