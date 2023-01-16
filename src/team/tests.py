@@ -161,7 +161,6 @@ class TeamTest(APITestCase):
         team = models.Team.objects.get(id=self.team1.id)
         self.assertEqual(response.status_code, 403)
 
-
     def test_team_update_no_authorization(self):
         data = {
             'name': 'test',

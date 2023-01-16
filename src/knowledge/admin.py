@@ -1,5 +1,5 @@
 from django.contrib import admin
-from src.knowledge.models import Category, Tag, Article, Glossary
+from src.knowledge.models import Category, Tag, Article, Glossary, CommentArticle
 from django import forms
 
 
@@ -22,6 +22,11 @@ class ArticleAdmin(admin.ModelAdmin):
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ('name', 'parent')
+
+
+@admin.register(CommentArticle)
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ('user', 'article', 'create_date')
 
 
 @admin.register(Glossary)

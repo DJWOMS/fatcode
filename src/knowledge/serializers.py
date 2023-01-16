@@ -69,3 +69,21 @@ class GlossaryArticleSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Article
         fields = ("id", "title")
+
+
+class CommentListSerializer(serializers.ModelSerializer):
+    """Сериализатор вывода списка комментариев"""
+    user = GetUserSerializer()
+
+    class Meta:
+        model = models.CommentArticle
+        fields = ("id", "user", "text", "create_date")
+
+
+class CUDCommentSerializer(serializers.ModelSerializer):
+    """Сериализатор CUD комментариев к article"""
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = models.CommentArticle
+        fields = ("text", "user")
