@@ -36,6 +36,8 @@ class DetailArticleSerializer(serializers.ModelSerializer):
     author = GetUserSerializer()
     category = CategorySerializer(many=True)
     tag = TagSerializer(many=True)
+    like_count = serializers.IntegerField()
+    dislike_count = serializers.IntegerField()
 
     class Meta:
         model = models.Article
@@ -51,7 +53,9 @@ class DetailArticleSerializer(serializers.ModelSerializer):
             'picture',
             'category',
             'tag',
-            'video_url'
+            'video_url',
+            'like_count',
+            'dislike_count'
         )
 
 
@@ -87,3 +91,12 @@ class CUDCommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.CommentArticle
         fields = ("text", "user")
+
+
+class LikeSerializer(serializers.ModelSerializer):
+    """Сериализатор лайков"""
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = models.LikeDislike
+        fields = ("id", "user", "status", "create_date")

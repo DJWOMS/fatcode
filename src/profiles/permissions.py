@@ -28,10 +28,9 @@ class IsNotYouGetter(BasePermission):
 
 class IsQuestionnaireNotExists(permissions.BasePermission):
     """Для создания только одной анкеты"""
-
     def has_permission(self, request, view):
-        cur_user = models.Questionnaire.objects.select_related('user').filter(user=request.user).exists()
-        if not cur_user:
+        current_user = models.Questionnaire.objects.select_related('user').filter(user=request.user).exists()
+        if not current_user:
             return True
 
 

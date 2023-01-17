@@ -4,9 +4,9 @@ from rest_framework import filters
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
-from ..base.classes import MixedSerializer, MixedPermissionSerializer
+from ..base.classes import MixedSerializer, MixedPermissionSerializer, MixedPermission
 
-from . import models, serializers
+from . import models, serializers, permissions
 from .filters import ArticleFilter
 from ..base.permissions import IsUser
 
@@ -28,6 +28,12 @@ class ArticleView(MixedSerializer, ModelViewSet):
     queryset = (
         models.Article.objects
         .filter(published=True)
+        .annotate(
+            like_count=Count("likedislike", filter=Q(likedislike__status='Like'), distinct=True)
+        )
+        .annotate(
+            dislike_count=Count("likedislike", filter=Q(likedislike__status='Dislike'), distinct=True)
+        )
         .select_related("author")
         .prefetch_related("tag", "category", "glossary")
     )
@@ -58,7 +64,7 @@ class GlossaryArticleListView(ListAPIView):
 
 
 class CommentsView(MixedPermissionSerializer, ModelViewSet):
-    """CRUD комментариев к постам"""
+    """CRUD комментариев к статьям"""
     permission_classes_by_action = {
         'list': (IsAuthenticated, ),
         'create': (IsAuthenticated, ),
@@ -83,6 +89,29 @@ class CommentsView(MixedPermissionSerializer, ModelViewSet):
 
     def perform_update(self, serializer):
         serializer.save(user=self.request.user, id=self.kwargs.get('comment_pk'))
+
+    def perform_destroy(self, instance):
+        instance.delete()
+
+
+class LikeDislikeView(MixedPermission, ModelViewSet):
+    """CRUD лайков к статьям"""
+    permission_classes_by_action = {
+        'list': (IsAuthenticated,),
+        'create': (IsAuthenticated, permissions.IsLikeNotExists),
+        'update': (IsAuthenticated, IsUser),
+    }
+    serializer_class = serializers.LikeSerializer
+    lookup_url_kwarg = 'like_pk'
+
+    def get_queryset(self):
+        return models.LikeDislike.objects.filter(article_id=self.kwargs.get('pk')).select_related('user')
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user, article_id=self.kwargs.get('pk'))
+
+    def perform_update(self, serializer):
+        serializer.save(user=self.request.user, id=self.kwargs.get('like_pk'))
 
     def perform_destroy(self, instance):
         instance.delete()

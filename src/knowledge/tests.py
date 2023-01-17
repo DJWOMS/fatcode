@@ -70,7 +70,7 @@ class TestKnowledge(APITestCase):
         self.assertEqual(request.json().get('results'), [{'id': 1, 'letter': 'f'}])
 
 
-class CommentTest(APITestCase):
+class CommentLikeTest(APITestCase):
     def setUp(self):
         self.profile1 = FatUser.objects.create(
             username='username1',
@@ -108,6 +108,11 @@ class CommentTest(APITestCase):
             text='test1',
             user=self.profile1,
             article=self.article1,
+        )
+        self.like1 = models.LikeDislike.objects.create(
+            user=self.profile1,
+            article=self.article1,
+            status='Like'
         )
 
     def test_comment_list(self):
@@ -197,3 +202,72 @@ class CommentTest(APITestCase):
                                    )
         self.assertEqual(response.status_code, 403)
         self.assertEqual(models.CommentArticle.objects.filter(id=self.comment1.id).exists(), True)
+
+    def test_like_list(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
+        response = self.client.get(reverse('article_like', kwargs={'pk': self.article1.id}))
+        self.assertEqual(len(response.data), 4)
+        self.assertEqual(response.status_code, 200)
+
+    def test_like_list_no_authorization(self):
+        response = self.client.get(reverse('article_like', kwargs={'pk': self.article1.id}))
+        self.assertEqual(response.status_code, 401)
+
+    def test_like_create(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile2_token.key)
+        data = {
+            'user': self.profile2.id,
+            'article': self.article1.id,
+            'status': 'Like'
+        }
+        response = self.client.post(reverse('article_like', kwargs={'pk': self.article1.id}), data=data, format='json')
+        self.assertEqual(len(response.data), 3)
+        self.assertEqual(response.status_code, 201)
+
+    def test_like_create_prohibit(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
+        data = {
+            'user': self.profile1.id,
+            'article': self.article1.id,
+            'status': 'Like'
+        }
+        response = self.client.post(reverse('article_like', kwargs={'pk': self.article1.id}), data=data, format='json')
+        self.assertEqual(response.status_code, 403)
+
+    def test_like_create_no_authorization(self):
+        data = {
+            'user': self.profile3.id,
+            'article': self.article1.id,
+            'status': 'Like'
+        }
+        response = self.client.post(reverse('article_like', kwargs={'pk': self.article1.id}), data=data, format='json')
+        self.assertEqual(response.status_code, 401)
+
+    def test_likeauthor_update(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
+        data = {
+            'user': self.profile1.id,
+            'article': self.article1.id,
+            'status': 'Dislike'
+        }
+        response = self.client.put(reverse('like_update',
+                                           kwargs={'pk': self.article1.id, 'like_pk': self.like1.id}),
+                                   data=data, format='json'
+                                   )
+        self.assertEqual(len(response.data), 3)
+        self.assertEqual(response.status_code, 200)
+
+    def test_like_update_invalid(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile2_token.key)
+        data = {
+            'user': self.profile2.id,
+            'article': self.article1.id,
+            'status': 'Dislike'
+        }
+        response = self.client.put(reverse('like_update',
+                                           kwargs={'pk': self.article1.id, 'like_pk': self.like1.id}),
+                                   data=data, format='json'
+                                   )
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.status_code, 403)
+
