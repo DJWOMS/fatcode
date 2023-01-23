@@ -161,7 +161,6 @@ class TeamTest(APITestCase):
         team = models.Team.objects.get(id=self.team1.id)
         self.assertEqual(response.status_code, 403)
 
-
     def test_team_update_no_authorization(self):
         data = {
             'name': 'test',
@@ -758,8 +757,8 @@ class TeamTest(APITestCase):
 
     def test_social_links_list_no_authorization(self):
         response = self.client.get(reverse('social_links', kwargs={'pk': self.team1.id}))
-        self.assertEqual(len(response.data), 4)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.status_code, 401)
 
     def test_social_links_create(self):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)

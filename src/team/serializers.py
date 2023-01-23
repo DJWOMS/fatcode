@@ -8,7 +8,7 @@ from . import services
 
 
 class TeamNameView(serializers.ModelSerializer):
-    """Вывод команды при добавлении социальной ссылки"""
+    """Сериализатор вывода команды при добавлении социальной ссылки"""
 
     class Meta:
         model = models.Team
@@ -16,7 +16,7 @@ class TeamNameView(serializers.ModelSerializer):
 
 
 class ListSocialLinkSerializer(serializers.ModelSerializer):
-    """Просмотр социальных сетей'"""
+    """Сериализатор просмотра социальных сетей'"""
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
@@ -25,7 +25,7 @@ class ListSocialLinkSerializer(serializers.ModelSerializer):
 
 
 class UpdateSocialLinkSerializer(serializers.ModelSerializer):
-    """Редактирование/удаление социальных сетей"""
+    """Сериализатор UD социальных сетей"""
 
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
@@ -35,7 +35,7 @@ class UpdateSocialLinkSerializer(serializers.ModelSerializer):
 
 
 class CreateSocialLinkSerializer(serializers.ModelSerializer):
-    """Добавление социальных сетей"""
+    """Сериализатор создания социальных сетей"""
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
@@ -53,7 +53,7 @@ class CreateSocialLinkSerializer(serializers.ModelSerializer):
 
 
 class SocialLinkSerializer(serializers.ModelSerializer):
-    """Вывод социальных сетей"""
+    """Сериализатор вывода социальных сетей"""
 
     class Meta:
         model = models.SocialLink
@@ -61,7 +61,7 @@ class SocialLinkSerializer(serializers.ModelSerializer):
 
 
 class InvitationSerializer(serializers.ModelSerializer):
-    """Сведения о подаче заявок"""
+    """Сериализатор вывода заявок"""
     team = TeamNameView()
 
     class Meta:
@@ -70,7 +70,7 @@ class InvitationSerializer(serializers.ModelSerializer):
 
 
 class InvitationAskingSerializer(serializers.ModelSerializer):
-    """Подача заявки пользователем"""
+    """Сериализатор создания заявки пользователем"""
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
@@ -84,7 +84,7 @@ class InvitationAskingSerializer(serializers.ModelSerializer):
 
 
 class RetrieveDeleteMember(serializers.ModelSerializer):
-    """RD участника команды"""
+    """Сериализатор RD участника команды"""
     user = GetUserSerializer()
 
     class Meta:
@@ -93,7 +93,7 @@ class RetrieveDeleteMember(serializers.ModelSerializer):
 
 
 class AcceptInvitationSerializerList(serializers.ModelSerializer):
-    """Вывод заявок для приема в команду"""
+    """Сериализатор вывод заявок для приема в команду"""
     user = GetUserSerializer()
     team = TeamNameView()
 
@@ -103,7 +103,7 @@ class AcceptInvitationSerializerList(serializers.ModelSerializer):
 
 
 class AcceptInvitationSerializer(serializers.ModelSerializer):
-    """Прием в команду"""
+    """Сериализатор приема в команду"""
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
@@ -118,7 +118,7 @@ class AcceptInvitationSerializer(serializers.ModelSerializer):
 
 
 class CommentListSerializer(serializers.ModelSerializer):
-    """ Список комментариев """
+    """Сериализатор вывода списка комментариев"""
     user = GetUserSerializer()
     comments_count = serializers.IntegerField()
 
@@ -128,7 +128,7 @@ class CommentListSerializer(serializers.ModelSerializer):
 
 
 class CommentCreateSerializer(serializers.ModelSerializer):
-    """ Добавление комментариев к посту """
+    """Сериализатор создания комментариев к посту"""
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
@@ -146,7 +146,7 @@ class CommentCreateSerializer(serializers.ModelSerializer):
 
 
 class TeamCommentUpdateSerializer(serializers.ModelSerializer):
-    """ Редактирование/удаление комментариев к посту """
+    """Сериализатор UD комментариев к посту"""
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
@@ -155,14 +155,14 @@ class TeamCommentUpdateSerializer(serializers.ModelSerializer):
 
 
 class CommentChildrenSerializer(serializers.Serializer):
-    """ Комментарий к комментарию"""
+    """Сериализатор вывода комментария к комментарию"""
     def to_representation(self, value):
         serializer = CommentListSerializer(value, context=self.context)
         return serializer.data
 
 
 class PostSerializer(serializers.ModelSerializer):
-    """ Список постов команды """
+    """Сериализатор вывода списока постов команды"""
     user = GetUserSerializer()
     view_count = serializers.CharField(read_only=True)
     comments_count = serializers.IntegerField()
@@ -180,7 +180,7 @@ class PostSerializer(serializers.ModelSerializer):
 
 
 class PostCreateSerializer(serializers.ModelSerializer):
-    """ CUD поста """
+    """Сериализатор CUD поста"""
 
     class Meta:
         model = models.Post
@@ -188,7 +188,7 @@ class PostCreateSerializer(serializers.ModelSerializer):
 
 
 class TeamMemberSerializer(serializers.ModelSerializer):
-    """Просмотр участников команды"""
+    """Сериализатор просмотра участников команды"""
     user = GetUserSerializer()
 
     class Meta:
@@ -197,7 +197,7 @@ class TeamMemberSerializer(serializers.ModelSerializer):
 
 
 class ProjectSerializers(serializers.ModelSerializer):
-    """Просмотр проекта команды"""
+    """Сериализатор просмотра проекта команды"""
 
     class Meta:
         model = Project
@@ -205,9 +205,9 @@ class ProjectSerializers(serializers.ModelSerializer):
 
 
 class TeamSerializer(serializers.ModelSerializer):
-    """Просмотр всех команд"""
+    """Сериализатор просмотра всех команд"""
     user = GetUserSerializer()
-    project_teams = ProjectSerializers(read_only=True, many=True)
+    projects_count = serializers.IntegerField()
 
     class Meta:
         model = models.Team
@@ -217,14 +217,16 @@ class TeamSerializer(serializers.ModelSerializer):
             "tagline",
             "user",
             "avatar",
-            "project_teams"
+            "projects_count"
         )
 
 
 class DetailTeamSerializer(serializers.ModelSerializer):
-    """ Просмотр деталей одной команды"""
+    """Сериализатор просмотра деталей одной команды"""
     user = GetUserSerializer()
     social_links = SocialLinkSerializer(many=True)
+    projects_count = serializers.IntegerField()
+    members_count = serializers.IntegerField()
 
     class Meta:
         model = models.Team
@@ -234,11 +236,13 @@ class DetailTeamSerializer(serializers.ModelSerializer):
             "user",
             "avatar",
             "social_links",
+            "projects_count",
+            "members_count"
         )
 
 
 class CreateTeamSerializer(serializers.ModelSerializer):
-    """Добавить команду"""
+    """Сериализатор создания команды"""
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
@@ -251,7 +255,7 @@ class CreateTeamSerializer(serializers.ModelSerializer):
 
 
 class UpdateTeamSerializer(serializers.ModelSerializer):
-    """Редактирование команды"""
+    """Сериализатор редактирования команды"""
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
@@ -264,7 +268,7 @@ class UpdateTeamSerializer(serializers.ModelSerializer):
 
 
 class TeamListSerializer(serializers.ModelSerializer):
-    """Просмотр всех команд как создатель"""
+    """Сериализатор просмотра всех команд как создатель"""
     social_links = SocialLinkSerializer(many=True)
 
     class Meta:
@@ -273,7 +277,7 @@ class TeamListSerializer(serializers.ModelSerializer):
 
 
 class MemberSerializer(serializers.ModelSerializer):
-    """Участники команды"""
+    """Сериализатор участников команды"""
     user = GetUserSerializer()
 
     class Meta:
@@ -290,7 +294,7 @@ class GetTeamSerializer(serializers.ModelSerializer):
 
 
 class AvatarSerializer(serializers.ModelSerializer):
-    """ Аватар команды """
+    """Сериализатор аватара команды"""
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
@@ -303,3 +307,4 @@ class AvatarSerializer(serializers.ModelSerializer):
         instance = super().update(instance, validated_data)
         instance.save()
         return instance
+

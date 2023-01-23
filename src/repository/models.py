@@ -7,6 +7,7 @@ from src.base.validators import ImageValidator
 
 
 class Category(models.Model):
+    """Модель категорий проекта"""
     name = models.CharField(max_length=150)
     parent = models.ForeignKey(
         'self',
@@ -21,6 +22,7 @@ class Category(models.Model):
 
 
 class Toolkit(models.Model):
+    """Модель инструментов проекта"""
     name = models.CharField(max_length=150)
     parent = models.ForeignKey(
         'self',
@@ -35,6 +37,7 @@ class Toolkit(models.Model):
 
 
 class Project(models.Model):
+    """Модель проекта"""
     name = models.CharField(max_length=150)
     description = models.TextField()
     create_date = models.DateTimeField(auto_now_add=True)
@@ -68,11 +71,8 @@ class Project(models.Model):
 
 
 class ProjectMember(models.Model):
-    user = models.ForeignKey(
-        'profiles.FatUser',
-        on_delete=models.CASCADE,
-        related_name='project_members'
-    )
+    """Модель участников проекта"""
+    user = models.ForeignKey('profiles.FatUser', on_delete=models.CASCADE, related_name='project_members')
     project = models.ForeignKey(Project, related_name="members", on_delete=models.CASCADE)
     create_date = models.DateTimeField(auto_now_add=True)
 

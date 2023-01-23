@@ -28,11 +28,11 @@ class ToolkitListView(generics.ListAPIView):
 class ProjectsView(MixedPermissionSerializer, viewsets.ModelViewSet):
     """CRUD проекта"""
     permission_classes_by_action = {
-        'list': (permissions.IsAuthenticated,),
-        'retrieve': (permissions.IsAuthenticated,),
-        'create': (permissions.IsAuthenticated,),
-        'update': (IsUser,),
-        'destroy': (IsUser,)
+        'list': (IsAuthenticated,),
+        'retrieve': (IsAuthenticated,),
+        'create': (IsAuthenticated,),
+        'update': (permissions.IsAuthenticated, IsUser),
+        'destroy': (permissions.IsAuthenticated, IsUser)
     }
     filterset_class = ProjectFilter
     filter_backends = (filters.DjangoFilterBackend,)
@@ -45,8 +45,7 @@ class ProjectsView(MixedPermissionSerializer, viewsets.ModelViewSet):
     }
 
     def get_queryset(self):
-        project = models.Project.objects.select_related('user', 'category').all().prefetch_related('toolkit', 'teams')
-        return project
+        return models.Project.objects.select_related('user', 'category').prefetch_related('toolkit', 'teams').all()
 
     def perform_create(self, serializer):
         serializer.save()
@@ -58,24 +57,24 @@ class ProjectsView(MixedPermissionSerializer, viewsets.ModelViewSet):
         instance.delete()
 
 
-class UserProjectsView(MixedPermissionSerializer, viewsets.ModelViewSet):
+class UserProjectsView(MixedSerializer, viewsets.ModelViewSet):
     """Список проектов пользователя"""
-    permission_classes_by_action = {
-        'list': (permissions.IsAuthenticated,)
-    }
+    permission_classes_by_action = (permissions.IsAuthenticated,)
     serializer_classes_by_action = {
         'list': serializers.ProjectUserListSerializer,
     }
 
     def get_queryset(self):
-        return models.Project.objects.select_related('user', 'category').prefetch_related('toolkit', 'teams').\
-            filter(user=self.request.user)
+        return models.Project.objects.filter(user=self.request.user).select_related(
+            'user',
+            'category'
+        ).prefetch_related('toolkit', 'teams')
 
 
 class MemberProjectTeamsView(MixedPermissionSerializer, viewsets.ModelViewSet):
     """Список команд проекта, если ты участник команды"""
     permission_classes_by_action = {
-        'list': (IsMemberTeam,)
+        'list': (permissions.IsAuthenticated, IsMemberTeam)
     }
     serializer_classes_by_action = {
         'list': serializers.ProjectTeamsSerializer
@@ -88,7 +87,7 @@ class MemberProjectTeamsView(MixedPermissionSerializer, viewsets.ModelViewSet):
 class MemberProjectBoardView(MixedPermissionSerializer, viewsets.ModelViewSet):
     """Доска задач проекта, если ты участник команды"""
     permission_classes_by_action = {
-        'list': (IsMemberTeam,)
+        'list': (permissions.IsAuthenticated, IsMemberTeam)
     }
     serializer_classes_by_action = {
         'list': serializers.ProjectTeamsSerializer
@@ -104,11 +103,11 @@ class AvatarView(MixedPermissionSerializer, viewsets.ModelViewSet):
     serializer_classes_by_action = serializers.AvatarProjectSerializer
     permission_classes_by_action = {
         'list': (IsAuthenticated,),
-        'update': (IsAuthorProject,)
+        'update': (permissions.IsAuthenticated, IsAuthorProject)
     }
 
     def get_queryset(self):
-        return models.Project.objects.select_related('user').filter(id=self.kwargs.get('pk'))
+        return models.Project.objects.filter(id=self.kwargs.get('pk')).select_related('user')
 
     def perform_update(self, serializer):
         serializer.save(project_id=self.kwargs.get('pk'))

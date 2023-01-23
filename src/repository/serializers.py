@@ -8,7 +8,7 @@ from ..dashboard.models import Board
 
 
 class CategorySerializer(serializers.ModelSerializer):
-    """Категории"""
+    """Сериализатор вывода категорий"""
 
     class Meta:
         model = models.Category
@@ -16,7 +16,7 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class ToolkitSerializer(serializers.ModelSerializer):
-    """Инструментарий"""
+    """Сериализатор вывода инструментария"""
 
     class Meta:
         model = models.Toolkit
@@ -24,7 +24,7 @@ class ToolkitSerializer(serializers.ModelSerializer):
 
 
 class GetCategorySerializer(serializers.ModelSerializer):
-    """Категории"""
+    """Сериализатор категорий для проекта"""
 
     class Meta:
         model = models.Category
@@ -32,7 +32,7 @@ class GetCategorySerializer(serializers.ModelSerializer):
 
 
 class GetToolkitSerializer(serializers.ModelSerializer):
-    """Инструментарий"""
+    """Сериализатор инструментария для проекта"""
 
     class Meta:
         model = models.Toolkit
@@ -40,7 +40,7 @@ class GetToolkitSerializer(serializers.ModelSerializer):
 
 
 class ProjectSerializer(serializers.ModelSerializer):
-    """Проект"""
+    """Сериализатор CU проекта"""
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
@@ -81,7 +81,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 
 
 class ProjectUserListSerializer(serializers.ModelSerializer):
-    """Список проектов"""
+    """Сериализатор списока проектов"""
     category = CategorySerializer()
     toolkit = ToolkitSerializer(many=True)
     teams = GetTeamSerializer(many=True)
@@ -101,7 +101,7 @@ class ProjectUserListSerializer(serializers.ModelSerializer):
 
 
 class ProjectDetailSerializer(serializers.ModelSerializer):
-    """Проект детально"""
+    """Сериализатор проекта детально"""
     user = GetUserForProjectSerializer()
     category = GetCategorySerializer()
     toolkit = GetToolkitSerializer(many=True)
@@ -128,7 +128,7 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
 
 
 class ProjectTeamsSerializer(serializers.ModelSerializer):
-    """Список команд"""
+    """Сериализатор списока команд"""
 
     class Meta:
         model = Team
@@ -138,7 +138,7 @@ class ProjectTeamsSerializer(serializers.ModelSerializer):
 
 
 class ProjectBoardSerializer(serializers.ModelSerializer):
-    """Доска задач"""
+    """Сериализатор доски задач"""
     user = GetUserForProjectSerializer()
 
     class Meta:
@@ -150,7 +150,7 @@ class ProjectBoardSerializer(serializers.ModelSerializer):
 
 
 class AvatarProjectSerializer(serializers.ModelSerializer):
-    """ Аватар проекта """
+    """Сериализатор аватара проекта"""
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
@@ -163,3 +163,4 @@ class AvatarProjectSerializer(serializers.ModelSerializer):
         instance = super().update(instance, validated_data)
         instance.save()
         return instance
+

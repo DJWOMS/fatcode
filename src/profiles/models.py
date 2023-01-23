@@ -1,14 +1,13 @@
 import uuid
-
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy as _
-from django.core.validators import FileExtensionValidator
+from django.core.validators import FileExtensionValidator, MaxValueValidator
 
 from fatcode import settings
 from src.base.validators import ImageValidator
 from src.courses.models import Course
-from .validators import phone_validator
+from .validators import phone_validator, birthday_validator
 
 
 def user_directory_path(instance: 'FatUser', filename: str) -> str:
@@ -17,7 +16,7 @@ def user_directory_path(instance: 'FatUser', filename: str) -> str:
 
 
 class Social(models.Model):
-    """Social networks"""
+    """Модель социальный ссылки"""
     title = models.CharField(max_length=200)
     logo = models.ImageField(
         upload_to='social/logo',
@@ -40,7 +39,7 @@ class Invitation(models.Model):
 
 
 class FatUser(AbstractUser):
-    """User model override"""
+    """Модель пользователя"""
     avatar = models.ImageField(
         upload_to=user_directory_path,
         default='default/default.jpg',
@@ -49,7 +48,6 @@ class FatUser(AbstractUser):
         validators=[ImageValidator((100, 100), 1048576)]
     )
     middle_name = models.CharField(max_length=200, null=True, blank=True)
-    socials = models.ManyToManyField(Social, through='FatUserSocial')
     experience = models.IntegerField(default=0)
     reputation = models.IntegerField(default=0)
     email = models.EmailField(_("email address"), unique=True, blank=True, null=True)
@@ -57,9 +55,12 @@ class FatUser(AbstractUser):
 
     USERNAME_FIELD = "username"
 
+    def full_name(self):
+        return f'{self.first_name} {self.middle_name}'
+
 
 class FatUserSocial(models.Model):
-    """Intermediate table for the ManyToMany FatUser and Social relationship"""
+    """Промежуточная модель со связью  ManyToMany FatUser и Social"""
     social = models.ForeignKey(Social, on_delete=models.CASCADE, related_name='link_social')
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -70,6 +71,9 @@ class FatUserSocial(models.Model):
 
     def __str__(self):
         return self.user_url
+
+    def full_social_link(self):
+        return f'{self.social}{self.user_url}'
 
 
 class Account(models.Model):
@@ -89,6 +93,7 @@ class Account(models.Model):
 
 
 class Language(models.Model):
+    """Модель языков"""
     name = models.CharField(max_length=150)
 
     def __str__(self):
@@ -101,6 +106,7 @@ class Questionnaire(models.Model):
     country = models.CharField(max_length=150, blank=True, null=True)
     town = models.CharField(max_length=150, blank=True, null=True)
     phone = models.CharField(validators=[phone_validator], max_length=13, blank=True, null=True)
+    birthday = models.DateField(validators=[birthday_validator], blank=True, null=True)
     avatar = models.ImageField(
         upload_to='questionnaire/avatar/',
         default='default/default.jpg',
@@ -134,6 +140,7 @@ class Questionnaire(models.Model):
 
 
 class Application(models.Model):
+    """Модель заявок в друзья"""
     sender = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
