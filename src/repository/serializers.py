@@ -164,3 +164,27 @@ class AvatarProjectSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
+
+class ProjectsSerializer(serializers.ModelSerializer):
+    """Сериализатор проектов пользователя"""
+
+    class Meta:
+        model = models.Project
+        fields = ('id', 'name')
+
+
+class UsersToolkitSerializer(serializers.ModelSerializer):
+    """Сериализатор инструментов пользователя"""
+
+    class Meta:
+        model = models.Toolkit
+        fields = ('name',)
+
+
+class UsersProjectsSerializer(serializers.ModelSerializer):
+    """Сериализатор проектов пользователя"""
+
+    class Meta:
+        model = models.Project
+        fields = ('id', 'name')
+
