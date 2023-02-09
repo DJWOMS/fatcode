@@ -308,3 +308,10 @@ class AvatarSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
+
+class TeamsSerializer(serializers.ModelSerializer):
+    """Сериализатор команд пользователя"""
+
+    class Meta:
+        model = models.Team
+        fields = ('name',)

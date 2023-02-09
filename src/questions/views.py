@@ -1,4 +1,5 @@
 from django.db.models import Prefetch
+from rest_framework import generics
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated, AllowAny
 
@@ -93,3 +94,6 @@ class QuestionFollower(MixedPermission, ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(follower=self.request.user)
+
+
+

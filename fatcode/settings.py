@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'src.repository',
     'src.dashboard',
     'src.support',
+    'src.questionnaire',
 ]
 
 MIDDLEWARE = [
