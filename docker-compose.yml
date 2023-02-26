@@ -28,36 +28,36 @@ services:
     env_file:
       - .env.dev
 
-  redis:
-    image: redis:alpine
-    ports:
-      - "6379:6379"
-
-  celery:
-    restart: always
-    build:
-      context: .
-    command: celery -A fatcode worker -l info
-    env_file:
-      - .env.dev
-    volumes:
-      - ./:/app
-    depends_on:
-      - redis
-      - web
-
-  celery-beat:
-    build: .
-    command: celery -A fatcode beat -l info
-    volumes:
-      - ./:/usr/src/app/
-    env_file:
-      - .env.dev
-    depends_on:
-      - redis
-      - db
-      - web
-      - celery
+#  redis:
+#    image: redis:alpine
+#    ports:
+#      - "6379:6379"
+#
+#  celery:
+#    restart: always
+#    build:
+#      context: .
+#    command: celery -A fatcode worker -l info
+#    env_file:
+#      - .env.dev
+#    volumes:
+#      - ./:/app
+#    depends_on:
+#      - redis
+#      - web
+#
+#  celery-beat:
+#    build: .
+#    command: celery -A fatcode beat -l info
+#    volumes:
+#      - ./:/usr/src/app/
+#    env_file:
+#      - .env.dev
+#    depends_on:
+#      - redis
+#      - db
+#      - web
+#      - celery
 
 volumes:
   db_fatcode_vol:

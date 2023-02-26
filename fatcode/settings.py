@@ -20,10 +20,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'djoser',
-    'ckeditor',
     'django_filters',
     'drf_yasg',
-    'ckeditor_uploader',
     'corsheaders',
     'silk',
 
@@ -38,6 +36,7 @@ INSTALLED_APPS = [
     'src.repository',
     'src.dashboard',
     'src.support',
+    'src.questionnaire',
 ]
 
 MIDDLEWARE = [
@@ -138,7 +137,6 @@ DJOSER = {
     },
 }
 
-CKEDITOR_UPLOAD_PATH = "media/uploads/"
 
 SWAGGER_SETTINGS = {
     'SECURITY_DEFINITIONS': {

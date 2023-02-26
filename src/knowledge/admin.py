@@ -1,19 +1,17 @@
 from django.contrib import admin
-from src.knowledge.models import Category, Tag, Article, Glossary
+from src.knowledge import models
 from django import forms
-from ckeditor_uploader.widgets import CKEditorUploadingWidget
 
 
 class ArticleAdminForm(forms.ModelForm):
     """Form for connecting ckeditor to Article model"""
-    text = forms.CharField(widget=CKEditorUploadingWidget())
 
     class Meta:
-        model = Article
+        model = models.Article
         fields = '__all__'
 
 
-@admin.register(Article)
+@admin.register(models.Article)
 class ArticleAdmin(admin.ModelAdmin):
     form = ArticleAdminForm
     list_display = ('title', 'author', 'published', 'date_creation')
@@ -21,15 +19,25 @@ class ArticleAdmin(admin.ModelAdmin):
     filter_horizontal = ('glossary',)
 
 
-@admin.register(Category)
+@admin.register(models.Category)
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ('name', 'parent')
 
 
-@admin.register(Glossary)
+@admin.register(models.CommentArticle)
+class CommentAdmin(admin.ModelAdmin):
+    list_display = ('user', 'article', 'create_date')
+
+
+@admin.register(models.LikeDislike)
+class LikeAdmin(admin.ModelAdmin):
+    list_display = ('user', 'article', 'create_date', 'status')
+
+
+@admin.register(models.Glossary)
 class GlossaryAdmin(admin.ModelAdmin):
     """Glossary"""
     pass
 
 
-admin.site.register(Tag)
+admin.site.register(models.Tag)

@@ -16,7 +16,6 @@ class TeamView(MixedPermissionSerializer, viewsets.ModelViewSet):
     """ CRUD команды """
     filterset_class = filters.TeamFilter
     filter_backends = (filter.DjangoFilterBackend,)
-    queryset = models.Team.objects.prefetch_related('project_teams').select_related('user').all()
     permission_classes_by_action = {
         'list': (IsAuthenticatedOrReadOnly,),
         'create': (IsAuthenticated,),
@@ -32,6 +31,12 @@ class TeamView(MixedPermissionSerializer, viewsets.ModelViewSet):
         'destroy': serializers.UpdateTeamSerializer
     }
 
+    def get_queryset(self):
+        return models.Team.objects.prefetch_related('project_teams').select_related('user').annotate(
+            projects_count=Count("project_teams", distinct=True),
+            members_count=Count("members", distinct=True)
+        ).all()
+
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
@@ -45,11 +50,11 @@ class TeamView(MixedPermissionSerializer, viewsets.ModelViewSet):
 class SocialLinkView(MixedPermissionSerializer, viewsets.ModelViewSet):
     """CRUD социальной ссылке к команде"""
     permission_classes_by_action = {
-        'list': (IsAuthenticatedOrReadOnly,),
-        'create': (permissions.IsAuthorTeam,),
-        'retrieve': (permissions.IsAuthorTeamOrRead,),
-        'update': (permissions.IsAuthorTeam,),
-        'destroy': (permissions.IsAuthorTeam,),
+        'list': (IsAuthenticated,),
+        'create': (IsAuthenticated, permissions.IsAuthorTeam),
+        'retrieve': (IsAuthenticated, permissions.IsAuthorTeamOrRead),
+        'update': (IsAuthenticated, permissions.IsAuthorTeam),
+        'destroy': (IsAuthenticated, permissions.IsAuthorTeam),
     }
     serializer_classes_by_action = {
         'list': serializers.ListSocialLinkSerializer,
@@ -61,7 +66,7 @@ class SocialLinkView(MixedPermissionSerializer, viewsets.ModelViewSet):
     lookup_url_kwarg = 'social_pk'
 
     def get_queryset(self):
-        return models.SocialLink.objects.select_related('team').filter(team=self.kwargs.get('pk'))
+        return models.SocialLink.objects.filter(team=self.kwargs.get('pk')).select_related('team')
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user, team_id=self.kwargs.get('pk'))
@@ -83,8 +88,9 @@ class OwnTeamListView(MixedPermissionSerializer, viewsets.ModelViewSet):
     }
 
     def get_queryset(self):
-        return models.Team.objects.select_related('user').prefetch_related('social_links')\
-            .filter(user=self.request.user)
+        return models.Team.objects.filter(user=self.request.user).select_related('user').prefetch_related(
+            'social_links'
+        )
 
 
 class MemberTeamListView(MixedPermissionSerializer, viewsets.ModelViewSet):
@@ -97,21 +103,23 @@ class MemberTeamListView(MixedPermissionSerializer, viewsets.ModelViewSet):
     }
 
     def get_queryset(self):
-        return models.Team.objects.select_related('user').filter(members__user=self.request.user).exclude(user=self.request.user)
+        return models.Team.objects.filter(members__user=self.request.user).exclude(user=self.request.user).select_related(
+            'user'
+        )
 
 
 class MemberList(MixedPermissionSerializer, viewsets.ModelViewSet):
     """ Просмотр участников команды"""
     permission_classes_by_action = {
-        'list': (permissions.IsMemberTeam,),
-        'retrieve': (permissions.IsMemberTeam,),
-        'destroy': (permissions.IsAuthorTeam,)
+        'list': (IsAuthenticated, permissions.IsMemberTeam),
+        'retrieve': (IsAuthenticated, permissions.IsMemberTeam),
+        'destroy': (IsAuthenticated, permissions.IsAuthorTeam)
     }
     serializer_classes_by_action = serializers.MemberSerializer
     lookup_url_kwarg = 'member_pk'
 
     def get_queryset(self):
-        return models.TeamMember.objects.prefetch_related('user').filter(team=self.kwargs.get('pk'))
+        return models.TeamMember.objects.filter(team=self.kwargs.get('pk')).prefetch_related('user')
 
     def perform_destroy(self, instance):
         if models.Team.objects.filter(name=instance.team, user=instance.user).exists():
@@ -132,18 +140,18 @@ class PostView(MixedPermissionSerializer, viewsets.ModelViewSet):
         'destroy': serializers.PostCreateSerializer
     }
     permission_classes_by_action = {
-        'list': (permissions.IsMemberTeam,),
-        'retrieve': (permissions.IsMemberTeam,),
-        'create': (permissions.IsAuthorTeam,),
-        'update': (IsUser,),
-        'destroy': (IsUser,),
+        'list': (IsAuthenticated, permissions.IsMemberTeam),
+        'retrieve': (IsAuthenticated, permissions.IsMemberTeam),
+        'create': (IsAuthenticated, permissions.IsAuthorTeam),
+        'update': (IsAuthenticated, IsUser),
+        'destroy': (IsAuthenticated, IsUser),
     }
     lookup_url_kwarg = 'post_pk'
 
     def get_queryset(self):
-        return models.Post.objects.select_related('user').filter(team_id=self.kwargs.get('pk')).annotate(
+        return models.Post.objects.filter(team_id=self.kwargs.get('pk')).annotate(
             comments_count=Count("post_comments", filter=Q(post_comments__is_delete=False), distinct=True)
-        )
+        ).select_related('user')
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -164,11 +172,11 @@ class PostView(MixedPermissionSerializer, viewsets.ModelViewSet):
 class CommentsView(MixedPermissionSerializer, viewsets.ModelViewSet):
     """CRUD комментариев к постам"""
     permission_classes_by_action = {
-        'list': (permissions.IsMemberTeam,),
-        'create': (permissions.IsMemberTeam,),
-        'update': (IsUser,),
-        'retrieve': (permissions.IsMemberTeam,),
-        'destroy': (IsUser,)
+        'list': (IsAuthenticated, permissions.IsMemberTeam),
+        'create': (IsAuthenticated, permissions.IsMemberTeam),
+        'update': (IsAuthenticated, IsUser),
+        'retrieve': (IsAuthenticated, permissions.IsMemberTeam),
+        'destroy': (IsAuthenticated, IsUser)
     }
     serializer_classes_by_action = {
         'list': serializers.CommentListSerializer,
@@ -180,11 +188,11 @@ class CommentsView(MixedPermissionSerializer, viewsets.ModelViewSet):
     lookup_url_kwarg = 'comment_pk'
 
     def get_queryset(self):
-        return models.Comment.objects.select_related('user', 'parent').filter(
+        return models.Comment.objects.filter(
             parent__isnull=True, post_id=self.kwargs.get('post_pk')
         ).annotate(
             comments_count=Count("children")
-        )
+        ).select_related('user', 'parent')
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user, post_id=self.kwargs.get('post_pk'))
@@ -200,9 +208,9 @@ class InvitationView(MixedPermissionSerializer, viewsets.ModelViewSet):
     """CD заявки в команду"""
     permission_classes_by_action = {
         'list': (IsAuthenticated,),
-        'retrieve': (IsUser,),
+        'retrieve': (IsAuthenticated, IsUser),
         'create': (IsAuthenticated,),
-        'destroy': (IsUser,)
+        'destroy': (IsAuthenticated, IsUser)
     }
     serializer_classes_by_action = {
         'list': serializers.InvitationSerializer,
@@ -212,7 +220,7 @@ class InvitationView(MixedPermissionSerializer, viewsets.ModelViewSet):
     }
 
     def get_queryset(self):
-        return models.Invitation.objects.select_related('team', 'user').filter(user=self.request.user)
+        return models.Invitation.objects.filter(user=self.request.user).select_related('team', 'user')
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
@@ -225,8 +233,8 @@ class InvitationDetailView(MixedPermissionSerializer, viewsets.ModelViewSet):
     """ Принять/отклонить заявки в команду"""
     permission_classes_by_action = {
         'list': (IsAuthenticated,),
-        'retrieve': (permissions.IsAuthorTeamForInvitation,),
-        'update': (permissions.IsAuthorTeamForInvitation,),
+        'retrieve': (IsAuthenticated, permissions.IsAuthorTeamForInvitation),
+        'update': (IsAuthenticated, permissions.IsAuthorTeamForInvitation),
     }
     serializer_classes_by_action = {
         'list': serializers.AcceptInvitationSerializerList,
@@ -235,10 +243,10 @@ class InvitationDetailView(MixedPermissionSerializer, viewsets.ModelViewSet):
     }
 
     def get_queryset(self):
-        return models.Invitation.objects.select_related('team', 'user').filter(
-                                                                                team__user=self.request.user,
-                                                                                order_status='Waiting'
-                                                                                )
+        return models.Invitation.objects.filter(team__user=self.request.user, order_status='Waiting').select_related(
+            'team',
+            'user'
+        )
 
     def perform_update(self, serializer):
         serializer.save(user=self.request.user)
@@ -249,12 +257,12 @@ class AvatarTeam(MixedPermissionSerializer, viewsets.ModelViewSet):
     parser_classes = (parsers.MultiPartParser,)
     serializer_classes_by_action = serializers.AvatarSerializer
     permission_classes_by_action = {
-        'list': (IsAuthenticatedOrReadOnly,),
-        'update': (permissions.IsAuthorTeam,),
+        'list': (IsAuthenticated,),
+        'update': (IsAuthenticated, permissions.IsAuthorTeam),
     }
 
     def get_queryset(self):
-        return models.Team.objects.select_related('user').filter(id=self.kwargs.get('pk'))
+        return models.Team.objects.filter(id=self.kwargs.get('pk')).select_related('user')
 
     def perform_update(self, serializer):
         serializer.save(team_id=self.kwargs.get('pk'))

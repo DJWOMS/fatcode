@@ -34,10 +34,43 @@ class Article(models.Model):
     view_count = models.IntegerField(default=0)
     picture = models.ImageField(upload_to='article/picture', null=True, blank=True)
     category = models.ManyToManyField(Category, related_name='article')
-    tag = models.ManyToManyField(Tag, blank=True, related_name='article')
+    tags = models.ManyToManyField(Tag, blank=True, related_name='article')
     video_url = models.URLField(max_length=500, null=True, blank=True)
     glossary = models.ManyToManyField(Glossary, blank=True)
     published = models.BooleanField(default=False)
 
     def __str__(self):
         return self.title
+
+
+class CommentArticle(models.Model):
+    """Модель комментариев"""
+    text = models.TextField(max_length=512)
+    create_date = models.DateTimeField(auto_now_add=True)
+    update_date = models.DateTimeField(auto_now=True)
+    is_publish = models.BooleanField(default=True)
+    is_delete = models.BooleanField(default=False)
+    user = models.ForeignKey('profiles.FatUser', on_delete=models.CASCADE, related_name='article_comments')
+    article = models.ForeignKey(Article, related_name="article_comments", on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'{self.id}'
+
+
+class LikeDislike(models.Model):
+    """Модель лайков"""
+    STATUS = (
+        ('Like', 'Нравиться'),
+        ('Dislike', 'Не нравиться'),
+        ('Empty', 'Отсутствует')
+    )
+    article = models.ForeignKey(Article, related_name="likedislike", on_delete=models.CASCADE)
+    user = models.ForeignKey('profiles.FatUser', on_delete=models.CASCADE, related_name='likedislike_user')
+    status = models.CharField(max_length=100, choices=STATUS, default='Empty')
+    create_date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'User {self.user} - {self.article} - {self.status}'
+
+
+

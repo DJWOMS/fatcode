@@ -126,3 +126,9 @@ class SocialExists(APIException):
     status_code = status.HTTP_403_FORBIDDEN
     default_detail = 'Ссылка на эту социальную сеть сущетсвует'
     default_code = 'error'
+
+
+class AuthExists(APIException):
+    status_code = status.HTTP_403_FORBIDDEN
+    default_detail = 'Пользователь не создан'
+    default_code = 'error'

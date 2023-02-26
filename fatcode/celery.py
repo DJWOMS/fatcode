@@ -12,6 +12,6 @@ app.autodiscover_tasks()
 app.conf.beat_schedule = {
     'everyday-task': {
       'task': 'src.team.tasks.check_invitations',
-      'schedule': crontab(hour='*/23')
+      'schedule': crontab(minute=0, hour=0)
     }
 }

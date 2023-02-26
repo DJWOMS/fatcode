@@ -7,7 +7,6 @@ from .yasg import urlpatterns as doc_urls
 
 urlpatterns = [
     path('api/v1/admin/', admin.site.urls),
-    path('api/v1/ckeditor/', include('ckeditor_uploader.urls')),
     path('api/v1/api-auth/', include('rest_framework.urls')),
     path('api/v1/auth/', include('djoser.urls')),
     path('api/v1/auth/', include('djoser.urls.authtoken')),
@@ -20,7 +19,8 @@ urlpatterns = [
     path('api/v1/dashboard/', include('src.dashboard.urls')),
     path('api/v1/repository/', include('src.repository.urls')),
     path('api/v1/data/', include('src.data.urls')),
-    path('api/v1/support/', include('src.support.urls'))
+    path('api/v1/support/', include('src.support.urls')),
+    path('api/v1/questionnaire/', include('src.questionnaire.urls'))
 ]
 
 urlpatterns += doc_urls

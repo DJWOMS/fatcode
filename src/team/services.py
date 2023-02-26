@@ -22,6 +22,7 @@ def check_create_invitations():
 
 
 def check_and_create_invitation(team, cur_user):
+    """Проверка и создание заявки"""
     user = models.Team.objects.filter(user=cur_user.id, id=team.id).exists()
     member = models.TeamMember.objects.filter(user=cur_user, team=team).exists()
     invitation = models.Invitation.objects.filter(team=team, user=cur_user, order_status='Waiting').exists()
@@ -33,14 +34,16 @@ def check_and_create_invitation(team, cur_user):
 
 
 def check_and_create_team_member(instance):
-    cur_member = models.TeamMember.objects.filter(user=instance.user, team=instance.team).exists()
-    if cur_member:
+    """Проверка и создание участника команды"""
+    current_member = models.TeamMember.objects.filter(user=instance.user, team=instance.team).exists()
+    if current_member:
         raise exceptions.TeamMemberException()
     if instance.order_status == 'Approved':
         return models.TeamMember.objects.create(user=instance.user, team=instance.team)
 
 
 def check_post(post_id, **validated_data):
+    """Проверка поста"""
     parent = validated_data.get('parent')
     if parent is not None:
         try:
@@ -50,6 +53,27 @@ def check_post(post_id, **validated_data):
         if post.id != post_id:
             raise exceptions.PostException()
         return parent
+
+
+def check_teams(teams, user):
+    """Проверка является ли пользователь участником команды"""
+    if teams is not None:
+        for team in teams:
+            if not models.TeamMember.objects.filter(user=user, team=team).exists():
+                raise exceptions.TeamMemberExists()
+    return teams
+
+
+def check_my_teams(teams, user):
+    """Проверка автора команд"""
+    for team in teams:
+        team = models.Team.objects.filter(user=user, id=team.id).exists()
+        if not team:
+            raise exceptions.TeamAuthor()
+    return teams
+
+
+
 
 
 
