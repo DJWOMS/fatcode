@@ -6,24 +6,20 @@ from django.contrib.auth.base_user import BaseUserManager
 from django.conf import settings
 from rest_framework.authtoken.models import Token
 
-from src.team.models import TeamMember
-from src.repository.models import ProjectMember
-
-from src.profiles.models import FatUser, Account, Friend, Application, Invitation
+from src.profiles import models
 from src.team import services as services_team
 from src.repository import services as services_rep
 from ..base import exceptions
-from .models import Questionnaire, FatUserSocial
 
 
 def add_experience(user_id: int, exp: int):
-    new_exp = FatUser.objects.filter(id=user_id).update(expirience=F('experience') + exp)
+    new_exp = models.FatUser.objects.filter(id=user_id).update(expirience=F('experience') + exp)
     return new_exp
 
 
 class CoinService:
 
-    def __init__(self, user: FatUser):
+    def __init__(self, user: models.FatUser):
         self.user = user
 
     def check_balance(self):
@@ -39,7 +35,7 @@ class CoinService:
 
 
 class ReputationService:
-    def __init__(self, user: FatUser):
+    def __init__(self, user: models.FatUser):
         self.user = user
 
     def increase_reputation(self, count: int, action: str):
@@ -135,7 +131,7 @@ def get_provider(account_url):
 
 def create_account(user, account_name, account_url, account_id):
     """Создание аккаунта для пользователя"""
-    return Account.objects.create(
+    return models.Account.objects.create(
                         user=user,
                         provider=get_provider(account_url),
                         account_id=account_id,
@@ -145,28 +141,28 @@ def create_account(user, account_name, account_url, account_id):
 
 
 def add_friend(friend, user):
-    if Application.objects.filter(getter=friend, sender=user):
-        Application.objects.filter(getter=friend, sender=user).delete()
-        return Friend.objects.create(friend=friend, user=user)
+    if models.Application.objects.filter(getter=friend, sender=user):
+        models.Application.objects.filter(getter=friend, sender=user).delete()
+        return models.Friend.objects.create(friend=friend, user=user)
     else:
         raise ValueError("you have not application")
 
 
 def create_user_without_email(account_id):
     """Создание пользователя без email"""
-    return FatUser.objects.create(username=account_id)
+    return models.FatUser.objects.create(username=account_id)
 
 
 def create_user_with_email(nik, email):
     """Создание пользователя с email"""
-    return FatUser.objects.create(username=nik, email=email)
+    return models.FatUser.objects.create(username=nik, email=email)
 
 
 def check_account_for_add(user, account_id):
     """Проверка наличия привязанного аккаунта github у пользователя"""
-    if Account.objects.filter(user=user, account_id=account_id).exists():
+    if models.Account.objects.filter(user=user, account_id=account_id).exists():
         raise exceptions.AccountExists()
-    if Account.objects.filter(account_id=account_id).exists():
+    if models.Account.objects.filter(account_id=account_id).exists():
         raise exceptions.AccountIdExists()
     else:
         return user
@@ -185,9 +181,9 @@ def check_or_create_token(user):
 def check_account_for_auth(account_id):
     """Проверка и создание токена пользователя  после авторизации через github"""
     try:
-        account = Account.objects.get(account_id=account_id)
+        account = models.Account.objects.get(account_id=account_id)
         return check_or_create_token(account.user)
-    except Account.DoesNotExist:
+    except models.Account.DoesNotExist:
         return False
 
 
@@ -214,34 +210,16 @@ def check_account(accounts, user):
     """Проверка привязанных аккаунтов пользователя"""
     if accounts is not None:
         for account in accounts:
-            if not Account.objects.filter(user=user, account_url=account).exists():
+            if not models.Account.objects.filter(user=user, account_url=account).exists():
                 raise exceptions.AccountMemberExists()
     return accounts
-
-
-def questionnaire_create(user, teams, projects, accounts, toolkits, languages, socials, **validated_data):
-    """Создание анкеты пользователя"""
-    questionnaire = Questionnaire.objects.create(user=user,**validated_data)
-    for team in teams:
-        questionnaire.teams.add(team)
-    for toolkit in toolkits:
-        questionnaire.toolkits.add(toolkit)
-    for project in projects:
-        questionnaire.projects.add(project)
-    for account in accounts:
-        questionnaire.accounts.add(account)
-    for language in languages:
-        questionnaire.languages.add(language)
-    for social in socials:
-        questionnaire.socials.add(social)
-    return questionnaire
 
 
 def check_socials(user, socials):
     """Проверка социальных сетей пользователя"""
     if socials is not None:
         for social in socials:
-            if not FatUserSocial.objects.filter(user=user, user_url=social).exists():
+            if not models.FatUserSocial.objects.filter(user=user, user_url=social).exists():
                 raise exceptions.SocialUserNotExists()
     return socials
 
@@ -254,57 +232,10 @@ def check_profile(user, teams, projects, accounts, socials):
         return user
 
 
-def questionnaire_update_teams(instance, teams):
-    """Обновление команд в анкете пользователя"""
-    instance.teams.clear()
-    for team in teams:
-        instance.teams.add(team)
-    return instance
-
-
-def questionnaire_update_projects(instance, projects):
-    """Обновление проектов в анкете пользователя"""
-    instance.projects.clear()
-    for project in projects:
-        instance.projects.add(project)
-    return instance
-
-
-def questionnaire_update_accounts(instance, accounts):
-    """Обновление аккаунтов в анкете пользователя"""
-    instance.accounts.clear()
-    for account in accounts:
-        instance.accounts.add(account)
-    return instance
-
-
-def questionnaire_update(instance, toolkits, languages, socials):
-    """Обновление анкеты пользователя"""
-    # instance.teams.clear()
-    instance.toolkits.clear()
-    # instance.accounts.clear()
-    # instance.projects.clear()
-    instance.languages.clear()
-    instance.socials.clear()
-    # for team in teams:
-    #     instance.teams.add(team)
-    for toolkit in toolkits:
-        instance.toolkits.add(toolkit)
-    # for project in projects:
-    #     instance.projects.add(project)
-    for language in languages:
-        instance.languages.add(language)
-    # for account in accounts:
-    #     instance.accounts.add(account)
-    for social in socials:
-        instance.socials.add(social)
-    return instance
-
-
 def check_invite(invite):
     """Проверка приглашения"""
     if invite:
-        if not Invitation.objects.filter(code=invite).exists():
+        if not models.Invitation.objects.filter(code=invite).exists():
             raise exceptions.InvitationNotExists()
         return invite
     raise exceptions.InvitationNotExists()
@@ -312,14 +243,14 @@ def check_invite(invite):
 
 def delete_invite(invite):
     """Удаление приглашения"""
-    current_invite = Invitation.objects.filter(code=invite)
+    current_invite = models.Invitation.objects.filter(code=invite)
     current_invite.delete()
     return True
 
 
 def check_email(email):
     """Проверка email пользователя"""
-    if FatUser.objects.filter(email=email).exists():
+    if models.FatUser.objects.filter(email=email).exists():
         raise exceptions.EmailExists()
     return email
 
@@ -327,7 +258,7 @@ def check_email(email):
 def check_or_update_email(instance, email, pk, middle_name):
     """Проверка значений на изменение email профиля"""
     if email != '':
-        if FatUser.objects.filter(email=email).exclude(email=instance.email).exists():
+        if models.FatUser.objects.filter(email=email).exclude(email=instance.email).exists():
             raise exceptions.EmailExists()
         else:
             instance.email = email
@@ -340,13 +271,13 @@ def check_or_update_email(instance, email, pk, middle_name):
 
 def create_social(user, social_link, user_url):
     """Проверка социальных ссылок пользователя"""
-    if FatUserSocial.objects.filter(social=social_link, user=user).exists():
+    if models.FatUserSocial.objects.filter(social=social_link, user=user).exists():
         raise exceptions.SocialExists()
     try:
         current_user_url = user_url.split('/')[-1]
-        return FatUserSocial.objects.create(social=social_link, user=user, user_url=current_user_url)
+        return models.FatUserSocial.objects.create(social=social_link, user=user, user_url=current_user_url)
     except:
-        return FatUserSocial.objects.create(social=social_link, user=user, user_url=user_url)
+        return models.FatUserSocial.objects.create(social=social_link, user=user, user_url=user_url)
 
 
 def check_or_update_social(instance, user_url):

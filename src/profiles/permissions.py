@@ -26,26 +26,10 @@ class IsNotYouGetter(BasePermission):
         return request.data['getter'] == request.user.id
 
 
-class IsQuestionnaireNotExists(permissions.BasePermission):
-    """Для создания только одной анкеты"""
-    def has_permission(self, request, view):
-        current_user = models.Questionnaire.objects.select_related('user').filter(user=request.user).exists()
-        if not current_user:
-            return True
-
-
 class IsAuthorUser(BasePermission):
     """Только для автора пользователя"""
     def has_permission(self, request, view):
         return models.FatUser.objects.filter(username=request.user, id=view.kwargs.get('pk')).exists()
-
-
-class IsAuthorQuestionnaireUser(BasePermission):
-    """Только для автора пользователя"""
-    def has_permission(self, request, view):
-        return models.Questionnaire.objects.select_related('user').filter(
-            user=request.user, id=view.kwargs.get('pk')
-        ).exists()
 
 
 class IsMeAuthor(BasePermission):

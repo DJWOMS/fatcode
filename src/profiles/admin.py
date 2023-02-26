@@ -36,18 +36,6 @@ class AccountAdmin(admin.ModelAdmin):
     search_fields = ("user", "account_id", "account_url", "account_name")
 
 
-@admin.register(models.Questionnaire)
-class QuestionnaireAdmin(admin.ModelAdmin):
-    list_display = ('user', 'description')
-    search_fields = ('user', )
-
-
-@admin.register(models.Language)
-class LanguageAdmin(admin.ModelAdmin):
-    list_display = ('name', )
-    search_fields = ('name', )
-
-
 @admin.register(models.FatUserSocial)
 class FatUserSocialAdmin(admin.ModelAdmin):
     list_display = ('social', 'user', 'user_url')
@@ -69,6 +57,12 @@ class InvitationAdmin(admin.ModelAdmin):
             item = uuid.uuid4()
             models.Invitation.objects.create(code=item)
         return HttpResponseRedirect("../")
+
+
+@admin.register(models.Language)
+class LanguageAdmin(admin.ModelAdmin):
+    list_display = ('name', )
+    search_fields = ('name', )
 
 
 admin.site.register(models.FatUser, FatUserAdmin)
