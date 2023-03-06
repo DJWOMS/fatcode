@@ -1,4 +1,6 @@
 from django.db import models
+from django.utils.text import slugify
+from transliterate import translit
 
 from src.profiles.models import FatUser
 
@@ -38,9 +40,14 @@ class Article(models.Model):
     video_url = models.URLField(max_length=500, null=True, blank=True)
     glossary = models.ManyToManyField(Glossary, blank=True)
     published = models.BooleanField(default=False)
+    slug = models.SlugField(max_length=255, unique=True, verbose_name="URL")
 
     def __str__(self):
         return self.title
+
+    def save(self, *args, **kwargs):
+        self.slug = slugify(translit(f'{self.title}', 'ru', reversed=True))
+        super(Article, self).save(*args, **kwargs)
 
 
 class CommentArticle(models.Model):

@@ -28,7 +28,7 @@ class ListArticleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Article
-        exclude = ('text', 'video_url')
+        exclude = ('text', 'video_url', 'slug')
 
 
 class DetailArticleSerializer(serializers.ModelSerializer):
@@ -55,7 +55,8 @@ class DetailArticleSerializer(serializers.ModelSerializer):
             'tag',
             'video_url',
             'like_count',
-            'dislike_count'
+            'dislike_count',
+            'slug'
         )
 
 
