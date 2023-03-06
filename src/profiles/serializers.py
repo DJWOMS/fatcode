@@ -231,13 +231,14 @@ class UserProfileUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.FatUser
-        fields = ('id', 'middle_name', 'email', 'user')
+        fields = ('id', 'middle_name', 'email', 'town', 'user')
 
     def update(self, instance, validated_data):
         email = validated_data.pop('email', None)
         pk = validated_data.pop('pk')
         middle_name = validated_data.pop('middle_name', None)
-        return services.check_or_update_email(instance, email, pk, middle_name)
+        town = validated_data.pop('town', None)
+        return services.check_or_update_email(instance, email, pk, middle_name, town)
 
 
 class UserMeProfileSerializer(serializers.ModelSerializer):
@@ -246,7 +247,7 @@ class UserMeProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.FatUser
-        fields = ('id', 'username', 'avatar', 'full_name', 'email', 'user', 'experience', 'coins')
+        fields = ('id', 'username', 'avatar', 'full_name', 'email', 'user', 'town', 'experience', 'coins')
 
 
 class SocialListSerializer(serializers.ModelSerializer):
