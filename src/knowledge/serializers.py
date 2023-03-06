@@ -75,7 +75,7 @@ class GlossaryArticleSerializer(serializers.ModelSerializer):
         fields = ("id", "title")
 
 
-class CommentListSerializer(serializers.ModelSerializer):
+class KnowledgeCommentListSerializer(serializers.ModelSerializer):
     """Сериализатор вывода списка комментариев"""
     user = GetUserSerializer()
 

@@ -73,9 +73,9 @@ class CommentsView(MixedPermissionSerializer, ModelViewSet):
         'destroy': (IsAuthenticated, IsUser)
     }
     serializer_classes_by_action = {
-        'list': serializers.CommentListSerializer,
+        'list': serializers.KnowledgeCommentListSerializer,
         'create': serializers.CUDCommentSerializer,
-        'retrieve': serializers.CommentListSerializer,
+        'retrieve': serializers.KnowledgeCommentListSerializer,
         'update': serializers.CUDCommentSerializer,
         'destroy': serializers.CUDCommentSerializer
     }

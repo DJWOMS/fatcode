@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'src.dashboard',
     'src.support',
     'src.questionnaire',
+    'src.event',
 ]
 
 MIDDLEWARE = [
@@ -103,7 +104,7 @@ TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
 
-USE_TZ = True
+# USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
