@@ -36,7 +36,7 @@ jobs:
         # Build and push Docker image to Docker Hub
         docker-compose -f docker-compose.prod.yml build
         docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-        docker-compose push
+        docker push djwoms/fatcode:tagname
 
     - name: Configure SSH
       env:
