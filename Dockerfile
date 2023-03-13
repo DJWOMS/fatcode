@@ -6,4 +6,7 @@ COPY . .
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
+ENV HOME=/app
+RUN chown -R root:root $HOME
+
 ENTRYPOINT ["/app/entrypoint.sh"]
