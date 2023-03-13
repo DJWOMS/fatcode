@@ -11,7 +11,7 @@ services:
   web:
     build:
       context: ./
-      dockerfile: Dockerfile.prod
+      dockerfile: Dockerfile
     command: >
       sh -c "gunicorn fatcode.wsgi:application --bind 0.0.0.0:8000"
     ports:
