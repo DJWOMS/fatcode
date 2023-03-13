@@ -46,7 +46,7 @@ jobs:
         PRODUCTION_SERVER_PATH: ${{ secrets.PRODUCTION_SERVER_PATH}}
       run: |
         # Deploy to production server
-        ssh-keyscan -H $PRODUCTION_SERVER_IP >> ~/.ssh/known_hosts
+        ssh-keyscan -H $PRODUCTION_SERVER_IP >> ~/.ssh/authorized_keys
         echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
         rsync -avz --delete ./ $PRODUCTION_SERVER_USER@$PRODUCTION_SERVER_IP:$PRODUCTION_SERVER_PATH
