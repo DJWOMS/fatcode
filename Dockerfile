@@ -5,7 +5,8 @@ WORKDIR /app
 #ENV HOME=/app
 #RUN chown -R root:root $HOME
 #RUN chmod a+x $HOME/entrypoint.sh
-RUN apt-get install -y netcat
+RUN apt-get update \
+    && apt-get install -y netcat
 COPY . .
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
