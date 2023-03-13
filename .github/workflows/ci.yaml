@@ -26,23 +26,15 @@ jobs:
       run: |
         docker-compose -f docker-compose.prod.yml run web sh -c "python manage.py test"
 
-#    - name: Push to Hub
-##      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-#      env:
-#        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-#        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-#
-#      run: |
-#        # Build and push Docker image to Docker Hub
-#        docker-compose -f docker-compose.prod.yml build
-#        docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-#        docker push djwoms/fatcode:tagname
-
   push:
     needs: build
     runs-on: ubuntu-latest
 
     steps:
+    - name: Build image
+      run: |
+        docker build . ${{ github.ref_name }}
+
     - name: Login to Docker Hub
       uses: docker/login-action@v2
       with:
@@ -56,6 +48,11 @@ jobs:
         push: true
         tags: djwoms/fatcode:latest
 
+  deploy:
+    needs: push
+    runs-on: ubuntu-latest
+
+    steps:
     - name: Configure SSH
       env:
         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
@@ -73,7 +70,7 @@ jobs:
         PRODUCTION_SERVER_PASS: ${{ secrets.PRODUCTION_SERVER_PASS}}
         PRODUCTION_SERVER_PATH: ${{ secrets.PRODUCTION_SERVER_PATH}}
       run: |
-         sshpass -p "$PRODUCTION_SERVER_PASS" ssh -o StrictHostKeyChecking=no $PRODUCTION_SERVER_USER@$PRODUCTION_SERVER_IP "cd $PRODUCTION_SERVER_PATH && docker-compose pull && docker-compose -f docker-compose.prod.yml up -d"
+         sshpass -p "$PRODUCTION_SERVER_PASS" ssh -o StrictHostKeyChecking=no $PRODUCTION_SERVER_USER@$PRODUCTION_SERVER_IP "cd $PRODUCTION_SERVER_PATH && docker pull djwoms/fatcode:latest && docker-compose -f docker-compose.prod.yml up -d"
 #        # Deploy to production server
 #        ssh-keyscan -H $PRODUCTION_SERVER_IP >> ~/home/.ssh/authorized_keys
 #        echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
