@@ -1,0 +1,67 @@
+name: Django CI/CD with Docker Compose
+
+on:
+  push:
+    branches:
+     - main
+     - dev
+  pull_request:
+    branches:
+      - main
+      - dev
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      db:
+        image: postgres
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Build and run containers
+      run: |
+        docker-compose up -d --build
+
+    - name: Wait for Django to start
+      run: |
+        docker-compose run web sh -c "while ! nc -z db 5432; do sleep 1; done;"
+        docker-compose run web sh -c "while ! nc -z localhost 8000; do sleep 1; done;"
+
+    - name: Run tests
+      run: |
+        docker-compose run web python manage.py test
+
+    - name: Deploy to production
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      env:
+        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+      run: |
+        # Build and push Docker image to Docker Hub
+        docker-compose -f docker-compose.prod.yml build
+        docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+        docker-compose push
+
+        # Deploy to production server
+        ssh-keyscan -H $PRODUCTION_SERVER_IP >> ~/.ssh/known_hosts
+        echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        rsync -avz --delete ./ $PRODUCTION_SERVER_USER@$PRODUCTION_SERVER_IP:$PRODUCTION_SERVER_PATH
+        ssh $PRODUCTION_SERVER_USER@$PRODUCTION_SERVER_IP "cd $PRODUCTION_SERVER_PATH && docker-compose pull && docker-compose -f docker-compose.prod.yml up -d"
