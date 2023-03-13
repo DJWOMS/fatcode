@@ -1,0 +1,46 @@
+name: Django Test Future
+
+on:
+  push:
+    branches:
+      - future
+  pull_request:
+    branches:
+      - future
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+#    services:
+#      db:
+#        image: postgres
+#        env:
+#          POSTGRES_USER: postgres
+#          POSTGRES_PASSWORD: postgres
+#          POSTGRES_DB: test_db
+#        ports:
+#          - 5432:5432
+#        options: >-
+#          --health-cmd pg_isready
+#          --health-interval 10s
+#          --health-timeout 5s
+#          --health-retries 5
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Build and run containers
+      run: |
+        cp .env.example .env.dev && docker-compose up -d --build
+
+    - name: Wait for Django to start
+      run: |
+        docker-compose run web sh -c "while ! nc -z db 5432; do sleep 1; done;"
+        docker-compose run web sh -c "while ! nc -z localhost 8000; do sleep 1; done;"
+
+    - name: Run tests
+      run: |
+        docker-compose run web sh -c "python manage.py test"
+#        docker-compose run web python manage.py test
