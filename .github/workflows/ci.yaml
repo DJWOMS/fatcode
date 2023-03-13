@@ -43,11 +43,13 @@ jobs:
         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         PRODUCTION_SERVER_IP: ${{ secrets.PRODUCTION_SERVER_IP }}
         PRODUCTION_SERVER_USER: ${{ secrets.PRODUCTION_SERVER_USER}}
+        PRODUCTION_SERVER_PASS: ${{ secrets.PRODUCTION_SERVER_PASS}}
         PRODUCTION_SERVER_PATH: ${{ secrets.PRODUCTION_SERVER_PATH}}
       run: |
-        # Deploy to production server
-        ssh-keyscan -H $PRODUCTION_SERVER_IP >> ~/.ssh/authorized_keys
-        echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-        rsync -avz --delete ./ $PRODUCTION_SERVER_USER@$PRODUCTION_SERVER_IP:$PRODUCTION_SERVER_PATH
-        ssh $PRODUCTION_SERVER_USER@$PRODUCTION_SERVER_IP "cd $PRODUCTION_SERVER_PATH && docker-compose pull && docker-compose -f docker-compose.prod.yml up -d"
+         sshpass -p "$PRODUCTION_SERVER_PASS" ssh -o StrictHostKeyChecking=no $PRODUCTION_SERVER_USER@$PRODUCTION_SERVER_IP "cd $PRODUCTION_SERVER_PATH && docker-compose pull && docker-compose -f docker-compose.prod.yml up -d"
+#        # Deploy to production server
+#        ssh-keyscan -H $PRODUCTION_SERVER_IP >> ~/home/.ssh/authorized_keys
+#        echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+#        chmod 600 ~/.ssh/id_rsa
+#        rsync -avz --delete ./ $PRODUCTION_SERVER_USER@$PRODUCTION_SERVER_IP:$PRODUCTION_SERVER_PATH
+#        ssh $PRODUCTION_SERVER_USER@$PRODUCTION_SERVER_IP "cd $PRODUCTION_SERVER_PATH && docker-compose pull && docker-compose -f docker-compose.prod.yml up -d"
