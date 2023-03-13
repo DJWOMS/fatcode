@@ -27,7 +27,7 @@ jobs:
         docker-compose -f docker-compose.prod.yml run web sh -c "python manage.py test"
 
     - name: Push to Hub
-      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+#      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       env:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
