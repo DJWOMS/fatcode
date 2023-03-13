@@ -16,9 +16,7 @@ services:
     build: .
     container_name: fatcode
     command: >
-      sh -c "python manage.py makemigrations --noinput && 
-      python manage.py migrate
-      && python manage.py runserver 0.0.0.0:8000"
+      sh -c "python manage.py runserver 0.0.0.0:8000"
     ports:
       - 8000:8000
     volumes:
