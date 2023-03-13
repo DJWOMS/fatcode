@@ -38,9 +38,18 @@ jobs:
         docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
         docker-compose push
 
-    - name: Deploy to production
+    - name: Configure SSH
       env:
         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        PRODUCTION_SERVER_IP: ${{ secrets.PRODUCTION_SERVER_IP }
+      run: |
+        mkdir -p ~/.ssh
+        echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan $PRODUCTION_SERVER_IP >> ~/.ssh/authorized_keys
+
+    - name: Deploy to production
+      env:
         PRODUCTION_SERVER_IP: ${{ secrets.PRODUCTION_SERVER_IP }}
         PRODUCTION_SERVER_USER: ${{ secrets.PRODUCTION_SERVER_USER}}
         PRODUCTION_SERVER_PASS: ${{ secrets.PRODUCTION_SERVER_PASS}}
