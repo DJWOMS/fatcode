@@ -4,11 +4,6 @@ on:
   push:
     branches:
       - main
-      - dev
-  pull_request:
-    branches:
-      - main
-      - dev
 
 jobs:
   test:
@@ -52,4 +47,4 @@ jobs:
         PRODUCTION_SERVER_PASS: ${{ secrets.PRODUCTION_SERVER_PASS}}
         PRODUCTION_SERVER_PATH: ${{ secrets.PRODUCTION_SERVER_PATH}}
       run: |
-         sshpass -p "$PRODUCTION_SERVER_PASS" ssh -o StrictHostKeyChecking=no $PRODUCTION_SERVER_USER@$PRODUCTION_SERVER_IP "cd $PRODUCTION_SERVER_PATH && docker-compose -f docker-compose.prod.yml down && git pull dev && docker-compose -f docker-compose.prod.yml up -d --build"
+         sshpass -p "$PRODUCTION_SERVER_PASS" ssh -o StrictHostKeyChecking=no $PRODUCTION_SERVER_USER@$PRODUCTION_SERVER_IP "cd $PRODUCTION_SERVER_PATH && docker-compose -f docker-compose.prod.yml down && git pull && docker-compose -f docker-compose.prod.yml up -d --build"
