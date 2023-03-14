@@ -24,7 +24,7 @@ jobs:
 
       - name: Run tests
         run: |
-          docker-compose run web sh -c "python manage.py test"
+          docker-compose -f docker-compose.prod.yml run web sh -c "python manage.py test"
 
   deploy:
     needs: test
