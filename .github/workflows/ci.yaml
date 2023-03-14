@@ -20,28 +20,20 @@ jobs:
 
     - name: Build and run containers
       run: |
-        cp .env.example .env.dev && docker-compose up -d --build
-
+        cp .env.example .env.prod && docker-compose -f docker-compose.prod.yml up -d --build
     - name: Run tests
       run: |
-        docker-compose run web sh -c "python manage.py test"
+        docker-compose -f docker-compose.prod.yml run web sh -c "python manage.py test"
 
-    - name: Push to Hub
-      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-      env:
-        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
 
-      run: |
-        # Build and push Docker image to Docker Hub
-        docker-compose -f docker-compose.prod.yml build
-        docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-        docker-compose push
-
+    steps:
     - name: Configure SSH
       env:
         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        PRODUCTION_SERVER_IP: ${{ secrets.PRODUCTION_SERVER_IP }
+        PRODUCTION_SERVER_IP: ${{ secrets.PRODUCTION_SERVER_IP }}
       run: |
         mkdir -p ~/.ssh
         echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
@@ -55,10 +47,6 @@ jobs:
         PRODUCTION_SERVER_PASS: ${{ secrets.PRODUCTION_SERVER_PASS}}
         PRODUCTION_SERVER_PATH: ${{ secrets.PRODUCTION_SERVER_PATH}}
       run: |
-         sshpass -p "$PRODUCTION_SERVER_PASS" ssh -o StrictHostKeyChecking=no $PRODUCTION_SERVER_USER@$PRODUCTION_SERVER_IP "cd $PRODUCTION_SERVER_PATH && docker-compose pull && docker-compose -f docker-compose.prod.yml up -d"
-#        # Deploy to production server
-#        ssh-keyscan -H $PRODUCTION_SERVER_IP >> ~/home/.ssh/authorized_keys
-#        echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-#        chmod 600 ~/.ssh/id_rsa
-#        rsync -avz --delete ./ $PRODUCTION_SERVER_USER@$PRODUCTION_SERVER_IP:$PRODUCTION_SERVER_PATH
-#        ssh $PRODUCTION_SERVER_USER@$PRODUCTION_SERVER_IP "cd $PRODUCTION_SERVER_PATH && docker-compose pull && docker-compose -f docker-compose.prod.yml up -d"
+         sshpass -p "$PRODUCTION_SERVER_PASS" ssh -o StrictHostKeyChecking=no $PRODUCTION_SERVER_USER@$PRODUCTION_SERVER_IP 
+        "cd $PRODUCTION_SERVER_PATH && docker-compose -f docker-compose.prod.yml down && git pull dev && docker-compose -f docker-compose.prod.yml up -d --build"
+      # Исправить на main ветку

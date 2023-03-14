@@ -11,11 +11,9 @@ services:
   web:
     build:
       context: ./
-      dockerfile: Dockerfile.prod
+      dockerfile: Dockerfile
     command: >
-      sh -c "python manage.py makemigrations --noinput && 
-      python manage.py migrate
-      && gunicorn fatcode.wsgi:application --bind 0.0.0.0:8000"
+      sh -c "gunicorn fatcode.wsgi:application --bind 0.0.0.0:8000"
     ports:
       - 8000:8000
     volumes:
