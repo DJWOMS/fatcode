@@ -255,7 +255,7 @@ def check_email(email):
     return email
 
 
-def check_or_update_email(instance, email, pk, middle_name):
+def check_or_update_email(instance, email, pk, middle_name, town):
     """Проверка значений на изменение email профиля"""
     if email != '':
         if models.FatUser.objects.filter(email=email).exclude(email=instance.email).exists():
@@ -265,6 +265,9 @@ def check_or_update_email(instance, email, pk, middle_name):
             instance.save()
     if middle_name != '':
         instance.middle_name = middle_name
+        instance.save()
+    if town != '':
+        instance.town = town
         instance.save()
     return instance
 

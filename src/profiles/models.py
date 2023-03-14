@@ -52,6 +52,7 @@ class FatUser(AbstractUser):
     reputation = models.IntegerField(default=0)
     email = models.EmailField(_("email address"), unique=True, blank=True, null=True)
     coins = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    town = models.CharField(max_length=200, null=True, blank=True)
 
     USERNAME_FIELD = "username"
 
