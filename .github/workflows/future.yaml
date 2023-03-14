@@ -3,9 +3,11 @@ name: Django Test Future
 on:
   push:
     branches:
+      - dev
       - future
   pull_request:
     branches:
+      - dev
       - future
 
 jobs:
