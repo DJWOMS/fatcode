@@ -32,7 +32,7 @@ jobs:
         docker-compose -f docker-compose.prod.yml run web sh -c "python manage.py test"
 
   deploy:
-    needs: push
+    needs: test
     runs-on: ubuntu-latest
 
     steps:
