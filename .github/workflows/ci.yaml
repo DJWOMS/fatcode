@@ -10,12 +10,12 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - uses: astappiev/docker-compose-remote-action@master
-      name: Docker-Compose Remote Deployment
-      with:
-        ssh_host: ${{ secrets.PRODUCTION_SERVER_IP }}
-        ssh_user: ${{ secrets.PRODUCTION_SERVER_USER}}
-        ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
-        ssh_host_public_key: ${{ secrets.DEPLOY_PUBLIC_KEY }}
-        docker_compose_filename: docker-compose.prod.yml
+      - uses: actions/checkout@v2
+
+      - uses: alex-ac/github-action-ssh-docker-compose@master
+        name: Docker-Compose Remote Deployment
+        with:
+          ssh_host: ${{ secrets.PRODUCTION_SERVER_IP }}
+          ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
+          ssh_user: ${{ secrets.PRODUCTION_SERVER_USER}}
+          docker_compose_filename: docker-compose.prod.yml
