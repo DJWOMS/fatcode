@@ -25,6 +25,11 @@ jobs:
       run: |
         docker-compose -f docker-compose.prod.yml run web sh -c "python manage.py test"
 
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
     - name: Configure SSH
       env:
         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
@@ -34,6 +39,7 @@ jobs:
         echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
         ssh-keyscan $PRODUCTION_SERVER_IP >> ~/.ssh/authorized_keys
+
     - name: Deploy to production
       env:
         PRODUCTION_SERVER_IP: ${{ secrets.PRODUCTION_SERVER_IP }}
