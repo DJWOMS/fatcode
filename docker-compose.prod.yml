@@ -1,4 +1,4 @@
-version: '3.7'
+version: '3'
 
 services:
   db:
@@ -9,8 +9,9 @@ services:
       - ./.env.prod
 
   web:
-    image: djwoms/fatcode:latest
-    pull_policy: always
+    build:
+      context: ./
+      dockerfile: Dockerfile
     command: >
       sh -c "gunicorn fatcode.wsgi:application --bind 0.0.0.0:8000"
     ports:
