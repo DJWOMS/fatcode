@@ -20,8 +20,8 @@ class TeamView(MixedPermissionSerializer, viewsets.ModelViewSet):
         'list': (IsAuthenticatedOrReadOnly,),
         'create': (IsAuthenticated,),
         'retrieve': (IsAuthenticatedOrReadOnly,),
-        'update': (IsUser,),
-        'destroy': (IsUser,)
+        'update': (IsAuthenticated, IsUser,),
+        'destroy': (IsAuthenticated, IsUser,)
     }
     serializer_classes_by_action = {
         'list': serializers.TeamSerializer,

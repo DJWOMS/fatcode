@@ -28,7 +28,7 @@ class ListArticleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Article
-        exclude = ('text', 'video_url')
+        exclude = ('text', 'video_url', 'slug')
 
 
 class DetailArticleSerializer(serializers.ModelSerializer):
@@ -55,7 +55,8 @@ class DetailArticleSerializer(serializers.ModelSerializer):
             'tags',
             'video_url',
             'like_count',
-            'dislike_count'
+            'dislike_count',
+            'slug'
         )
 
 
@@ -75,7 +76,7 @@ class GlossaryArticleSerializer(serializers.ModelSerializer):
         fields = ("id", "title")
 
 
-class CommentListSerializer(serializers.ModelSerializer):
+class KnowledgeCommentListSerializer(serializers.ModelSerializer):
     """Сериализатор вывода списка комментариев"""
     user = GetUserSerializer()
 

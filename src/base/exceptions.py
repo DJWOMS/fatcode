@@ -132,3 +132,9 @@ class AuthExists(APIException):
     status_code = status.HTTP_403_FORBIDDEN
     default_detail = 'Пользователь не создан'
     default_code = 'error'
+
+
+class EventDateException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Время и дате не может быть меньше текущего'
+    default_code = 'error'

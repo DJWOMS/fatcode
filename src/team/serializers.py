@@ -162,7 +162,7 @@ class CommentChildrenSerializer(serializers.Serializer):
 
 
 class PostSerializer(serializers.ModelSerializer):
-    """Сериализатор вывода списока постов команды"""
+    """Сериализатор вывода списка постов команды"""
     user = GetUserSerializer()
     view_count = serializers.CharField(read_only=True)
     comments_count = serializers.IntegerField()
