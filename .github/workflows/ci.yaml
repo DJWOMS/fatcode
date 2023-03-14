@@ -49,4 +49,3 @@ jobs:
       run: |
          sshpass -p "$PRODUCTION_SERVER_PASS" ssh -o StrictHostKeyChecking=no $PRODUCTION_SERVER_USER@$PRODUCTION_SERVER_IP 
         "cd $PRODUCTION_SERVER_PATH && docker-compose -f docker-compose.prod.yml down && git pull dev && docker-compose -f docker-compose.prod.yml up -d --build"
-      # Исправить на main ветку
