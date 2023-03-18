@@ -17,16 +17,16 @@ class EventSerializers(serializers.ModelSerializer):
 
     def create(self, validated_data):
         date = validated_data.pop('date')
-        services.check_date(date)
+        _date = services.check_date(validated_data.get('user'), date)
         event = Event.objects.create(
-            date=date,
+            date=_date,
             **validated_data
         )
         return event
 
     def update(self, instance, validated_data):
         date = validated_data.pop('date')
-        services.check_date(date)
-        instance.date = date
+        _date = services.check_date(validated_data.get('user'), date)
+        instance.date = _date
         instance.save()
         return instance

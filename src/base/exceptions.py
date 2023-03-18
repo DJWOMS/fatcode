@@ -138,3 +138,9 @@ class EventDateException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Время и дате не может быть меньше текущего'
     default_code = 'error'
+
+
+class QuestionnaireTimezonaException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = 'Установите тайм-зону в анкете'
+    default_code = 'error'

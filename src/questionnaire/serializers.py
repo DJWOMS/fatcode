@@ -46,7 +46,8 @@ class QuestionnaireDetailSerializer(serializers.ModelSerializer):
             "projects",
             "accounts",
             "socials",
-            "languages"
+            "languages",
+            "timezone"
         )
 
 
@@ -69,6 +70,7 @@ class CUDQuestionnaireSerializer(serializers.ModelSerializer):
             "accounts",
             "socials",
             "languages",
+            "timezone"
         )
 
     def create(self, validated_data):
@@ -107,7 +109,8 @@ class UDQuestionnaireSerializer(serializers.ModelSerializer):
             "user",
             "toolkits",
             "socials",
-            "languages"
+            "languages",
+            "timezone"
         )
 
     def update(self, instance, validated_data):

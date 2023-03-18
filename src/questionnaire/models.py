@@ -1,3 +1,5 @@
+import pytz
+
 from django.db import models
 from django.core.validators import FileExtensionValidator
 
@@ -8,6 +10,7 @@ from src.profiles.models import FatUser, Account, FatUserSocial, Language
 
 class Questionnaire(models.Model):
     """Модель анкеты"""
+    TIMEZONES = tuple(zip(pytz.all_timezones, pytz.all_timezones))
     description = models.TextField()
     country = models.CharField(max_length=150, blank=True, null=True)
     town = models.CharField(max_length=150, blank=True, null=True)
@@ -23,6 +26,8 @@ class Questionnaire(models.Model):
             ImageValidator((250, 250), 524288)
         ]
     )
+    timezone = models.CharField(max_length=32, choices=TIMEZONES,
+                                default='UTC')
     user = models.OneToOneField(FatUser, on_delete=models.CASCADE, related_name='questionnaire')
     toolkits = models.ManyToManyField(
         'repository.Toolkit',
