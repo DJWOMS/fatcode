@@ -7,7 +7,7 @@ def delete_old_file(path_file):
         os.remove(path_file)
 
 
-def post_view_count(instance):
+def view_count(instance):
     instance.view_count += 1
     instance.save()
     return instance

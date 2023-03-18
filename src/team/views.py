@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework import parsers
 
 from src.base.classes import MixedPermissionSerializer, MixedSerializer
-from src.base.service import post_view_count
+from src.base.service import view_count
 from src.base.permissions import IsUser
 from src.team import serializers, permissions, filters, models
 
@@ -155,7 +155,7 @@ class PostView(MixedPermissionSerializer, viewsets.ModelViewSet):
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
-        instance = post_view_count(instance)
+        instance = view_count(instance)
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 

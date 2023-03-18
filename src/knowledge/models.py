@@ -40,7 +40,7 @@ class Article(models.Model):
     video_url = models.URLField(max_length=500, null=True, blank=True)
     glossary = models.ManyToManyField(Glossary, blank=True)
     published = models.BooleanField(default=False)
-    slug = models.SlugField(max_length=255, unique=True, verbose_name="URL")
+    slug = models.SlugField(max_length=255, unique=True, verbose_name="URL", default='info')
 
     def __str__(self):
         return self.title

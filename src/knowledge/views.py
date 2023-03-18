@@ -5,10 +5,12 @@ from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
 from ..base.classes import MixedSerializer, MixedPermissionSerializer, MixedPermission
+from rest_framework.response import Response
 
 from . import models, serializers, permissions
 from .filters import ArticleFilter
 from ..base.permissions import IsUser
+from ..base.service import view_count
 
 
 class CategoryView(ModelViewSet):
@@ -45,6 +47,12 @@ class ArticleView(MixedSerializer, ModelViewSet):
     filter_backends = (DjangoFilterBackend, filters.SearchFilter, )
     filterset_class = ArticleFilter
     search_fields = ['title']
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance = view_count(instance)
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
 
 class GlossaryLetterListView(ListAPIView):

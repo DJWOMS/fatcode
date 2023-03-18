@@ -25,10 +25,11 @@ class TagSerializer(serializers.ModelSerializer):
 class ListArticleSerializer(serializers.ModelSerializer):
     """Список статей"""
     author = GetUserSerializer()
+    category = CategorySerializer(many=True)
 
     class Meta:
         model = models.Article
-        exclude = ('text', 'video_url', 'slug')
+        exclude = ('text', 'video_url')
 
 
 class DetailArticleSerializer(serializers.ModelSerializer):
@@ -38,6 +39,7 @@ class DetailArticleSerializer(serializers.ModelSerializer):
     tag = TagSerializer(many=True)
     like_count = serializers.IntegerField()
     dislike_count = serializers.IntegerField()
+    view_count = serializers.CharField(read_only=True)
 
     class Meta:
         model = models.Article
