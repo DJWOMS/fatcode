@@ -36,7 +36,7 @@ class DetailArticleSerializer(serializers.ModelSerializer):
     """Статья детально"""
     author = GetUserSerializer()
     category = CategorySerializer(many=True)
-    tag = TagSerializer(many=True)
+    tags = TagSerializer(many=True)
     like_count = serializers.IntegerField()
     dislike_count = serializers.IntegerField()
     view_count = serializers.CharField(read_only=True)
@@ -54,7 +54,7 @@ class DetailArticleSerializer(serializers.ModelSerializer):
             'view_count',
             'picture',
             'category',
-            'tag',
+            'tags',
             'video_url',
             'like_count',
             'dislike_count',
@@ -85,6 +85,7 @@ class KnowledgeCommentListSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.CommentArticle
         fields = ("id", "user", "text", "create_date")
+        ref_name = 'comment_list_knowledge'
 
 
 class CUDCommentSerializer(serializers.ModelSerializer):

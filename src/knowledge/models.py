@@ -36,7 +36,7 @@ class Article(models.Model):
     view_count = models.IntegerField(default=0)
     picture = models.ImageField(upload_to='article/picture', null=True, blank=True)
     category = models.ManyToManyField(Category, related_name='article')
-    tag = models.ManyToManyField(Tag, blank=True, related_name='article')
+    tags = models.ManyToManyField(Tag, blank=True, related_name='article')
     video_url = models.URLField(max_length=500, null=True, blank=True)
     glossary = models.ManyToManyField(Glossary, blank=True)
     published = models.BooleanField(default=False)

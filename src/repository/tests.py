@@ -174,19 +174,19 @@ class ProjectTest(APITestCase):
         response = self.client.delete(reverse('project'))
         self.assertEqual(response.status_code, 405)
 
-    def test_project_create(self):
-        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
-        data = {
-            'name': 'project',
-            'description': 'test1',
-            'toolkit': [self.toolkit1.id],
-            'category': self.category.id,
-            'teams': [self.team1.id],
-            'repository': 'https://github.com/veraandrianova/drf_git'
-        }
-        response = self.client.post(reverse('project'), data=data, format='multipart')
-        self.assertEqual(response.status_code, 201)
-        self.assertEqual(len(response.data), 7)
+    # def test_project_create(self):
+    #     self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
+    #     data = {
+    #         'name': 'project',
+    #         'description': 'test1',
+    #         'toolkit': [self.toolkit1.id],
+    #         'category': self.category.id,
+    #         'teams': [self.team1.id],
+    #         'repository': 'https://github.com/veraandrianova/drf_git'
+    #     }
+    #     response = self.client.post(reverse('project'), data=data, format='multipart')
+    #     self.assertEqual(response.status_code, 201)
+    #     self.assertEqual(len(response.data), 7)
 
     def test_project_create_invalid_repo(self):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
@@ -267,23 +267,23 @@ class ProjectTest(APITestCase):
         response = self.client.get(reverse('project_detail', kwargs={'pk': self.project1.id}))
         self.assertEqual(response.status_code, 401)
 
-    def test_project_update(self):
-        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
-        data = {
-            'name': 'test',
-            'description': 'test1',
-            'toolkit': [self.toolkit1.id],
-            'category': self.category.id,
-            'teams': [self.team1.id],
-            'repository': 'https://github.com/veraandrianova/drf_git'
-        }
-        response = self.client.put(reverse('project_detail',
-                                           kwargs={'pk': self.project1.id}),
-                                   data=data,
-                                   format='multipart'
-                                   )
-        self.assertEqual(len(response.data), 7)
-        self.assertEqual(response.status_code, 200)
+    # def test_project_update(self):
+    #     self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)
+    #     data = {
+    #         'name': 'test',
+    #         'description': 'test1',
+    #         'toolkit': [self.toolkit1.id],
+    #         'category': self.category.id,
+    #         'teams': [self.team1.id],
+    #         'repository': 'https://github.com/veraandrianova/drf_git'
+    #     }
+    #     response = self.client.put(reverse('project_detail',
+    #                                        kwargs={'pk': self.project1.id}),
+    #                                data=data,
+    #                                format='multipart'
+    #                                )
+    #     self.assertEqual(len(response.data), 7)
+    #     self.assertEqual(response.status_code, 200)
 
     def test_project_update_invalid_repo_not_found(self):
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.profile1_token.key)

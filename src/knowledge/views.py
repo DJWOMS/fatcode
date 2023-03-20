@@ -37,7 +37,7 @@ class ArticleView(MixedSerializer, ModelViewSet):
             dislike_count=Count("likedislike", filter=Q(likedislike__status='Dislike'), distinct=True)
         )
         .select_related("author")
-        .prefetch_related("tag", "category", "glossary")
+        .prefetch_related("tags", "category", "glossary")
     )
     serializer_classes_by_action = {
         'list': serializers.ListArticleSerializer,

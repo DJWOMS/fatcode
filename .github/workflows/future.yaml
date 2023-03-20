@@ -1,0 +1,27 @@
+name: Django Test Future
+
+on:
+  push:
+    branches:
+      - dev
+      - future
+  pull_request:
+    branches:
+      - dev
+      - future
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Build and run containers
+      run: |
+        cp .env.example .env.dev && docker-compose up -d --build
+
+    - name: Run tests
+      run: |
+        docker-compose run web sh -c "python manage.py test"
